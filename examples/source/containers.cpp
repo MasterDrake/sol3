@@ -1,8 +1,30 @@
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 
-#include <vector>
+#include <EASTL/vector.h>
 #include <iostream>
+
+void* __cdecl operator new[](size_t size, const char* name, int flags, unsigned debugFlags, const char* file, int line)
+{
+	(void)name;
+	(void)flags;
+	(void)debugFlags;
+	(void)file;
+	(void)line;
+	return new uint8_t[size];
+}
+
+void* __cdecl operator new[](size_t size, size_t alignment, size_t offset, const char* name, int flags, unsigned debugFlags, const char* file, int line)
+{
+	(void)name;
+	(void)alignment;
+	(void)offset;
+	(void)flags;
+	(void)debugFlags;
+	(void)file;
+	(void)line;
+	return new uint8_t[size];
+}
 
 int main(int, char**) {
 	std::cout << "=== containers ===" << std::endl;
@@ -27,7 +49,7 @@ end
 
 	// Set a global variable called
 	// "arr" to be a vector of 5 lements
-	lua["arr"] = std::vector<int> { 2, 4, 6, 8, 10 };
+	lua["arr"] = eastl::vector<int> { 2, 4, 6, 8, 10 };
 
 	// Call it, see 5 elements
 	// printed out
@@ -36,7 +58,7 @@ end
 	// Mess with it in C++
 	// Containers are stored as userdata, unless you
 	// use `sol::as_table()` and `sol::as_table_t`.
-	std::vector<int>& reference_to_arr = lua["arr"];
+	eastl::vector<int>& reference_to_arr = lua["arr"];
 	reference_to_arr.push_back(12);
 
 	// Call it, see *6* elements

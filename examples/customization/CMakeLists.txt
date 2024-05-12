@@ -22,6 +22,8 @@
 
 # # # sol2 Customization Examples
 
+find_package(Lua REQUIRED)
+
 function (MAKE_CUSTOMIZATION_EXAMPLE example_suffix target_sol)
 	set(customization_example_name customization_to_table${example_suffix})
 	
@@ -49,10 +51,8 @@ function (MAKE_CUSTOMIZATION_EXAMPLE example_suffix target_sol)
 			-Wno-noexcept-type)
 	endif()
 
-	target_link_libraries(${customization_example_name}
-		PRIVATE Threads::Threads ${target_sol} Lua::Lua)
-	target_include_directories(${customization_example_name}
-		PRIVATE include)
+	target_link_libraries(${customization_example_name} PRIVATE Threads::Threads ${target_sol} ${LUA_LIBRARIES} EASTL)
+	target_include_directories(${customization_example_name} PRIVATE include ${LUA_INCLUDE_DIR})
 endfunction()
 
 if (SOL2_EXAMPLES)

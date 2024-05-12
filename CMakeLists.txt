@@ -26,6 +26,8 @@ cmake_minimum_required(VERSION 3.16.0)
 # # # Project Include - file that is included after project declaration is finished
 set(CMAKE_PROJECT_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Includes/Project.cmake")
 
+include("$ENV{VCPKG_ROOT}\\scripts\\buildsystems\\vcpkg.cmake")
+
 # # # project declaration
 project(sol2 VERSION 4.0.0 LANGUAGES CXX C)
 
@@ -42,18 +44,18 @@ include(FetchContent)
 
 # # # Configuration
 # # Cached defines, strings, paths and options
-set(SOL2_LUA_VERSION "5.4.4" CACHE STRING "The version of Lua needed. Can be 5.1, 5.2, 5.3, 5.4, LuaJIT, or a more specific 3-part version number for a specifc Lua (e.g., 5.4.4 or luajit-2.0.5)")
-set(SOL2_BUILD_LUA TRUE CACHE BOOL "Always build Lua, do not search for it in the system")
+set(SOL2_LUA_VERSION "5.4.6" CACHE STRING "The version of Lua needed. Can be 5.1, 5.2, 5.3, 5.4, LuaJIT, or a more specific 3-part version number for a specifc Lua (e.g., 5.4.4 or luajit-2.0.5)")
+set(SOL2_BUILD_LUA FALSE CACHE BOOL "Always build Lua, do not search for it in the system")
 set(SOL2_PLATFORM "x64" CACHE STRING "Target platform to compile for when building binaries (x86, x64)")
 option(SOL2_CI "Whether or not we are in continguous integration mode" OFF)
 option(SOL2_SYSTEM_INCLUDE "Whether or not sol2 should be considered a system include. This helps suppress errors for when the sol2 author is a big derp and doesn't fix every single warning, ever." ON)
-option(SOL2_TESTS "Enable build of tests" OFF)
-option(SOL2_EXAMPLES "Enable build of examples" OFF)
+option(SOL2_TESTS "Enable build of tests" ON)
+option(SOL2_EXAMPLES "Enable build of examples" ON)
 option(SOL2_INTEROP_EXAMPLES "Enable build of interop examples" OFF)
 option(SOL2_DYNAMIC_LOADING_EXAMPLES "Enable build of interop examples" OFF)
 option(SOL2_SINGLE "Enable generation and build of single header files" OFF)
 option(SOL2_DOCS "Enable build of documentation" OFF)
-option(SOL2_ENABLE_INSTALL "Enable installation of Sol2" ON)
+option(SOL2_ENABLE_INSTALL "Enable installation of Sol2" OFF)
 # Single tests and examples tests will only be turned on if both SINGLE and TESTS are defined
 CMAKE_DEPENDENT_OPTION(SOL2_TESTS_SINGLE "Enable build of tests using the premade single headers" ON
 	"SOL2_SINGLE;SOL2_TESTS" OFF)
@@ -69,7 +71,7 @@ CMAKE_DEPENDENT_OPTION(SOL2_TESTS_INTEROP_EXAMPLES "Enable build of interop exam
 	"SOL2_INTEROP_EXAMPLES" OFF)
 CMAKE_DEPENDENT_OPTION(SOL2_TESTS_DYNAMIC_LOADING_EXAMPLES "Enable build of dynamic loading examples as tests" ON
 	"SOL2_DYNAMIC_LOADING_EXAMPLES" OFF)
-CMAKE_DEPENDENT_OPTION(BUILD_LUA_AS_DLL "Build Lua as a DLL" ON
+CMAKE_DEPENDENT_OPTION(BUILD_LUA_AS_DLL "Build Lua as a DLL" OFF
 	"SOL2_BUILD_LUA" OFF)
 
 
@@ -91,6 +93,10 @@ file(GLOB_RECURSE sol2-sources
 	CONFIGURE_DEPENDS
 	${CMAKE_CURRENT_SOURCE_DIR}/source/**
 )
+
+find_package(EASTL CONFIG REQUIRED)
+find_package(Lua REQUIRED)
+
 
 # # # sol2 Library
 # # Add a target for sol2's library to be included by external users
@@ -222,63 +228,64 @@ if (sol2-is-top-level-project)
 	# Here, we pull in all the necessary libraries for building examples and tests
 	# Find threading library
 	find_package(Threads REQUIRED)
-
-	string(TOLOWER ${SOL2_LUA_VERSION} NORMALIZED_LUA_VERSION)
-	# Find way to get Lua: build if requested, or attempt to build if no matching version is found
-	if (SOL2_BUILD_LUA)
-		find_package(LuaBuild REQUIRED COMPONENTS ${SOL2_LUA_VERSION})
-	elseif (NOT SOL2_LUA_VERSION)
-		find_package(LuaBuild REQUIRED)
-	else ()
-		if (NORMALIZED_LUA_VERSION MATCHES "5.1")
-			set(CREATE_LUALIB_TARGET TRUE)
-			find_package(Lua 5.1 EXACT REQUIRED)
-		elseif(NORMALIZED_LUA_VERSION MATCHES "5.2")
-			set(CREATE_LUALIB_TARGET TRUE)
-			find_package(Lua 5.2 EXACT REQUIRED)
-		elseif(NORMALIZED_LUA_VERSION MATCHES "5.3")
-			set(CREATE_LUALIB_TARGET TRUE)
-			find_package(Lua 5.3 EXACT REQUIRED)
-		elseif(NORMALIZED_LUA_VERSION MATCHES "5.4")
-			set(CREATE_LUALIB_TARGET TRUE)
-			find_package(Lua 5.4 EXACT REQUIRED)
-		elseif(NORMALIZED_LUA_VERSION MATCHES "luajit")
-			set(CREATE_LUALIB_TARGET TRUE)
-			find_package(LuaJIT REQUIRED)
-		else()
-			find_package(LuaBuild ${SOL2_LUA_VERSION} REQUIRED)
-		endif()
-	endif()
-
-	if (CREATE_LUALIB_TARGET AND LUA_FOUND)
-		set(lualib lua_imported_lib_${SOL2_LUA_VERSION})
-		foreach(lua_search_lib ${LUA_LIBRARIES})
-			get_filename_component(lsl_fname ${lua_search_lib} NAME)
-			if (lsl_fname MATCHES "lua" OR lsl_fname MATCHES "Lua" OR lsl_fname MATCHES "LUA")
-				if (lsl_fname MATCHES "\.so|\.dylib|\.dll")
-					set(lualibtype SHARED)
-					set(lualiblocation ${lua_search_lib})
-				else()
-					set(lualibtype STATIC)
-					set(lualiblocation ${lua_search_lib})
-				endif()
-			else()
-				set(LUA_SEARCH_DEPENDENCY_LIBS ${LUA_SEARCH_DEPENDENCY_LIBS} "${lua_search_lib}")
-			endif()
-		endforeach()
-		add_library(${lualib} ${lualibtype} IMPORTED)
-		set_target_properties(${lualib}
-			PROPERTIES 
-			INTERFACE_INCLUDE_DIRECTORIES ${LUA_INCLUDE_DIR}
-			INTERFACE_LINK_LIBRARIES "${LUA_SEARCH_DEPENDENCY_LIBS} ${CMAKE_DL_LIBS}"
-			IMPORTED_LINK_INTERFACE_LANGUAGES C
-			IMPORTED_LOCATION ${lualiblocation})
-		set(LUA_LIBRARIES ${lualib})
-	endif()
-
-	if (NOT LUA_FOUND AND NOT LUABUILD_FOUND)
-		message(FATAL_ERROR "sol2 Lua \"${SOL2_LUA_VERSION}\" not found and could not be targeted for building")
-	endif()
+	
+	##TODO: To uncomment once done
+#	string(TOLOWER ${SOL2_LUA_VERSION} NORMALIZED_LUA_VERSION)
+#	# Find way to get Lua: build if requested, or attempt to build if no matching version is found
+#	if (SOL2_BUILD_LUA)
+#		find_package(LuaBuild REQUIRED COMPONENTS ${SOL2_LUA_VERSION})
+#	elseif (NOT SOL2_LUA_VERSION)
+#		find_package(LuaBuild REQUIRED)
+#	else ()
+#		if (NORMALIZED_LUA_VERSION MATCHES "5.1")
+#			set(CREATE_LUALIB_TARGET TRUE)
+#			find_package(Lua 5.1 EXACT REQUIRED)
+#		elseif(NORMALIZED_LUA_VERSION MATCHES "5.2")
+#			set(CREATE_LUALIB_TARGET TRUE)
+#			find_package(Lua 5.2 EXACT REQUIRED)
+#		elseif(NORMALIZED_LUA_VERSION MATCHES "5.3")
+#			set(CREATE_LUALIB_TARGET TRUE)
+#			find_package(Lua 5.3 EXACT REQUIRED)
+#		elseif(NORMALIZED_LUA_VERSION MATCHES "5.4")
+#			set(CREATE_LUALIB_TARGET TRUE)
+#			find_package(Lua 5.4 EXACT REQUIRED)
+#		elseif(NORMALIZED_LUA_VERSION MATCHES "luajit")
+#			set(CREATE_LUALIB_TARGET TRUE)
+#			find_package(LuaJIT REQUIRED)
+#		else()
+#			find_package(LuaBuild ${SOL2_LUA_VERSION} REQUIRED)
+#		endif()
+#	endif()
+#
+#	if (CREATE_LUALIB_TARGET AND LUA_FOUND)
+#		set(lualib lua_imported_lib_${SOL2_LUA_VERSION})
+#		foreach(lua_search_lib ${LUA_LIBRARIES})
+#			get_filename_component(lsl_fname ${lua_search_lib} NAME)
+#			if (lsl_fname MATCHES "lua" OR lsl_fname MATCHES "Lua" OR lsl_fname MATCHES "LUA")
+#				if (lsl_fname MATCHES "\.so|\.dylib|\.dll")
+#					set(lualibtype SHARED)
+#					set(lualiblocation ${lua_search_lib})
+#				else()
+#					set(lualibtype STATIC)
+#					set(lualiblocation ${lua_search_lib})
+#				endif()
+#			else()
+#				set(LUA_SEARCH_DEPENDENCY_LIBS ${LUA_SEARCH_DEPENDENCY_LIBS} "${lua_search_lib}")
+#			endif()
+#		endforeach()
+#		add_library(${lualib} ${lualibtype} IMPORTED)
+#		set_target_properties(${lualib}
+#			PROPERTIES 
+#			INTERFACE_INCLUDE_DIRECTORIES ${LUA_INCLUDE_DIR}
+#			INTERFACE_LINK_LIBRARIES "${LUA_SEARCH_DEPENDENCY_LIBS} ${CMAKE_DL_LIBS}"
+#			IMPORTED_LINK_INTERFACE_LANGUAGES C
+#			IMPORTED_LOCATION ${lualiblocation})
+#		set(LUA_LIBRARIES ${lualib})
+#	endif()
+#
+#	if (NOT LUA_FOUND AND NOT LUABUILD_FOUND)
+#		message(FATAL_ERROR "sol2 Lua \"${SOL2_LUA_VERSION}\" not found and could not be targeted for building")
+#	endif()
 	
 	# # Enable test harness for regular, example or single tests
 	if (SOL2_DO_TESTS OR (SOL2_TESTS_EXAMPLES AND SOL2_DO_EXAMPLES))

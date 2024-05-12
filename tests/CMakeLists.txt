@@ -30,9 +30,11 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(Catch2)
 
+find_package(Lua REQUIRED)
+
 function(sol2_add_test_properties target-name)
-	target_link_libraries(${target-name}
-		PUBLIC Threads::Threads Lua::Lua Catch2::Catch2 ${CMAKE_DL_LIBS})
+	target_link_libraries(${target-name} PUBLIC Threads::Threads ${LUA_LIBRARIES} EASTL Catch2::Catch2 EASTL ${CMAKE_DL_LIBS})
+	target_link_libraries(${target-name} PRIVATE ${LUA_LIBRARIES})
 	target_compile_definitions(${target-name}
 		PUBLIC SOL_PRINT_ERRORS=1)
 	target_compile_options(${target-name}
