@@ -31,7 +31,7 @@
 namespace sol { namespace function_detail {
 	template <typename Function>
 	struct upvalue_free_function {
-		using function_type = std::remove_pointer_t<std::decay_t<Function>>;
+		using function_type = eastl::remove_pointer_t<eastl::decay_t<Function>>;
 		using traits_type = meta::bind_traits<function_type>;
 
 		static int real_call(lua_State* L)
@@ -66,7 +66,7 @@ namespace sol { namespace function_detail {
 
 	template <typename T, typename Function>
 	struct upvalue_member_function {
-		typedef std::remove_pointer_t<std::decay_t<Function>> function_type;
+		typedef eastl::remove_pointer_t<eastl::decay_t<Function>> function_type;
 		typedef lua_bind_traits<function_type> traits_type;
 
 		static int real_call(lua_State* L)
@@ -122,7 +122,7 @@ namespace sol { namespace function_detail {
 
 	template <typename T, typename Function>
 	struct upvalue_member_variable {
-		typedef std::remove_pointer_t<std::decay_t<Function>> function_type;
+		typedef eastl::remove_pointer_t<eastl::decay_t<Function>> function_type;
 		typedef lua_bind_traits<function_type> traits_type;
 
 		static int real_call(lua_State* L)
@@ -187,7 +187,7 @@ namespace sol { namespace function_detail {
 
 	template <typename T, typename Function>
 	struct upvalue_member_variable<T, readonly_wrapper<Function>> {
-		typedef std::remove_pointer_t<std::decay_t<Function>> function_type;
+		typedef eastl::remove_pointer_t<eastl::decay_t<Function>> function_type;
 		typedef lua_bind_traits<function_type> traits_type;
 
 		static int real_call(lua_State* L)
@@ -250,7 +250,7 @@ namespace sol { namespace function_detail {
 
 	template <typename T, typename Function>
 	struct upvalue_this_member_function {
-		typedef std::remove_pointer_t<std::decay_t<Function>> function_type;
+		typedef eastl::remove_pointer_t<eastl::decay_t<Function>> function_type;
 		typedef lua_bind_traits<function_type> traits_type;
 
 		static int real_call(lua_State* L)
@@ -302,9 +302,9 @@ namespace sol { namespace function_detail {
 
 	template <typename T, typename Function>
 	struct upvalue_this_member_variable {
-		typedef std::remove_pointer_t<std::decay_t<Function>> function_type;
+		typedef eastl::remove_pointer_t<eastl::decay_t<Function>> function_type;
 
-		static int real_call(lua_State* L) noexcept(std::is_nothrow_copy_assignable_v<T>) {
+		static int real_call(lua_State* L) noexcept(eastl::is_nothrow_copy_assignable_v<T>) {
 			// Layout:
 			// idx 1...n: verbatim data of member variable pointer
 			auto memberdata = stack::stack_detail::get_as_upvalues<function_type>(L);
@@ -320,7 +320,7 @@ namespace sol { namespace function_detail {
 		}
 
 		template <bool is_yielding, bool no_trampoline>
-		static int call(lua_State* L) noexcept(std::is_nothrow_copy_assignable_v<T>) {
+		static int call(lua_State* L) noexcept(eastl::is_nothrow_copy_assignable_v<T>) {
 			int nr;
 			if constexpr (no_trampoline) {
 				nr = real_call(L);
@@ -336,17 +336,17 @@ namespace sol { namespace function_detail {
 			}
 		}
 
-		int operator()(lua_State* L) noexcept(std::is_nothrow_copy_assignable_v<T>) {
+		int operator()(lua_State* L) noexcept(eastl::is_nothrow_copy_assignable_v<T>) {
 			return call(L);
 		}
 	};
 
 	template <typename T, typename Function>
 	struct upvalue_this_member_variable<T, readonly_wrapper<Function>> {
-		typedef std::remove_pointer_t<std::decay_t<Function>> function_type;
+		typedef eastl::remove_pointer_t<eastl::decay_t<Function>> function_type;
 		typedef lua_bind_traits<function_type> traits_type;
 
-		static int real_call(lua_State* L) noexcept(std::is_nothrow_copy_assignable_v<T>) {
+		static int real_call(lua_State* L) noexcept(eastl::is_nothrow_copy_assignable_v<T>) {
 			// Layout:
 			// idx 1...n: verbatim data of member variable pointer
 			auto memberdata = stack::stack_detail::get_as_upvalues<function_type>(L);
@@ -360,7 +360,7 @@ namespace sol { namespace function_detail {
 		}
 
 		template <bool is_yielding, bool no_trampoline>
-		static int call(lua_State* L) noexcept(std::is_nothrow_copy_assignable_v<T>) {
+		static int call(lua_State* L) noexcept(eastl::is_nothrow_copy_assignable_v<T>) {
 			int nr;
 			if constexpr (no_trampoline) {
 				nr = real_call(L);
@@ -376,7 +376,7 @@ namespace sol { namespace function_detail {
 			}
 		}
 
-		int operator()(lua_State* L) noexcept(std::is_nothrow_copy_assignable_v<T>) {
+		int operator()(lua_State* L) noexcept(eastl::is_nothrow_copy_assignable_v<T>) {
 			return call(L);
 		}
 	};

@@ -92,8 +92,8 @@ namespace sol {
 		basic_thread(const basic_thread&) = default;
 		basic_thread(basic_thread&&) = default;
 		template <typename T,
-		     meta::enable<meta::neg<std::is_same<meta::unqualified_t<T>, basic_thread>>, is_lua_reference<meta::unqualified_t<T>>> = meta::enabler>
-		basic_thread(T&& r) : base_t(std::forward<T>(r)) {
+		     meta::enable<meta::neg<eastl::is_same<meta::unqualified_t<T>, basic_thread>>, is_lua_reference<meta::unqualified_t<T>>> = meta::enabler>
+		basic_thread(T&& r) : base_t(eastl::forward<T>(r)) {
 #if SOL_IS_ON(SOL_SAFE_REFERENCES)
 			auto pp = stack::push_pop(*this);
 			constructor_handler handler {};
@@ -105,7 +105,7 @@ namespace sol {
 		basic_thread& operator=(const basic_thread&) = default;
 		basic_thread& operator=(basic_thread&&) = default;
 		template <typename T, meta::enable<is_lua_reference<meta::unqualified_t<T>>> = meta::enabler>
-		basic_thread(lua_State* L, T&& r) : base_t(L, std::forward<T>(r)) {
+		basic_thread(lua_State* L, T&& r) : base_t(L, eastl::forward<T>(r)) {
 #if SOL_IS_ON(SOL_SAFE_REFERENCES)
 			auto pp = stack::push_pop(*this);
 			constructor_handler handler {};

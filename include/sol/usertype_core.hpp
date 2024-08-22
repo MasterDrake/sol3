@@ -37,7 +37,7 @@
 #include <sol/usertype_container_launch.hpp>
 
 #include <sstream>
-#include <type_traits>
+#include <EASTL/type_traits.h>
 
 namespace sol {
 	namespace u_detail {
@@ -90,9 +90,9 @@ namespace sol {
 		}
 
 		template <typename Arg>
-		inline std::string make_string(Arg&& arg) {
+		inline eastl::string make_string(Arg&& arg) {
 			string_view s = make_string_view(arg);
-			return std::string(s.data(), s.size());
+			return eastl::string(s.data(), s.size());
 		}
 
 		inline int is_indexer(string_view s) {
@@ -129,19 +129,19 @@ namespace sol {
 			if constexpr (is_automagical<T>::value) {
 				if (fx(meta_function::less_than)) {
 					if constexpr (meta::supports_op_less<T>::value) {
-						lua_CFunction f = &comparsion_operator_wrap<T, std::less<>>;
+						lua_CFunction f = &comparsion_operator_wrap<T, eastl::less<>>;
 						ifx(meta_function::less_than, f);
 					}
 				}
 				if (fx(meta_function::less_than_or_equal_to)) {
 					if constexpr (meta::supports_op_less_equal<T>::value) {
-						lua_CFunction f = &comparsion_operator_wrap<T, std::less_equal<>>;
+						lua_CFunction f = &comparsion_operator_wrap<T, eastl::less_equal<>>;
 						ifx(meta_function::less_than_or_equal_to, f);
 					}
 				}
 				if (fx(meta_function::equal_to)) {
 					if constexpr (meta::supports_op_equal<T>::value) {
-						lua_CFunction f = &comparsion_operator_wrap<T, std::equal_to<>>;
+						lua_CFunction f = &comparsion_operator_wrap<T, eastl::equal_to<>>;
 						ifx(meta_function::equal_to, f);
 					}
 					else {
@@ -160,7 +160,7 @@ namespace sol {
 				}
 				if (fx(meta_function::to_string)) {
 					if constexpr (is_to_stringable_v<T>) {
-						if constexpr (!meta::is_probably_stateless_lambda_v<T> && !std::is_member_pointer_v<T>) {
+						if constexpr (!meta::is_probably_stateless_lambda_v<T> && !eastl::is_member_pointer_v<T>) {
 							auto f = &detail::static_trampoline<&default_to_string<T>>;
 							ifx(meta_function::to_string, f);
 						}
@@ -181,7 +181,7 @@ namespace sol {
 	namespace stack { namespace stack_detail {
 		template <typename X>
 		void set_undefined_methods_on(stack_reference t) {
-			using T = std::remove_pointer_t<X>;
+			using T = eastl::remove_pointer_t<X>;
 
 			lua_State* L = t.lua_state();
 
@@ -191,14 +191,14 @@ namespace sol {
 			int index = 0;
 			detail::indexed_insert insert_fx(l, index);
 			detail::insert_default_registrations<T>(insert_fx, detail::property_always_true);
-			if constexpr (!std::is_pointer_v<X>) {
+			if constexpr (!eastl::is_pointer_v<X>) {
 				l[index] = luaL_Reg { to_string(meta_function::garbage_collect).c_str(), detail::make_destructor<T>() };
 			}
 			luaL_setfuncs(L, l, 0);
 
 			// __type table
 			lua_createtable(L, 0, 2);
-			const std::string& name = detail::demangle<T>();
+			const eastl::string& name = detail::demangle<T>();
 			lua_pushlstring(L, name.c_str(), name.size());
 			lua_setfield(L, -2, "name");
 			lua_CFunction is_func = &detail::is_check<T>;

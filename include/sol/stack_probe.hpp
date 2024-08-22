@@ -38,42 +38,42 @@ namespace sol { namespace stack {
 					return probe(false, 0);
 				}
 			}
-			get_field<b, raw>(L, std::forward<Key>(key), tableindex);
+			get_field<b, raw>(L, eastl::forward<Key>(key), tableindex);
 			return probe(check<P>(L), 1);
 		}
 	};
 
 	template <typename A, typename B, typename P, bool b, bool raw, typename C>
-	struct probe_field_getter<std::pair<A, B>, P, b, raw, C> {
+	struct probe_field_getter<eastl::pair<A, B>, P, b, raw, C> {
 		template <typename Keys>
 		probe get(lua_State* L, Keys&& keys, int tableindex = -2) {
 			if (!b && !maybe_indexable(L, tableindex)) {
 				return probe(false, 0);
 			}
-			get_field<b, raw>(L, std::get<0>(keys), tableindex);
+			get_field<b, raw>(L, eastl::get<0>(keys), tableindex);
 			if (!maybe_indexable(L)) {
 				return probe(false, 1);
 			}
-			get_field<false, raw>(L, std::get<1>(keys), tableindex);
+			get_field<false, raw>(L, eastl::get<1>(keys), tableindex);
 			return probe(check<P>(L), 2);
 		}
 	};
 
 	template <typename... Args, typename P, bool b, bool raw, typename C>
-	struct probe_field_getter<std::tuple<Args...>, P, b, raw, C> {
-		template <std::size_t I, typename Keys>
-		probe apply(std::index_sequence<I>, int sofar, lua_State* L, Keys&& keys, int tableindex) {
-			get_field<(I < 1) && b, raw>(L, std::get<I>(keys), tableindex);
+	struct probe_field_getter<eastl::tuple<Args...>, P, b, raw, C> {
+		template <eastl::size_t I, typename Keys>
+		probe apply(eastl::index_sequence<I>, int sofar, lua_State* L, Keys&& keys, int tableindex) {
+			get_field<(I < 1) && b, raw>(L, eastl::get<I>(keys), tableindex);
 			return probe(check<P>(L), sofar);
 		}
 
-		template <std::size_t I, std::size_t I1, std::size_t... In, typename Keys>
-		probe apply(std::index_sequence<I, I1, In...>, int sofar, lua_State* L, Keys&& keys, int tableindex) {
-			get_field < I<1 && b, raw>(L, std::get<I>(keys), tableindex);
+		template <eastl::size_t I, eastl::size_t I1, eastl::size_t... In, typename Keys>
+		probe apply(eastl::index_sequence<I, I1, In...>, int sofar, lua_State* L, Keys&& keys, int tableindex) {
+			get_field < I<1 && b, raw>(L, eastl::get<I>(keys), tableindex);
 			if (!maybe_indexable(L)) {
 				return probe(false, sofar);
 			}
-			return apply(std::index_sequence<I1, In...>(), sofar + 1, L, std::forward<Keys>(keys), -1);
+			return apply(eastl::index_sequence<I1, In...>(), sofar + 1, L, eastl::forward<Keys>(keys), -1);
 		}
 
 		template <typename Keys>
@@ -82,10 +82,10 @@ namespace sol { namespace stack {
 				if (!maybe_indexable(L, tableindex)) {
 					return probe(false, 0);
 				}
-				return apply(std::index_sequence_for<Args...>(), 1, L, std::forward<Keys>(keys), tableindex);
+				return apply(eastl::index_sequence_for<Args...>(), 1, L, eastl::forward<Keys>(keys), tableindex);
 			}
 			else {
-				return apply(std::index_sequence_for<Args...>(), 1, L, std::forward<Keys>(keys), tableindex);
+				return apply(eastl::index_sequence_for<Args...>(), 1, L, eastl::forward<Keys>(keys), tableindex);
 			}
 		}
 	};

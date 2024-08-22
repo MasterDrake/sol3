@@ -29,7 +29,7 @@
 namespace sol {
 	namespace function_detail {
 		template <typename F, F fx>
-		inline int call_wrapper_variable(std::false_type, lua_State* L) {
+		inline int call_wrapper_variable(eastl::false_type, lua_State* L) {
 			typedef meta::bind_traits<meta::unqualified_t<F>> traits_type;
 			typedef typename traits_type::args_list args_list;
 			typedef meta::tuple_types<typename traits_type::return_type> return_type;
@@ -37,28 +37,28 @@ namespace sol {
 		}
 
 		template <typename R, typename V, V, typename T>
-		inline int call_set_assignable(std::false_type, T&&, lua_State* L) {
+		inline int call_set_assignable(eastl::false_type, T&&, lua_State* L) {
 			return luaL_error(L, "cannot write to this type: copy assignment/constructor not available");
 		}
 
 		template <typename R, typename V, V variable, typename T>
-		inline int call_set_assignable(std::true_type, lua_State* L, T&& mem) {
+		inline int call_set_assignable(eastl::true_type, lua_State* L, T&& mem) {
 			(mem.*variable) = stack::get<R>(L, 2);
 			return 0;
 		}
 
 		template <typename R, typename V, V, typename T>
-		inline int call_set_variable(std::false_type, lua_State* L, T&&) {
+		inline int call_set_variable(eastl::false_type, lua_State* L, T&&) {
 			return luaL_error(L, "cannot write to a const variable");
 		}
 
 		template <typename R, typename V, V variable, typename T>
-		inline int call_set_variable(std::true_type, lua_State* L, T&& mem) {
-			return call_set_assignable<R, V, variable>(std::is_assignable<std::add_lvalue_reference_t<R>, R>(), L, std::forward<T>(mem));
+		inline int call_set_variable(eastl::true_type, lua_State* L, T&& mem) {
+			return call_set_assignable<R, V, variable>(eastl::is_assignable<eastl::add_lvalue_reference_t<R>, R>(), L, eastl::forward<T>(mem));
 		}
 
 		template <typename V, V variable>
-		inline int call_wrapper_variable(std::true_type, lua_State* L) {
+		inline int call_wrapper_variable(eastl::true_type, lua_State* L) {
 			typedef meta::bind_traits<meta::unqualified_t<V>> traits_type;
 			typedef typename traits_type::object_type T;
 			typedef typename traits_type::return_type R;
@@ -66,34 +66,34 @@ namespace sol {
 			switch (lua_gettop(L)) {
 			case 1: {
 				decltype(auto) r = (mem.*variable);
-				stack::push_reference(L, std::forward<decltype(r)>(r));
+				stack::push_reference(L, eastl::forward<decltype(r)>(r));
 				return 1;
 			}
 			case 2:
-				return call_set_variable<R, V, variable>(meta::neg<std::is_const<R>>(), L, mem);
+				return call_set_variable<R, V, variable>(meta::neg<eastl::is_const<R>>(), L, mem);
 			default:
 				return luaL_error(L, "incorrect number of arguments to member variable function call");
 			}
 		}
 
 		template <typename F, F fx>
-		inline int call_wrapper_function(std::false_type, lua_State* L) {
-			return call_wrapper_variable<F, fx>(std::is_member_object_pointer<F>(), L);
+		inline int call_wrapper_function(eastl::false_type, lua_State* L) {
+			return call_wrapper_variable<F, fx>(eastl::is_member_object_pointer<F>(), L);
 		}
 
 		template <typename F, F fx>
-		inline int call_wrapper_function(std::true_type, lua_State* L) {
+		inline int call_wrapper_function(eastl::true_type, lua_State* L) {
 			return call_detail::call_wrapped<void, false, false>(L, fx);
 		}
 
 		template <typename F, F fx>
 		int call_wrapper_entry(lua_State* L) noexcept(meta::bind_traits<F>::is_noexcept) {
-			return call_wrapper_function<F, fx>(std::is_member_function_pointer<meta::unqualified_t<F>>(), L);
+			return call_wrapper_function<F, fx>(eastl::is_member_function_pointer<meta::unqualified_t<F>>(), L);
 		}
 
 		template <typename... Fxs>
 		struct c_call_matcher {
-			template <typename Fx, std::size_t I, typename R, typename... Args>
+			template <typename Fx, eastl::size_t I, typename R, typename... Args>
 			int operator()(types<Fx>, meta::index_value<I>, types<R>, types<Args...>, lua_State* L, int, int) const {
 				typedef meta::at_in_pack_t<I, Fxs...> target;
 				return target::call(L);
@@ -101,12 +101,12 @@ namespace sol {
 		};
 
 		template <typename F, F fx>
-		inline int c_call_raw(std::true_type, lua_State* L) {
+		inline int c_call_raw(eastl::true_type, lua_State* L) {
 			return fx(L);
 		}
 
 		template <typename F, F fx>
-		inline int c_call_raw(std::false_type, lua_State* L) {
+		inline int c_call_raw(eastl::false_type, lua_State* L) {
 #ifdef __clang__
 			return detail::trampoline(L, function_detail::call_wrapper_entry<F, fx>);
 #else
@@ -119,10 +119,10 @@ namespace sol {
 	template <typename F, F fx>
 	inline int c_call(lua_State* L) {
 		typedef meta::unqualified_t<F> Fu;
-		typedef std::integral_constant<bool,
-		     std::is_same<Fu, lua_CFunction>::value
+		typedef eastl::integral_constant<bool,
+		     eastl::is_same<Fu, lua_CFunction>::value
 #if SOL_IS_ON(SOL_USE_NOEXCEPT_FUNCTION_TYPE)
-		          || std::is_same<Fu, detail::lua_CFunction_noexcept>::value
+		          || eastl::is_same<Fu, detail::lua_CFunction_noexcept>::value
 #endif
 		     >
 		     is_raw;

@@ -27,8 +27,8 @@
 #include <sol/compatibility.hpp>
 
 #include <stdexcept>
-#include <string>
-#include <array>
+#include <EASTL/string.h>
+#include <EASTL/array.h>
 
 namespace sol {
 	namespace detail {
@@ -38,7 +38,7 @@ namespace sol {
 		struct error_result {
 			int results;
 			const char* format_string;
-			std::array<const char*, 4> argument_strings;
+			eastl::array<const char*, 4> argument_strings;
 
 			error_result() : results(0), format_string(nullptr) {
 			}
@@ -62,16 +62,16 @@ namespace sol {
 	class error : public std::runtime_error {
 	private:
 		// Because VC++ is upsetting, most of the time!
-		std::string what_reason;
+		eastl::string what_reason;
 
 	public:
-		error(const std::string& str) : error(detail::direct_error, "lua: error: " + str) {
+		error(const eastl::string& str) : error(detail::direct_error, "lua: error: " + str) {
 		}
-		error(std::string&& str) : error(detail::direct_error, "lua: error: " + std::move(str)) {
+		error(eastl::string&& str) : error(detail::direct_error, "lua: error: " + eastl::move(str)) {
 		}
-		error(detail::direct_error_tag, const std::string& str) : std::runtime_error(""), what_reason(str) {
+		error(detail::direct_error_tag, const eastl::string& str) : std::runtime_error(""), what_reason(str) {
 		}
-		error(detail::direct_error_tag, std::string&& str) : std::runtime_error(""), what_reason(std::move(str)) {
+		error(detail::direct_error_tag, eastl::string&& str) : std::runtime_error(""), what_reason(eastl::move(str)) {
 		}
 
 		error(const error& e) = default;

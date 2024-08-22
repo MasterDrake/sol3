@@ -37,30 +37,30 @@
 #include <sol/assert.hpp>
 
 #include <cstring>
-#include <array>
+#include <EASTL/array.h>
 
 namespace sol {
 	namespace detail {
 		using typical_chunk_name_t = char[SOL_ID_SIZE_I_];
 		using typical_file_chunk_name_t = char[SOL_FILE_ID_SIZE_I_];
 
-		inline const std::string& default_chunk_name() {
-			static const std::string name = "";
+		inline const eastl::string& default_chunk_name() {
+			static const eastl::string name = "";
 			return name;
 		}
 
-		template <std::size_t N>
-		const char* make_chunk_name(const string_view& code, const std::string& chunkname, char (&basechunkname)[N]) {
+		template <eastl::size_t N>
+		const char* make_chunk_name(const string_view& code, const eastl::string& chunkname, char (&basechunkname)[N]) {
 			if (chunkname.empty()) {
 				auto it = code.cbegin();
 				auto e = code.cend();
-				std::size_t i = 0;
-				static const std::size_t n = N - 4;
+				eastl::size_t i = 0;
+				static const eastl::size_t n = N - 4;
 				for (i = 0; i < n && it != e; ++i, ++it) {
 					basechunkname[i] = *it;
 				}
 				if (it != e) {
-					for (std::size_t c = 0; c < 3; ++i, ++c) {
+					for (eastl::size_t c = 0; c < 3; ++i, ++c) {
 						basechunkname[i] = '.';
 					}
 				}
@@ -92,15 +92,15 @@ namespace sol {
 		namespace stack_detail {
 			template <typename T>
 			inline int push_as_upvalues(lua_State* L, T& item) {
-				typedef std::decay_t<T> TValue;
-				static const std::size_t itemsize = sizeof(TValue);
-				static const std::size_t voidsize = sizeof(void*);
-				static const std::size_t voidsizem1 = voidsize - 1;
-				static const std::size_t data_t_count = (sizeof(TValue) + voidsizem1) / voidsize;
-				typedef std::array<void*, data_t_count> data_t;
+				typedef eastl::decay_t<T> TValue;
+				static const eastl::size_t itemsize = sizeof(TValue);
+				static const eastl::size_t voidsize = sizeof(void*);
+				static const eastl::size_t voidsizem1 = voidsize - 1;
+				static const eastl::size_t data_t_count = (sizeof(TValue) + voidsizem1) / voidsize;
+				typedef eastl::array<void*, data_t_count> data_t;
 
 				data_t data { {} };
-				std::memcpy(&data[0], std::addressof(item), itemsize);
+				std::memcpy(&data[0], eastl::addressof(item), itemsize);
 				int pushcount = 0;
 				for (const auto& v : data) {
 					lua_pushlightuserdata(L, v);
@@ -110,24 +110,24 @@ namespace sol {
 			}
 
 			template <typename T>
-			inline std::pair<T, int> get_as_upvalues(lua_State* L, int index = 2) {
-				static const std::size_t data_t_count = (sizeof(T) + (sizeof(void*) - 1)) / sizeof(void*);
-				typedef std::array<void*, data_t_count> data_t;
+			inline eastl::pair<T, int> get_as_upvalues(lua_State* L, int index = 2) {
+				static const eastl::size_t data_t_count = (sizeof(T) + (sizeof(void*) - 1)) / sizeof(void*);
+				typedef eastl::array<void*, data_t_count> data_t;
 				data_t voiddata { {} };
-				for (std::size_t i = 0, d = 0; d < sizeof(T); ++i, d += sizeof(void*)) {
+				for (eastl::size_t i = 0, d = 0; d < sizeof(T); ++i, d += sizeof(void*)) {
 					voiddata[i] = lua_touserdata(L, upvalue_index(index++));
 				}
-				return std::pair<T, int>(*reinterpret_cast<T*>(static_cast<void*>(voiddata.data())), index);
+				return eastl::pair<T, int>(*reinterpret_cast<T*>(static_cast<void*>(voiddata.data())), index);
 			}
 
 			template <typename T>
-			inline std::pair<T, int> get_as_upvalues_using_function(lua_State* L, int function_index = -1) {
-				static const std::size_t data_t_count = (sizeof(T) + (sizeof(void*) - 1)) / sizeof(void*);
-				typedef std::array<void*, data_t_count> data_t;
+			inline eastl::pair<T, int> get_as_upvalues_using_function(lua_State* L, int function_index = -1) {
+				static const eastl::size_t data_t_count = (sizeof(T) + (sizeof(void*) - 1)) / sizeof(void*);
+				typedef eastl::array<void*, data_t_count> data_t;
 				function_index = lua_absindex(L, function_index);
 				int index = 0;
 				data_t voiddata { {} };
-				for (std::size_t d = 0; d < sizeof(T); d += sizeof(void*)) {
+				for (eastl::size_t d = 0; d < sizeof(T); d += sizeof(void*)) {
 					// first upvalue is nullptr to respect environment shenanigans
 					// So +2 instead of +1
 					const char* upvalue_name = lua_getupvalue(L, function_index, index + 2);
@@ -139,16 +139,16 @@ namespace sol {
 					++index;
 				}
 				lua_pop(L, index);
-				return std::pair<T, int>(*reinterpret_cast<T*>(static_cast<void*>(voiddata.data())), index);
+				return eastl::pair<T, int>(*reinterpret_cast<T*>(static_cast<void*>(voiddata.data())), index);
 			}
 
 			template <bool checked, typename Handler, typename Fx, typename... Args>
-			static decltype(auto) eval(types<>, std::index_sequence<>, lua_State*, int, Handler&&, record&, Fx&& fx, Args&&... args) {
-				return std::forward<Fx>(fx)(std::forward<Args>(args)...);
+			static decltype(auto) eval(types<>, eastl::index_sequence<>, lua_State*, int, Handler&&, record&, Fx&& fx, Args&&... args) {
+				return eastl::forward<Fx>(fx)(eastl::forward<Args>(args)...);
 			}
 
-			template <bool checked, typename Arg, typename... Args, std::size_t I, std::size_t... Is, typename Handler, typename Fx, typename... FxArgs>
-			static decltype(auto) eval(types<Arg, Args...>, std::index_sequence<I, Is...>, lua_State* L_, int start_index_, Handler&& handler_,
+			template <bool checked, typename Arg, typename... Args, eastl::size_t I, eastl::size_t... Is, typename Handler, typename Fx, typename... FxArgs>
+			static decltype(auto) eval(types<Arg, Args...>, eastl::index_sequence<I, Is...>, lua_State* L_, int start_index_, Handler&& handler_,
 			     record& tracking_, Fx&& fx_, FxArgs&&... fxargs_) {
 #if 0 && SOL_IS_ON(SOL_PROPAGATE_EXCEPTIONS)
 				// NOTE: THIS IS TERMPORARILY TURNED OFF BECAUSE IT IMPACTS ACTUAL SEMANTICS W.R.T. THINGS LIKE LUAJIT,
@@ -158,36 +158,36 @@ namespace sol {
 				// rather than checking everything once, and then potentially re-doing work
 				if constexpr (checked) {
 					return eval<checked>(types<Args...>(),
-					     std::index_sequence<Is...>(),
+					     eastl::index_sequence<Is...>(),
 					     L_,
 					     start_index_,
-					     std::forward<Handler>(handler_),
+					     eastl::forward<Handler>(handler_),
 					     tracking_,
-					     std::forward<Fx>(fx_),
-					     std::forward<FxArgs>(fxargs_)...,
+					     eastl::forward<Fx>(fx_),
+					     eastl::forward<FxArgs>(fxargs_)...,
 					     *stack_detail::check_get_arg<Arg>(L_, start_index_ + tracking_.used, handler_, tracking_));
 				}
 				else
 #endif
 				{
 					return eval<checked>(types<Args...>(),
-					     std::index_sequence<Is...>(),
+					     eastl::index_sequence<Is...>(),
 					     L_,
 					     start_index_,
-					     std::forward<Handler>(handler_),
+					     eastl::forward<Handler>(handler_),
 					     tracking_,
-					     std::forward<Fx>(fx_),
-					     std::forward<FxArgs>(fxargs_)...,
+					     eastl::forward<Fx>(fx_),
+					     eastl::forward<FxArgs>(fxargs_)...,
 					     stack_detail::unchecked_get_arg<Arg>(L_, start_index_ + tracking_.used, tracking_));
 				}
 			}
 
-			template <bool checkargs = detail::default_safe_function_calls, std::size_t... I, typename R, typename... Args, typename Fx, typename... FxArgs>
-			inline decltype(auto) call(types<R>, types<Args...> argument_types_, std::index_sequence<I...> argument_indices_, lua_State* L_,
+			template <bool checkargs = detail::default_safe_function_calls, eastl::size_t... I, typename R, typename... Args, typename Fx, typename... FxArgs>
+			inline decltype(auto) call(types<R>, types<Args...> argument_types_, eastl::index_sequence<I...> argument_indices_, lua_State* L_,
 			     int start_index_, Fx&& fx_, FxArgs&&... args_) {
 				static_assert(meta::all_v<meta::is_not_move_only<Args>...>,
 				     "One of the arguments being bound is a move-only type, and it is not being taken by reference: this will break your code. Please take "
-				     "a reference and std::move it manually if this was your intention.");
+				     "a reference and eastl::move it manually if this was your intention.");
 				argument_handler<types<R, Args...>> handler {};
 				record tracking {};
 #if SOL_IS_OFF(SOL_PROPAGATE_EXCEPTIONS)
@@ -195,21 +195,21 @@ namespace sol {
 					multi_check<Args...>(L_, start_index_, handler);
 				}
 #endif
-				if constexpr (std::is_void_v<R>) {
+				if constexpr (eastl::is_void_v<R>) {
 					eval<checkargs>(
-					     argument_types_, argument_indices_, L_, start_index_, handler, tracking, std::forward<Fx>(fx_), std::forward<FxArgs>(args_)...);
+					     argument_types_, argument_indices_, L_, start_index_, handler, tracking, eastl::forward<Fx>(fx_), eastl::forward<FxArgs>(args_)...);
 				}
 				else {
 					return eval<checkargs>(
-					     argument_types_, argument_indices_, L_, start_index_, handler, tracking, std::forward<Fx>(fx_), std::forward<FxArgs>(args_)...);
+					     argument_types_, argument_indices_, L_, start_index_, handler, tracking, eastl::forward<Fx>(fx_), eastl::forward<FxArgs>(args_)...);
 				}
 			}
 
 			template <typename T>
 			void raw_table_set(lua_State* L, T&& arg, int tableindex = -2) {
-				int push_count = push(L, std::forward<T>(arg));
+				int push_count = push(L, eastl::forward<T>(arg));
 				SOL_ASSERT(push_count == 1);
-				std::size_t unique_index = static_cast<std::size_t>(luaL_len(L, tableindex) + 1u);
+				eastl::size_t unique_index = static_cast<eastl::size_t>(luaL_len(L, tableindex) + 1u);
 				lua_rawseti(L, tableindex, static_cast<int>(unique_index));
 			}
 
@@ -217,58 +217,58 @@ namespace sol {
 
 		template <typename T>
 		int set_ref(lua_State* L, T&& arg, int tableindex = -2) {
-			int push_count = push(L, std::forward<T>(arg));
+			int push_count = push(L, eastl::forward<T>(arg));
 			SOL_ASSERT(push_count == 1);
 			return luaL_ref(L, tableindex);
 		}
 
 		template <bool check_args = detail::default_safe_function_calls, typename R, typename... Args, typename Fx, typename... FxArgs>
 		inline decltype(auto) call(types<R> tr, types<Args...> ta, lua_State* L, int start, Fx&& fx, FxArgs&&... args) {
-			using args_indices = std::make_index_sequence<sizeof...(Args)>;
-			if constexpr (std::is_void_v<R>) {
-				stack_detail::call<check_args>(tr, ta, args_indices(), L, start, std::forward<Fx>(fx), std::forward<FxArgs>(args)...);
+			using args_indices = eastl::make_index_sequence<sizeof...(Args)>;
+			if constexpr (eastl::is_void_v<R>) {
+				stack_detail::call<check_args>(tr, ta, args_indices(), L, start, eastl::forward<Fx>(fx), eastl::forward<FxArgs>(args)...);
 			}
 			else {
-				return stack_detail::call<check_args>(tr, ta, args_indices(), L, start, std::forward<Fx>(fx), std::forward<FxArgs>(args)...);
+				return stack_detail::call<check_args>(tr, ta, args_indices(), L, start, eastl::forward<Fx>(fx), eastl::forward<FxArgs>(args)...);
 			}
 		}
 
 		template <bool check_args = detail::default_safe_function_calls, typename R, typename... Args, typename Fx, typename... FxArgs>
 		inline decltype(auto) call(types<R> tr, types<Args...> ta, lua_State* L, Fx&& fx, FxArgs&&... args) {
-			if constexpr (std::is_void_v<R>) {
-				call<check_args>(tr, ta, L, 1, std::forward<Fx>(fx), std::forward<FxArgs>(args)...);
+			if constexpr (eastl::is_void_v<R>) {
+				call<check_args>(tr, ta, L, 1, eastl::forward<Fx>(fx), eastl::forward<FxArgs>(args)...);
 			}
 			else {
-				return call<check_args>(tr, ta, L, 1, std::forward<Fx>(fx), std::forward<FxArgs>(args)...);
+				return call<check_args>(tr, ta, L, 1, eastl::forward<Fx>(fx), eastl::forward<FxArgs>(args)...);
 			}
 		}
 
 		template <bool check_args = detail::default_safe_function_calls, typename R, typename... Args, typename Fx, typename... FxArgs>
 		inline decltype(auto) call_from_top(types<R> tr, types<Args...> ta, lua_State* L, Fx&& fx, FxArgs&&... args) {
 			using expected_count_t = meta::count_for_pack<lua_size, Args...>;
-			if constexpr (std::is_void_v<R>) {
+			if constexpr (eastl::is_void_v<R>) {
 				call<check_args>(tr,
 				     ta,
 				     L,
-				     (std::max)(static_cast<int>(lua_gettop(L) - expected_count_t::value), static_cast<int>(0)),
-				     std::forward<Fx>(fx),
-				     std::forward<FxArgs>(args)...);
+				     (eastl::max)(static_cast<int>(lua_gettop(L) - expected_count_t::value), static_cast<int>(0)),
+				     eastl::forward<Fx>(fx),
+				     eastl::forward<FxArgs>(args)...);
 			}
 			else {
 				return call<check_args>(tr,
 				     ta,
 				     L,
-				     (std::max)(static_cast<int>(lua_gettop(L) - expected_count_t::value), static_cast<int>(0)),
-				     std::forward<Fx>(fx),
-				     std::forward<FxArgs>(args)...);
+				     (eastl::max)(static_cast<int>(lua_gettop(L) - expected_count_t::value), static_cast<int>(0)),
+				     eastl::forward<Fx>(fx),
+				     eastl::forward<FxArgs>(args)...);
 			}
 		}
 
 		template <bool check_args = detail::default_safe_function_calls, bool clean_stack = true, typename Ret0, typename... Ret, typename... Args,
 		     typename Fx, typename... FxArgs>
 		inline int call_into_lua(types<Ret0, Ret...> tr, types<Args...> ta, lua_State* L, int start, Fx&& fx, FxArgs&&... fxargs) {
-			if constexpr (std::is_void_v<Ret0>) {
-				call<check_args>(tr, ta, L, start, std::forward<Fx>(fx), std::forward<FxArgs>(fxargs)...);
+			if constexpr (eastl::is_void_v<Ret0>) {
+				call<check_args>(tr, ta, L, start, eastl::forward<Fx>(fx), eastl::forward<FxArgs>(fxargs)...);
 				if constexpr (clean_stack) {
 					lua_settop(L, 0);
 				}
@@ -277,13 +277,13 @@ namespace sol {
 			else {
 				(void)tr;
 				decltype(auto) r
-				     = call<check_args>(types<meta::return_type_t<Ret0, Ret...>>(), ta, L, start, std::forward<Fx>(fx), std::forward<FxArgs>(fxargs)...);
+				     = call<check_args>(types<meta::return_type_t<Ret0, Ret...>>(), ta, L, start, eastl::forward<Fx>(fx), eastl::forward<FxArgs>(fxargs)...);
 				using R = meta::unqualified_t<decltype(r)>;
-				using is_stack = meta::any<is_stack_based<R>, std::is_same<R, absolute_index>, std::is_same<R, ref_index>, std::is_same<R, raw_index>>;
+				using is_stack = meta::any<is_stack_based<R>, eastl::is_same<R, absolute_index>, eastl::is_same<R, ref_index>, eastl::is_same<R, raw_index>>;
 				if constexpr (clean_stack && !is_stack::value) {
 					lua_settop(L, 0);
 				}
-				return push_reference(L, std::forward<decltype(r)>(r));
+				return push_reference(L, eastl::forward<decltype(r)>(r));
 			}
 		}
 
@@ -292,7 +292,7 @@ namespace sol {
 			using traits_type = lua_bind_traits<meta::unqualified_t<Fx>>;
 			using args_list = typename traits_type::args_list;
 			using returns_list = typename traits_type::returns_list;
-			return call_into_lua<check_args, clean_stack>(returns_list(), args_list(), L, start, std::forward<Fx>(fx), std::forward<FxArgs>(fxargs)...);
+			return call_into_lua<check_args, clean_stack>(returns_list(), args_list(), L, start, eastl::forward<Fx>(fx), eastl::forward<FxArgs>(fxargs)...);
 		}
 
 		inline call_syntax get_call_syntax(lua_State* L, const string_view& key, int index) {
@@ -308,7 +308,7 @@ namespace sol {
 		}
 
 		inline void script(
-		     lua_State* L, lua_Reader reader, void* data, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+		     lua_State* L, lua_Reader reader, void* data, const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			detail::typical_chunk_name_t basechunkname = {};
 			const char* chunknametarget = detail::make_chunk_name("lua_Reader", chunkname, basechunkname);
 			if (lua_load(L, reader, data, chunknametarget, to_string(mode).c_str()) || lua_pcall(L, 0, LUA_MULTRET, 0)) {
@@ -317,7 +317,7 @@ namespace sol {
 		}
 
 		inline void script(
-		     lua_State* L, const string_view& code, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+		     lua_State* L, const string_view& code, const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 
 			detail::typical_chunk_name_t basechunkname = {};
 			const char* chunknametarget = detail::make_chunk_name(code, chunkname, basechunkname);
@@ -326,7 +326,7 @@ namespace sol {
 			}
 		}
 
-		inline void script_file(lua_State* L, const std::string& filename, load_mode mode = load_mode::any) {
+		inline void script_file(lua_State* L, const eastl::string& filename, load_mode mode = load_mode::any) {
 			if (luaL_loadfilex(L, filename.c_str(), to_string(mode).c_str()) || lua_pcall(L, 0, LUA_MULTRET, 0)) {
 				lua_error(L);
 			}

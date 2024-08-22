@@ -61,15 +61,15 @@ namespace sol {
 			type t = static_cast<type>(lua_type(L, -1));
 			if (t != type::lightuserdata) {
 				lua_pop(L, 1);
-				return default_exception_handler(L, std::move(maybe_ex), std::move(what));
+				return default_exception_handler(L, eastl::move(maybe_ex), eastl::move(what));
 			}
 			void* vfunc = lua_touserdata(L, -1);
 			lua_pop(L, 1);
 			if (vfunc == nullptr) {
-				return default_exception_handler(L, std::move(maybe_ex), std::move(what));
+				return default_exception_handler(L, eastl::move(maybe_ex), eastl::move(what));
 			}
 			exception_handler_function exfunc = reinterpret_cast<exception_handler_function>(vfunc);
-			return exfunc(L, std::move(maybe_ex), std::move(what));
+			return exfunc(L, eastl::move(maybe_ex), eastl::move(what));
 		}
 
 #if SOL_IS_OFF(SOL_EXCEPTIONS)
@@ -92,7 +92,7 @@ namespace sol {
 
 		template <typename Fx, typename... Args>
 		int trampoline(lua_State* L, Fx&& f, Args&&... args) noexcept {
-			return f(L, std::forward<Args>(args)...);
+			return f(L, eastl::forward<Args>(args)...);
 		}
 
 		inline int c_trampoline(lua_State* L, lua_CFunction f) noexcept {
@@ -110,7 +110,7 @@ namespace sol {
 			catch (const char* cs) {
 				call_exception_handler(L, optional<const std::exception&>(nullopt), string_view(cs));
 			}
-			catch (const std::string& s) {
+			catch (const eastl::string& s) {
 				call_exception_handler(L, optional<const std::exception&>(nullopt), string_view(s.c_str(), s.size()));
 			}
 			catch (const std::exception& e) {
@@ -148,19 +148,19 @@ namespace sol {
 		template <typename Fx, typename... Args>
 		int trampoline(lua_State* L, Fx&& f, Args&&... args) {
 			if constexpr (meta::bind_traits<meta::unqualified_t<Fx>>::is_noexcept) {
-				return f(L, std::forward<Args>(args)...);
+				return f(L, eastl::forward<Args>(args)...);
 			}
 			else {
 #if SOL_IS_ON(SOL_PROPAGATE_EXCEPTIONS)
-				return f(L, std::forward<Args>(args)...);
+				return f(L, eastl::forward<Args>(args)...);
 #else
 				try {
-					return f(L, std::forward<Args>(args)...);
+					return f(L, eastl::forward<Args>(args)...);
 				}
 				catch (const char* cs) {
 					call_exception_handler(L, optional<const std::exception&>(nullopt), string_view(cs));
 				}
-				catch (const std::string& s) {
+				catch (const eastl::string& s) {
 					call_exception_handler(L, optional<const std::exception&>(nullopt), string_view(s.c_str(), s.size()));
 				}
 				catch (const std::exception& e) {

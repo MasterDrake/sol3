@@ -23,7 +23,7 @@
 // holy shit am I done dealing with C++11 constexpr
 
 ///
-// optional - An implementation of std::optional with extensions
+// optional - An implementation of eastl::optional with extensions
 // Written in 2017 by Simon Brand (@TartanLlama)
 //
 // To the extent possible under law, the author(s) have dedicated all
@@ -46,12 +46,12 @@
 #define SOL_TL_OPTIONAL_VERSION_MINOR 5
 
 #include <exception>
-#include <functional>
+#include <EASTL/functional.h>
 #include <new>
-#include <type_traits>
-#include <utility>
+#include <EASTL/type_traits.h>
+#include <EASTL/utility.h>
 #include <cstdlib>
-#include <optional>
+#include <EASTL/optional.h>
 
 #if (defined(_MSC_VER) && _MSC_VER == 1900)
 #define SOL_TL_OPTIONAL_MSVC2015
@@ -74,34 +74,34 @@
 #define SOL_TL_OPTIONAL_NO_CONSTRR
 
 // GCC < 5 doesn't support some standard C++11 type traits
-#define SOL_TL_OPTIONAL_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T) std::has_trivial_copy_constructor<T>::value
-#define SOL_TL_OPTIONAL_IS_TRIVIALLY_COPY_ASSIGNABLE(T) std::has_trivial_copy_assign<T>::value
+#define SOL_TL_OPTIONAL_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T) eastl::has_trivial_copy_constructor<T>::value
+#define SOL_TL_OPTIONAL_IS_TRIVIALLY_COPY_ASSIGNABLE(T) eastl::has_trivial_copy_assign<T>::value
 
 // This one will be different for GCC 5.7 if it's ever supported
-#define SOL_TL_OPTIONAL_IS_TRIVIALLY_DESTRUCTIBLE(T) std::is_trivially_destructible<T>::value
+#define SOL_TL_OPTIONAL_IS_TRIVIALLY_DESTRUCTIBLE(T) eastl::is_trivially_destructible<T>::value
 
-// GCC 5 < v < 8 has a bug in is_trivially_copy_constructible which breaks std::vector
+// GCC 5 < v < 8 has a bug in is_trivially_copy_constructible which breaks eastl::vector
 // for non-copyable types
 #elif (defined(__GNUC__) && __GNUC__ < 8 && !defined(__clang__))
 #ifndef SOL_TL_GCC_LESS_8_TRIVIALLY_COPY_CONSTRUCTIBLE_MUTEX
 #define SOL_TL_GCC_LESS_8_TRIVIALLY_COPY_CONSTRUCTIBLE_MUTEX
 namespace sol { namespace detail {
 	template <class T>
-	struct is_trivially_copy_constructible : std::is_trivially_copy_constructible<T> { };
+	struct is_trivially_copy_constructible : eastl::is_trivially_copy_constructible<T> { };
 #ifdef _GLIBCXX_VECTOR
 	template <class T, class A>
-	struct is_trivially_copy_constructible<std::vector<T, A>> : std::is_trivially_copy_constructible<T> { };
+	struct is_trivially_copy_constructible<eastl::vector<T, A>> : eastl::is_trivially_copy_constructible<T> { };
 #endif
 }} // namespace sol::detail
 #endif
 
 #define SOL_TL_OPTIONAL_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T) sol::detail::is_trivially_copy_constructible<T>::value
-#define SOL_TL_OPTIONAL_IS_TRIVIALLY_COPY_ASSIGNABLE(T) std::is_trivially_copy_assignable<T>::value
-#define SOL_TL_OPTIONAL_IS_TRIVIALLY_DESTRUCTIBLE(T) std::is_trivially_destructible<T>::value
+#define SOL_TL_OPTIONAL_IS_TRIVIALLY_COPY_ASSIGNABLE(T) eastl::is_trivially_copy_assignable<T>::value
+#define SOL_TL_OPTIONAL_IS_TRIVIALLY_DESTRUCTIBLE(T) eastl::is_trivially_destructible<T>::value
 #else
-#define SOL_TL_OPTIONAL_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T) std::is_trivially_copy_constructible<T>::value
-#define SOL_TL_OPTIONAL_IS_TRIVIALLY_COPY_ASSIGNABLE(T) std::is_trivially_copy_assignable<T>::value
-#define SOL_TL_OPTIONAL_IS_TRIVIALLY_DESTRUCTIBLE(T) std::is_trivially_destructible<T>::value
+#define SOL_TL_OPTIONAL_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T) eastl::is_trivially_copy_constructible<T>::value
+#define SOL_TL_OPTIONAL_IS_TRIVIALLY_COPY_ASSIGNABLE(T) eastl::is_trivially_copy_assignable<T>::value
+#define SOL_TL_OPTIONAL_IS_TRIVIALLY_DESTRUCTIBLE(T) eastl::is_trivially_destructible<T>::value
 #endif
 
 #if __cplusplus > 201103L
@@ -133,80 +133,80 @@ namespace sol {
 #define SOL_TL_TRAITS_MUTEX
 		// C++14-style aliases for brevity
 		template <class T>
-		using remove_const_t = typename std::remove_const<T>::type;
+		using remove_const_t = typename eastl::remove_const<T>::type;
 		template <class T>
-		using remove_reference_t = typename std::remove_reference<T>::type;
+		using remove_reference_t = typename eastl::remove_reference<T>::type;
 		template <class T>
-		using decay_t = typename std::decay<T>::type;
+		using decay_t = typename eastl::decay<T>::type;
 		template <bool E, class T = void>
-		using enable_if_t = typename std::enable_if<E, T>::type;
+		using enable_if_t = typename eastl::enable_if<E, T>::type;
 		template <bool B, class T, class F>
-		using conditional_t = typename std::conditional<B, T, F>::type;
+		using conditional_t = typename eastl::conditional<B, T, F>::type;
 
-		// std::conjunction from C++17
+		// eastl::conjunction from C++17
 		template <class...>
-		struct conjunction : std::true_type { };
+		struct conjunction : eastl::true_type { };
 		template <class B>
 		struct conjunction<B> : B { };
 		template <class B, class... Bs>
-		struct conjunction<B, Bs...> : std::conditional<bool(B::value), conjunction<Bs...>, B>::type { };
+		struct conjunction<B, Bs...> : eastl::conditional<bool(B::value), conjunction<Bs...>, B>::type { };
 
 #if defined(_LIBCPP_VERSION) && __cplusplus == 201103L
 #define SOL_TL_OPTIONAL_LIBCXX_MEM_FN_WORKAROUND
 #endif
 
-// In C++11 mode, there's an issue in libc++'s std::mem_fn
+// In C++11 mode, there's an issue in libc++'s eastl::mem_fn
 // which results in a hard-error when using it in a noexcept expression
 // in some cases. This is a check to workaround the common failing case.
 #ifdef SOL_TL_OPTIONAL_LIBCXX_MEM_FN_WORKAROUND
 		template <class T>
-		struct is_pointer_to_non_const_member_func : std::false_type { };
+		struct is_pointer_to_non_const_member_func : eastl::false_type { };
 		template <class T, class Ret, class... Args>
-		struct is_pointer_to_non_const_member_func<Ret (T::*)(Args...)> : std::true_type { };
+		struct is_pointer_to_non_const_member_func<Ret (T::*)(Args...)> : eastl::true_type { };
 		template <class T, class Ret, class... Args>
-		struct is_pointer_to_non_const_member_func<Ret (T::*)(Args...)&> : std::true_type { };
+		struct is_pointer_to_non_const_member_func<Ret (T::*)(Args...)&> : eastl::true_type { };
 		template <class T, class Ret, class... Args>
-		struct is_pointer_to_non_const_member_func<Ret (T::*)(Args...) &&> : std::true_type { };
+		struct is_pointer_to_non_const_member_func<Ret (T::*)(Args...) &&> : eastl::true_type { };
 		template <class T, class Ret, class... Args>
-		struct is_pointer_to_non_const_member_func<Ret (T::*)(Args...) volatile> : std::true_type { };
+		struct is_pointer_to_non_const_member_func<Ret (T::*)(Args...) volatile> : eastl::true_type { };
 		template <class T, class Ret, class... Args>
-		struct is_pointer_to_non_const_member_func<Ret (T::*)(Args...) volatile&> : std::true_type { };
+		struct is_pointer_to_non_const_member_func<Ret (T::*)(Args...) volatile&> : eastl::true_type { };
 		template <class T, class Ret, class... Args>
-		struct is_pointer_to_non_const_member_func<Ret (T::*)(Args...) volatile&&> : std::true_type { };
+		struct is_pointer_to_non_const_member_func<Ret (T::*)(Args...) volatile&&> : eastl::true_type { };
 
 		template <class T>
-		struct is_const_or_const_ref : std::false_type { };
+		struct is_const_or_const_ref : eastl::false_type { };
 		template <class T>
-		struct is_const_or_const_ref<T const&> : std::true_type { };
+		struct is_const_or_const_ref<T const&> : eastl::true_type { };
 		template <class T>
-		struct is_const_or_const_ref<T const> : std::true_type { };
+		struct is_const_or_const_ref<T const> : eastl::true_type { };
 #endif
 
-		// std::invoke from C++17
+		// eastl::invoke from C++17
 		// https://stackoverflow.com/questions/38288042/c11-14-invoke-workaround
 		template <typename Fn, typename... Args,
 #ifdef SOL_TL_OPTIONAL_LIBCXX_MEM_FN_WORKAROUND
 		     typename = enable_if_t<!(is_pointer_to_non_const_member_func<Fn>::value && is_const_or_const_ref<Args...>::value)>,
 #endif
-		     typename = enable_if_t<std::is_member_pointer<decay_t<Fn>>::value>, int = 0>
-		constexpr auto invoke(Fn&& f, Args&&... args) noexcept(noexcept(std::mem_fn(f)(std::forward<Args>(args)...)))
-		     -> decltype(std::mem_fn(f)(std::forward<Args>(args)...)) {
-			return std::mem_fn(f)(std::forward<Args>(args)...);
+		     typename = enable_if_t<eastl::is_member_pointer<decay_t<Fn>>::value>, int = 0>
+		constexpr auto invoke(Fn&& f, Args&&... args) noexcept(noexcept(eastl::mem_fn(f)(eastl::forward<Args>(args)...)))
+		     -> decltype(eastl::mem_fn(f)(eastl::forward<Args>(args)...)) {
+			return eastl::mem_fn(f)(eastl::forward<Args>(args)...);
 		}
 
-		template <typename Fn, typename... Args, typename = enable_if_t<!std::is_member_pointer<decay_t<Fn>>::value>>
-		constexpr auto invoke(Fn&& f, Args&&... args) noexcept(noexcept(std::forward<Fn>(f)(std::forward<Args>(args)...)))
-		     -> decltype(std::forward<Fn>(f)(std::forward<Args>(args)...)) {
-			return std::forward<Fn>(f)(std::forward<Args>(args)...);
+		template <typename Fn, typename... Args, typename = enable_if_t<!eastl::is_member_pointer<decay_t<Fn>>::value>>
+		constexpr auto invoke(Fn&& f, Args&&... args) noexcept(noexcept(eastl::forward<Fn>(f)(eastl::forward<Args>(args)...)))
+		     -> decltype(eastl::forward<Fn>(f)(eastl::forward<Args>(args)...)) {
+			return eastl::forward<Fn>(f)(eastl::forward<Args>(args)...);
 		}
 
-		// std::invoke_result from C++17
+		// eastl::invoke_result from C++17
 		template <class F, class, class... Us>
 		struct invoke_result_impl;
 
 		template <class F, class... Us>
-		struct invoke_result_impl<F, decltype(detail::invoke(std::declval<F>(), std::declval<Us>()...), void()), Us...> {
-			using type = decltype(detail::invoke(std::declval<F>(), std::declval<Us>()...));
+		struct invoke_result_impl<F, decltype(detail::invoke(eastl::declval<F>(), eastl::declval<Us>()...), void()), Us...> {
+			using type = decltype(detail::invoke(eastl::declval<F>(), eastl::declval<Us>()...));
 		};
 
 		template <class F, class... Us>
@@ -216,7 +216,7 @@ namespace sol {
 		using invoke_result_t = typename invoke_result<F, Us...>::type;
 #endif
 
-		// std::void_t from C++17
+		// eastl::void_t from C++17
 		template <class...>
 		struct voider {
 			using type = void;
@@ -226,15 +226,15 @@ namespace sol {
 
 		// Trait for checking if a type is a sol::optional
 		template <class T>
-		struct is_optional_impl : std::false_type { };
+		struct is_optional_impl : eastl::false_type { };
 		template <class T>
-		struct is_optional_impl<optional<T>> : std::true_type { };
+		struct is_optional_impl<optional<T>> : eastl::true_type { };
 		template <class T>
 		using is_optional = is_optional_impl<decay_t<T>>;
 
 		// Change void to sol::monostate
 		template <class U>
-		using fixup_void = conditional_t<std::is_void<U>::value, monostate, U>;
+		using fixup_void = conditional_t<eastl::is_void<U>::value, monostate, U>;
 
 		template <class F, class U, class = invoke_result_t<F, U>>
 		using get_map_return = optional<fixup_void<invoke_result_t<F, U>>>;
@@ -243,7 +243,7 @@ namespace sol {
 		template <class F, class = void, class... U>
 		struct returns_void_impl;
 		template <class F, class... U>
-		struct returns_void_impl<F, void_t<invoke_result_t<F, U...>>, U...> : std::is_void<invoke_result_t<F, U...>> { };
+		struct returns_void_impl<F, void_t<invoke_result_t<F, U...>>, U...> : eastl::is_void<invoke_result_t<F, U...>> { };
 		template <class F, class... U>
 		using returns_void = returns_void_impl<F, void, U...>;
 
@@ -254,86 +254,86 @@ namespace sol {
 		using disable_if_ret_void = enable_if_t<!returns_void<T&&, U...>::value>;
 
 		template <class T, class U>
-		using enable_forward_value = detail::enable_if_t<std::is_constructible<T, U&&>::value && !std::is_same<detail::decay_t<U>, in_place_t>::value
-		     && !std::is_same<optional<T>, detail::decay_t<U>>::value>;
+		using enable_forward_value = detail::enable_if_t<eastl::is_constructible<T, U&&>::value && !eastl::is_same<detail::decay_t<U>, in_place_t>::value
+		     && !eastl::is_same<optional<T>, detail::decay_t<U>>::value>;
 
 		template <class T, class U, class Other>
-		using enable_from_other = detail::enable_if_t<std::is_constructible<T, Other>::value && !std::is_constructible<T, optional<U>&>::value
-		     && !std::is_constructible<T, optional<U>&&>::value && !std::is_constructible<T, const optional<U>&>::value
-		     && !std::is_constructible<T, const optional<U>&&>::value && !std::is_convertible<optional<U>&, T>::value
-		     && !std::is_convertible<optional<U>&&, T>::value && !std::is_convertible<const optional<U>&, T>::value
-		     && !std::is_convertible<const optional<U>&&, T>::value>;
+		using enable_from_other = detail::enable_if_t<eastl::is_constructible<T, Other>::value && !eastl::is_constructible<T, optional<U>&>::value
+		     && !eastl::is_constructible<T, optional<U>&&>::value && !eastl::is_constructible<T, const optional<U>&>::value
+		     && !eastl::is_constructible<T, const optional<U>&&>::value && !eastl::is_convertible<optional<U>&, T>::value
+		     && !eastl::is_convertible<optional<U>&&, T>::value && !eastl::is_convertible<const optional<U>&, T>::value
+		     && !eastl::is_convertible<const optional<U>&&, T>::value>;
 
 		template <class T, class U>
-		using enable_assign_forward = detail::enable_if_t<!std::is_same<optional<T>, detail::decay_t<U>>::value
-		     && !detail::conjunction<std::is_scalar<T>, std::is_same<T, detail::decay_t<U>>>::value && std::is_constructible<T, U>::value
-		     && std::is_assignable<T&, U>::value>;
+		using enable_assign_forward = detail::enable_if_t<!eastl::is_same<optional<T>, detail::decay_t<U>>::value
+		     && !detail::conjunction<eastl::is_scalar<T>, eastl::is_same<T, detail::decay_t<U>>>::value && eastl::is_constructible<T, U>::value
+		     && eastl::is_assignable<T&, U>::value>;
 
 		template <class T, class U, class Other>
-		using enable_assign_from_other = detail::enable_if_t<std::is_constructible<T, Other>::value && std::is_assignable<T&, Other>::value
-		     && !std::is_constructible<T, optional<U>&>::value && !std::is_constructible<T, optional<U>&&>::value
-		     && !std::is_constructible<T, const optional<U>&>::value && !std::is_constructible<T, const optional<U>&&>::value
-		     && !std::is_convertible<optional<U>&, T>::value && !std::is_convertible<optional<U>&&, T>::value
-		     && !std::is_convertible<const optional<U>&, T>::value && !std::is_convertible<const optional<U>&&, T>::value
-		     && !std::is_assignable<T&, optional<U>&>::value && !std::is_assignable<T&, optional<U>&&>::value
-		     && !std::is_assignable<T&, const optional<U>&>::value && !std::is_assignable<T&, const optional<U>&&>::value>;
+		using enable_assign_from_other = detail::enable_if_t<eastl::is_constructible<T, Other>::value && eastl::is_assignable<T&, Other>::value
+		     && !eastl::is_constructible<T, optional<U>&>::value && !eastl::is_constructible<T, optional<U>&&>::value
+		     && !eastl::is_constructible<T, const optional<U>&>::value && !eastl::is_constructible<T, const optional<U>&&>::value
+		     && !eastl::is_convertible<optional<U>&, T>::value && !eastl::is_convertible<optional<U>&&, T>::value
+		     && !eastl::is_convertible<const optional<U>&, T>::value && !eastl::is_convertible<const optional<U>&&, T>::value
+		     && !eastl::is_assignable<T&, optional<U>&>::value && !eastl::is_assignable<T&, optional<U>&&>::value
+		     && !eastl::is_assignable<T&, const optional<U>&>::value && !eastl::is_assignable<T&, const optional<U>&&>::value>;
 
 #ifdef _MSC_VER
 		// TODO make a version which works with MSVC
 		template <class T, class U = T>
-		struct is_swappable : std::true_type { };
+		struct is_swappable : eastl::true_type { };
 
 		template <class T, class U = T>
-		struct is_nothrow_swappable : std::true_type { };
+		struct is_nothrow_swappable : eastl::true_type { };
 #else
 		// https://stackoverflow.com/questions/26744589/what-is-a-proper-way-to-implement-is-swappable-to-test-for-the-swappable-concept
 		namespace swap_adl_tests {
-			// if swap ADL finds this then it would call std::swap otherwise (same
+			// if swap ADL finds this then it would call eastl::swap otherwise (same
 			// signature)
 			struct tag { };
 
 			template <class T>
 			tag swap(T&, T&);
-			template <class T, std::size_t N>
+			template <class T, eastl::size_t N>
 			tag swap(T (&a)[N], T (&b)[N]);
 
 			// helper functions to test if an unqualified swap is possible, and if it
-			// becomes std::swap
+			// becomes eastl::swap
 			template <class, class>
-			std::false_type can_swap(...) noexcept(false);
-			template <class T, class U, class = decltype(swap(std::declval<T&>(), std::declval<U&>()))>
-			std::true_type can_swap(int) noexcept(noexcept(swap(std::declval<T&>(), std::declval<U&>())));
+			eastl::false_type can_swap(...) noexcept(false);
+			template <class T, class U, class = decltype(swap(eastl::declval<T&>(), eastl::declval<U&>()))>
+			eastl::true_type can_swap(int) noexcept(noexcept(swap(eastl::declval<T&>(), eastl::declval<U&>())));
 
 			template <class, class>
-			std::false_type uses_std(...);
+			eastl::false_type uses_eastl(...);
 			template <class T, class U>
-			std::is_same<decltype(swap(std::declval<T&>(), std::declval<U&>())), tag> uses_std(int);
+			eastl::is_same<decltype(swap(eastl::declval<T&>(), eastl::declval<U&>())), tag> uses_std(int);
 
 			template <class T>
 			struct is_std_swap_noexcept
-			: std::integral_constant<bool, std::is_nothrow_move_constructible<T>::value && std::is_nothrow_move_assignable<T>::value> { };
+			: eastl::integral_constant<bool, eastl::is_nothrow_move_constructible<T>::value && eastl::is_nothrow_move_assignable<T>::value> { };
 
-			template <class T, std::size_t N>
+			template <class T, eastl::size_t N>
 			struct is_std_swap_noexcept<T[N]> : is_std_swap_noexcept<T> { };
 
 			template <class T, class U>
-			struct is_adl_swap_noexcept : std::integral_constant<bool, noexcept(can_swap<T, U>(0))> { };
+			struct is_adl_swap_noexcept : eastl::integral_constant<bool, noexcept(can_swap<T, U>(0))> { };
 		} // namespace swap_adl_tests
 
 		template <class T, class U = T>
-		struct is_swappable : std::integral_constant<bool,
+		struct is_swappable : eastl::integral_constant<bool,
 		                           decltype(detail::swap_adl_tests::can_swap<T, U>(0))::value
 		                                && (!decltype(detail::swap_adl_tests::uses_std<T, U>(0))::value
-		                                     || (std::is_move_assignable<T>::value && std::is_move_constructible<T>::value))> { };
+		                                     || (eastl::is_move_assignable<T>::value && eastl::is_move_constructible<T>::value))> { };
 
-		template <class T, std::size_t N>
-		struct is_swappable<T[N], T[N]> : std::integral_constant<bool,
+		template <class T, eastl::size_t N>
+		struct is_swappable<T[N], T[N]> : eastl::integral_constant<bool,
 		                                       decltype(detail::swap_adl_tests::can_swap<T[N], T[N]>(0))::value
 		                                            && (!decltype(detail::swap_adl_tests::uses_std<T[N], T[N]>(0))::value || is_swappable<T, T>::value)> { };
 
 		template <class T, class U = T>
 		struct is_nothrow_swappable
-		: std::integral_constant<bool,
+		: eastl::integral_constant<bool,
 		       is_swappable<T, U>::value
 		            && ((decltype(detail::swap_adl_tests::uses_std<T, U>(0))::value&& detail::swap_adl_tests::is_std_swap_noexcept<T>::value)
 		                 || (!decltype(detail::swap_adl_tests::uses_std<T, U>(0))::value&& detail::swap_adl_tests::is_adl_swap_noexcept<T, U>::value))> { };
@@ -342,13 +342,13 @@ namespace sol {
 		// The storage base manages the actual storage, and correctly propagates
 		// trivial destroyion from T. This case is for when T is not trivially
 		// destructible.
-		template <class T, bool = ::std::is_trivially_destructible<T>::value>
+		template <class T, bool = ::eastl::is_trivially_destructible<T>::value>
 		struct optional_storage_base {
 			SOL_TL_OPTIONAL_11_CONSTEXPR optional_storage_base() noexcept : m_dummy(), m_has_value(false) {
 			}
 
 			template <class... U>
-			SOL_TL_OPTIONAL_11_CONSTEXPR optional_storage_base(in_place_t, U&&... u) : m_value(std::forward<U>(u)...), m_has_value(true) {
+			SOL_TL_OPTIONAL_11_CONSTEXPR optional_storage_base(in_place_t, U&&... u) : m_value(eastl::forward<U>(u)...), m_has_value(true) {
 			}
 
 			~optional_storage_base() {
@@ -374,7 +374,7 @@ namespace sol {
 			}
 
 			template <class... U>
-			SOL_TL_OPTIONAL_11_CONSTEXPR optional_storage_base(in_place_t, U&&... u) : m_value(std::forward<U>(u)...), m_has_value(true) {
+			SOL_TL_OPTIONAL_11_CONSTEXPR optional_storage_base(in_place_t, U&&... u) : m_value(eastl::forward<U>(u)...), m_has_value(true) {
 			}
 
 			// No destructor, so this class is trivially destructible
@@ -401,7 +401,7 @@ namespace sol {
 
 			template <class... Args>
 			void construct(Args&&... args) noexcept {
-				new (std::addressof(this->m_value)) T(std::forward<Args>(args)...);
+				new (eastl::addressof(this->m_value)) T(eastl::forward<Args>(args)...);
 				this->m_has_value = true;
 			}
 
@@ -409,7 +409,7 @@ namespace sol {
 			void assign(Opt&& rhs) {
 				if (this->has_value()) {
 					if (rhs.has_value()) {
-						this->m_value = std::forward<Opt>(rhs).get();
+						this->m_value = eastl::forward<Opt>(rhs).get();
 					}
 					else {
 						this->m_value.~T();
@@ -418,7 +418,7 @@ namespace sol {
 				}
 
 				else if (rhs.has_value()) {
-					construct(std::forward<Opt>(rhs).get());
+					construct(eastl::forward<Opt>(rhs).get());
 				}
 			}
 
@@ -433,11 +433,11 @@ namespace sol {
 				return this->m_value;
 			}
 			SOL_TL_OPTIONAL_11_CONSTEXPR T&& get() && {
-				return std::move(this->m_value);
+				return eastl::move(this->m_value);
 			}
 #ifndef SOL_TL_OPTIONAL_NO_CONSTRR
 			constexpr const T&& get() const&& {
-				return std::move(this->m_value);
+				return eastl::move(this->m_value);
 			}
 #endif
 		};
@@ -473,11 +473,11 @@ namespace sol {
 
 // This class manages conditionally having a trivial move constructor
 // Unfortunately there's no way to achieve this in GCC < 5 AFAIK, since it
-// doesn't implement an analogue to std::is_trivially_move_constructible. We
+// doesn't implement an analogue to eastl::is_trivially_move_constructible. We
 // have to make do with a non-trivial move constructor even if T is trivially
 // move constructible
 #ifndef SOL_TL_OPTIONAL_GCC49
-		template <class T, bool = std::is_trivially_move_constructible<T>::value>
+		template <class T, bool = eastl::is_trivially_move_constructible<T>::value>
 		struct optional_move_base : optional_copy_base<T> {
 			using optional_copy_base<T>::optional_copy_base;
 		};
@@ -492,9 +492,9 @@ namespace sol {
 			optional_move_base() = default;
 			optional_move_base(const optional_move_base& rhs) = default;
 
-			optional_move_base(optional_move_base&& rhs) noexcept(std::is_nothrow_move_constructible<T>::value) {
+			optional_move_base(optional_move_base&& rhs) noexcept(eastl::is_nothrow_move_constructible<T>::value) {
 				if (rhs.has_value()) {
-					this->construct(std::move(rhs.get()));
+					this->construct(eastl::move(rhs.get()));
 				}
 				else {
 					this->m_has_value = false;
@@ -529,12 +529,12 @@ namespace sol {
 
 // This class manages conditionally having a trivial move assignment operator
 // Unfortunately there's no way to achieve this in GCC < 5 AFAIK, since it
-// doesn't implement an analogue to std::is_trivially_move_assignable. We have
+// doesn't implement an analogue to eastl::is_trivially_move_assignable. We have
 // to make do with a non-trivial move assignment operator even if T is trivially
 // move assignable
 #ifndef SOL_TL_OPTIONAL_GCC49
 		template <class T,
-		     bool = std::is_trivially_destructible<T>::value&& std::is_trivially_move_constructible<T>::value&& std::is_trivially_move_assignable<T>::value>
+		     bool = eastl::is_trivially_destructible<T>::value&& eastl::is_trivially_move_constructible<T>::value&& eastl::is_trivially_move_assignable<T>::value>
 		struct optional_move_assign_base : optional_copy_assign_base<T> {
 			using optional_copy_assign_base<T>::optional_copy_assign_base;
 		};
@@ -555,15 +555,15 @@ namespace sol {
 			optional_move_assign_base& operator=(const optional_move_assign_base& rhs) = default;
 
 			optional_move_assign_base& operator=(optional_move_assign_base&& rhs) noexcept(
-			     std::is_nothrow_move_constructible<T>::value&& std::is_nothrow_move_assignable<T>::value) {
-				this->assign(std::move(rhs));
+			     eastl::is_nothrow_move_constructible<T>::value&& eastl::is_nothrow_move_assignable<T>::value) {
+				this->assign(eastl::move(rhs));
 				return *this;
 			}
 		};
 
 		// optional_delete_ctor_base will conditionally delete copy and move
 		// constructors depending on whether T is copy/move constructible
-		template <class T, bool EnableCopy = std::is_copy_constructible<T>::value, bool EnableMove = std::is_move_constructible<T>::value>
+		template <class T, bool EnableCopy = eastl::is_copy_constructible<T>::value, bool EnableMove = eastl::is_move_constructible<T>::value>
 		struct optional_delete_ctor_base {
 			optional_delete_ctor_base() = default;
 			optional_delete_ctor_base(const optional_delete_ctor_base&) = default;
@@ -601,8 +601,8 @@ namespace sol {
 
 		// optional_delete_assign_base will conditionally delete copy and move
 		// constructors depending on whether T is copy/move constructible + assignable
-		template <class T, bool EnableCopy = (std::is_copy_constructible<T>::value && std::is_copy_assignable<T>::value),
-		     bool EnableMove = (std::is_move_constructible<T>::value && std::is_move_assignable<T>::value)>
+		template <class T, bool EnableCopy = (eastl::is_copy_constructible<T>::value && eastl::is_copy_assignable<T>::value),
+		     bool EnableMove = (eastl::is_move_constructible<T>::value && eastl::is_move_assignable<T>::value)>
 		struct optional_delete_assign_base {
 			optional_delete_assign_base() = default;
 			optional_delete_assign_base(const optional_delete_assign_base&) = default;
@@ -641,7 +641,7 @@ namespace sol {
 	} // namespace detail
 
 	/// \brief A tag type to represent an empty optional
-	using nullopt_t = std::nullopt_t;
+	using nullopt_t = eastl::nullopt_t;
 
 	/// \brief Represents an empty optional
 	/// \synopsis static constexpr nullopt_t nullopt;
@@ -652,7 +652,7 @@ namespace sol {
 	/// void foo (sol::optional<int>);
 	/// foo(sol::nullopt); //pass an empty optional
 	/// ```
-	using std::nullopt;
+	using eastl::nullopt;
 
 	/// @brief An exception for when an optional is accessed through specific methods while it is not engaged.
 	class bad_optional_access : public std::exception {
@@ -677,8 +677,8 @@ namespace sol {
 	                 private detail::optional_delete_assign_base<T> {
 		using base = detail::optional_move_assign_base<T>;
 
-		static_assert(!std::is_same<T, in_place_t>::value, "instantiation of optional with in_place_t is ill-formed");
-		static_assert(!std::is_same<detail::decay_t<T>, nullopt_t>::value, "instantiation of optional with nullopt_t is ill-formed");
+		static_assert(!eastl::is_same<T, in_place_t>::value, "instantiation of optional with in_place_t is ill-formed");
+		static_assert(!eastl::is_same<detail::decay_t<T>, nullopt_t>::value, "instantiation of optional with nullopt_t is ill-formed");
 
 	public:
 // The different versions for C++14 and 11 are needed because deduced return
@@ -688,11 +688,11 @@ namespace sol {
 #if defined(SOL_TL_OPTIONAL_CXX14) && !defined(SOL_TL_OPTIONAL_GCC49) && !defined(SOL_TL_OPTIONAL_GCC54) && !defined(SOL_TL_OPTIONAL_GCC55)
 		/// \group and_then
 		/// Carries out some operation which returns an optional on the stored
-		/// object if there is one. \requires `std::invoke(std::forward<F>(f),
-		/// value())` returns a `std::optional<U>` for some `U`. \returns Let `U` be
-		/// the result of `std::invoke(std::forward<F>(f), value())`. Returns a
-		/// `std::optional<U>`. The return value is empty if `*this` is empty,
-		/// otherwise the return value of `std::invoke(std::forward<F>(f), value())`
+		/// object if there is one. \requires `eastl::invoke(eastl::forward<F>(f),
+		/// value())` returns a `eastl::optional<U>` for some `U`. \returns Let `U` be
+		/// the result of `eastl::invoke(eastl::forward<F>(f), value())`. Returns a
+		/// `eastl::optional<U>`. The return value is empty if `*this` is empty,
+		/// otherwise the return value of `eastl::invoke(eastl::forward<F>(f), value())`
 		/// is returned.
 		/// \group and_then
 		/// \synopsis template <class F> \n constexpr auto and_then(F &&f) &;
@@ -701,7 +701,7 @@ namespace sol {
 			using result = detail::invoke_result_t<F, T&>;
 			static_assert(detail::is_optional<result>::value, "F must return an optional");
 
-			return has_value() ? detail::invoke(std::forward<F>(f), **this) : result(nullopt);
+			return has_value() ? detail::invoke(eastl::forward<F>(f), **this) : result(nullopt);
 		}
 
 		/// \group and_then
@@ -711,7 +711,7 @@ namespace sol {
 			using result = detail::invoke_result_t<F, T&&>;
 			static_assert(detail::is_optional<result>::value, "F must return an optional");
 
-			return has_value() ? detail::invoke(std::forward<F>(f), std::move(**this)) : result(nullopt);
+			return has_value() ? detail::invoke(eastl::forward<F>(f), eastl::move(**this)) : result(nullopt);
 		}
 
 		/// \group and_then
@@ -721,7 +721,7 @@ namespace sol {
 			using result = detail::invoke_result_t<F, const T&>;
 			static_assert(detail::is_optional<result>::value, "F must return an optional");
 
-			return has_value() ? detail::invoke(std::forward<F>(f), **this) : result(nullopt);
+			return has_value() ? detail::invoke(eastl::forward<F>(f), **this) : result(nullopt);
 		}
 
 #ifndef SOL_TL_OPTIONAL_NO_CONSTRR
@@ -732,18 +732,18 @@ namespace sol {
 			using result = detail::invoke_result_t<F, const T&&>;
 			static_assert(detail::is_optional<result>::value, "F must return an optional");
 
-			return has_value() ? detail::invoke(std::forward<F>(f), std::move(**this)) : result(nullopt);
+			return has_value() ? detail::invoke(eastl::forward<F>(f), eastl::move(**this)) : result(nullopt);
 		}
 #endif
 #else
 		/// \group and_then
 		/// Carries out some operation which returns an optional on the stored
-		/// object if there is one. \requires `std::invoke(std::forward<F>(f),
-		/// value())` returns a `std::optional<U>` for some `U`.
-		/// \returns Let `U` be the result of `std::invoke(std::forward<F>(f),
-		/// value())`. Returns a `std::optional<U>`. The return value is empty if
+		/// object if there is one. \requires `eastl::invoke(eastl::forward<F>(f),
+		/// value())` returns a `eastl::optional<U>` for some `U`.
+		/// \returns Let `U` be the result of `eastl::invoke(eastl::forward<F>(f),
+		/// value())`. Returns a `eastl::optional<U>`. The return value is empty if
 		/// `*this` is empty, otherwise the return value of
-		/// `std::invoke(std::forward<F>(f), value())` is returned.
+		/// `eastl::invoke(eastl::forward<F>(f), value())` is returned.
 		/// \group and_then
 		/// \synopsis template <class F> \n constexpr auto and_then(F &&f) &;
 		template <class F>
@@ -751,7 +751,7 @@ namespace sol {
 			using result = detail::invoke_result_t<F, T&>;
 			static_assert(detail::is_optional<result>::value, "F must return an optional");
 
-			return has_value() ? detail::invoke(std::forward<F>(f), **this) : result(nullopt);
+			return has_value() ? detail::invoke(eastl::forward<F>(f), **this) : result(nullopt);
 		}
 
 		/// \group and_then
@@ -761,7 +761,7 @@ namespace sol {
 			using result = detail::invoke_result_t<F, T&&>;
 			static_assert(detail::is_optional<result>::value, "F must return an optional");
 
-			return has_value() ? detail::invoke(std::forward<F>(f), std::move(**this)) : result(nullopt);
+			return has_value() ? detail::invoke(eastl::forward<F>(f), eastl::move(**this)) : result(nullopt);
 		}
 
 		/// \group and_then
@@ -771,7 +771,7 @@ namespace sol {
 			using result = detail::invoke_result_t<F, const T&>;
 			static_assert(detail::is_optional<result>::value, "F must return an optional");
 
-			return has_value() ? detail::invoke(std::forward<F>(f), **this) : result(nullopt);
+			return has_value() ? detail::invoke(eastl::forward<F>(f), **this) : result(nullopt);
 		}
 
 #ifndef SOL_TL_OPTIONAL_NO_CONSTRR
@@ -782,91 +782,91 @@ namespace sol {
 			using result = detail::invoke_result_t<F, const T&&>;
 			static_assert(detail::is_optional<result>::value, "F must return an optional");
 
-			return has_value() ? detail::invoke(std::forward<F>(f), std::move(**this)) : result(nullopt);
+			return has_value() ? detail::invoke(eastl::forward<F>(f), eastl::move(**this)) : result(nullopt);
 		}
 #endif
 #endif
 
 #if defined(SOL_TL_OPTIONAL_CXX14) && !defined(SOL_TL_OPTIONAL_GCC49) && !defined(SOL_TL_OPTIONAL_GCC54) && !defined(SOL_TL_OPTIONAL_GCC55)
 		/// \brief Carries out some operation on the stored object if there is one.
-		/// \returns Let `U` be the result of `std::invoke(std::forward<F>(f),
-		/// value())`. Returns a `std::optional<U>`. The return value is empty if
+		/// \returns Let `U` be the result of `eastl::invoke(eastl::forward<F>(f),
+		/// value())`. Returns a `eastl::optional<U>`. The return value is empty if
 		/// `*this` is empty, otherwise an `optional<U>` is constructed from the
-		/// return value of `std::invoke(std::forward<F>(f), value())` and is
+		/// return value of `eastl::invoke(eastl::forward<F>(f), value())` and is
 		/// returned.
 		///
 		/// \group map
 		/// \synopsis template <class F> constexpr auto map(F &&f) &;
 		template <class F>
 		SOL_TL_OPTIONAL_11_CONSTEXPR auto map(F&& f) & {
-			return optional_map_impl(*this, std::forward<F>(f));
+			return optional_map_impl(*this, eastl::forward<F>(f));
 		}
 
 		/// \group map
 		/// \synopsis template <class F> constexpr auto map(F &&f) &&;
 		template <class F>
 		SOL_TL_OPTIONAL_11_CONSTEXPR auto map(F&& f) && {
-			return optional_map_impl(std::move(*this), std::forward<F>(f));
+			return optional_map_impl(eastl::move(*this), eastl::forward<F>(f));
 		}
 
 		/// \group map
 		/// \synopsis template <class F> constexpr auto map(F &&f) const&;
 		template <class F>
 		constexpr auto map(F&& f) const& {
-			return optional_map_impl(*this, std::forward<F>(f));
+			return optional_map_impl(*this, eastl::forward<F>(f));
 		}
 
 		/// \group map
 		/// \synopsis template <class F> constexpr auto map(F &&f) const&&;
 		template <class F>
 		constexpr auto map(F&& f) const&& {
-			return optional_map_impl(std::move(*this), std::forward<F>(f));
+			return optional_map_impl(eastl::move(*this), eastl::forward<F>(f));
 		}
 #else
 		/// \brief Carries out some operation on the stored object if there is one.
-		/// \returns Let `U` be the result of `std::invoke(std::forward<F>(f),
-		/// value())`. Returns a `std::optional<U>`. The return value is empty if
+		/// \returns Let `U` be the result of `eastl::invoke(eastl::forward<F>(f),
+		/// value())`. Returns a `eastl::optional<U>`. The return value is empty if
 		/// `*this` is empty, otherwise an `optional<U>` is constructed from the
-		/// return value of `std::invoke(std::forward<F>(f), value())` and is
+		/// return value of `eastl::invoke(eastl::forward<F>(f), value())` and is
 		/// returned.
 		///
 		/// \group map
 		/// \synopsis template <class F> auto map(F &&f) &;
 		template <class F>
-		SOL_TL_OPTIONAL_11_CONSTEXPR decltype(optional_map_impl(std::declval<optional&>(), std::declval<F&&>())) map(F&& f) & {
-			return optional_map_impl(*this, std::forward<F>(f));
+		SOL_TL_OPTIONAL_11_CONSTEXPR decltype(optional_map_impl(eastl::declval<optional&>(), eastl::declval<F&&>())) map(F&& f) & {
+			return optional_map_impl(*this, eastl::forward<F>(f));
 		}
 
 		/// \group map
 		/// \synopsis template <class F> auto map(F &&f) &&;
 		template <class F>
-		SOL_TL_OPTIONAL_11_CONSTEXPR decltype(optional_map_impl(std::declval<optional&&>(), std::declval<F&&>())) map(F&& f) && {
-			return optional_map_impl(std::move(*this), std::forward<F>(f));
+		SOL_TL_OPTIONAL_11_CONSTEXPR decltype(optional_map_impl(eastl::declval<optional&&>(), eastl::declval<F&&>())) map(F&& f) && {
+			return optional_map_impl(eastl::move(*this), eastl::forward<F>(f));
 		}
 
 		/// \group map
 		/// \synopsis template <class F> auto map(F &&f) const&;
 		template <class F>
-		constexpr decltype(optional_map_impl(std::declval<const optional&>(), std::declval<F&&>())) map(F&& f) const& {
-			return optional_map_impl(*this, std::forward<F>(f));
+		constexpr decltype(optional_map_impl(eastl::declval<const optional&>(), eastl::declval<F&&>())) map(F&& f) const& {
+			return optional_map_impl(*this, eastl::forward<F>(f));
 		}
 
 #ifndef SOL_TL_OPTIONAL_NO_CONSTRR
 		/// \group map
 		/// \synopsis template <class F> auto map(F &&f) const&&;
 		template <class F>
-		constexpr decltype(optional_map_impl(std::declval<const optional&&>(), std::declval<F&&>())) map(F&& f) const&& {
-			return optional_map_impl(std::move(*this), std::forward<F>(f));
+		constexpr decltype(optional_map_impl(eastl::declval<const optional&&>(), eastl::declval<F&&>())) map(F&& f) const&& {
+			return optional_map_impl(eastl::move(*this), eastl::forward<F>(f));
 		}
 #endif
 #endif
 
 		/// \brief Calls `f` if the optional is empty
-		/// \requires `std::invoke_result_t<F>` must be void or convertible to
+		/// \requires `eastl::invoke_result_t<F>` must be void or convertible to
 		/// `optional<T>`.
 		/// \effects If `*this` has a value, returns `*this`.
-		/// Otherwise, if `f` returns `void`, calls `std::forward<F>(f)` and returns
-		/// `std::nullopt`. Otherwise, returns `std::forward<F>(f)()`.
+		/// Otherwise, if `f` returns `void`, calls `eastl::forward<F>(f)` and returns
+		/// `eastl::nullopt`. Otherwise, returns `eastl::forward<F>(f)()`.
 		///
 		/// \group or_else
 		/// \synopsis template <class F> optional<T> or_else (F &&f) &;
@@ -875,14 +875,14 @@ namespace sol {
 			if (has_value())
 				return *this;
 
-			std::forward<F>(f)();
+			eastl::forward<F>(f)();
 			return nullopt;
 		}
 
 		/// \exclude
 		template <class F, detail::disable_if_ret_void<F>* = nullptr>
 		optional<T> SOL_TL_OPTIONAL_11_CONSTEXPR or_else(F&& f) & {
-			return has_value() ? *this : std::forward<F>(f)();
+			return has_value() ? *this : eastl::forward<F>(f)();
 		}
 
 		/// \group or_else
@@ -890,16 +890,16 @@ namespace sol {
 		template <class F, detail::enable_if_ret_void<F>* = nullptr>
 		optional<T> or_else(F&& f) && {
 			if (has_value())
-				return std::move(*this);
+				return eastl::move(*this);
 
-			std::forward<F>(f)();
+			eastl::forward<F>(f)();
 			return nullopt;
 		}
 
 		/// \exclude
 		template <class F, detail::disable_if_ret_void<F>* = nullptr>
 		optional<T> SOL_TL_OPTIONAL_11_CONSTEXPR or_else(F&& f) && {
-			return has_value() ? std::move(*this) : std::forward<F>(f)();
+			return has_value() ? eastl::move(*this) : eastl::forward<F>(f)();
 		}
 
 		/// \group or_else
@@ -909,14 +909,14 @@ namespace sol {
 			if (has_value())
 				return *this;
 
-			std::forward<F>(f)();
+			eastl::forward<F>(f)();
 			return nullopt;
 		}
 
 		/// \exclude
 		template <class F, detail::disable_if_ret_void<F>* = nullptr>
 		optional<T> SOL_TL_OPTIONAL_11_CONSTEXPR or_else(F&& f) const& {
-			return has_value() ? *this : std::forward<F>(f)();
+			return has_value() ? *this : eastl::forward<F>(f)();
 		}
 
 #ifndef SOL_TL_OPTIONAL_NO_CONSTRR
@@ -924,16 +924,16 @@ namespace sol {
 		template <class F, detail::enable_if_ret_void<F>* = nullptr>
 		optional<T> or_else(F&& f) const&& {
 			if (has_value())
-				return std::move(*this);
+				return eastl::move(*this);
 
-			std::forward<F>(f)();
+			eastl::forward<F>(f)();
 			return nullopt;
 		}
 
 		/// \exclude
 		template <class F, detail::disable_if_ret_void<F>* = nullptr>
 		optional<T> or_else(F&& f) const&& {
-			return has_value() ? std::move(*this) : std::forward<F>(f)();
+			return has_value() ? eastl::move(*this) : eastl::forward<F>(f)();
 		}
 #endif
 
@@ -946,26 +946,26 @@ namespace sol {
 		/// \group map_or
 		template <class F, class U>
 		U map_or(F&& f, U&& u) & {
-			return has_value() ? detail::invoke(std::forward<F>(f), **this) : std::forward<U>(u);
+			return has_value() ? detail::invoke(eastl::forward<F>(f), **this) : eastl::forward<U>(u);
 		}
 
 		/// \group map_or
 		template <class F, class U>
 		U map_or(F&& f, U&& u) && {
-			return has_value() ? detail::invoke(std::forward<F>(f), std::move(**this)) : std::forward<U>(u);
+			return has_value() ? detail::invoke(eastl::forward<F>(f), eastl::move(**this)) : eastl::forward<U>(u);
 		}
 
 		/// \group map_or
 		template <class F, class U>
 		U map_or(F&& f, U&& u) const& {
-			return has_value() ? detail::invoke(std::forward<F>(f), **this) : std::forward<U>(u);
+			return has_value() ? detail::invoke(eastl::forward<F>(f), **this) : eastl::forward<U>(u);
 		}
 
 #ifndef SOL_TL_OPTIONAL_NO_CONSTRR
 		/// \group map_or
 		template <class F, class U>
 		U map_or(F&& f, U&& u) const&& {
-			return has_value() ? detail::invoke(std::forward<F>(f), std::move(**this)) : std::forward<U>(u);
+			return has_value() ? detail::invoke(eastl::forward<F>(f), eastl::move(**this)) : eastl::forward<U>(u);
 		}
 #endif
 
@@ -974,13 +974,13 @@ namespace sol {
 		///
 		/// \details If there is a value stored, then `f` is
 		/// called with `**this` and the value is returned. Otherwise
-		/// `std::forward<U>(u)()` is returned.
+		/// `eastl::forward<U>(u)()` is returned.
 		///
 		/// \group map_or_else
 		/// \synopsis template <class F, class U> \n auto map_or_else(F &&f, U &&u) &;
 		template <class F, class U>
 		detail::invoke_result_t<U> map_or_else(F&& f, U&& u) & {
-			return has_value() ? detail::invoke(std::forward<F>(f), **this) : std::forward<U>(u)();
+			return has_value() ? detail::invoke(eastl::forward<F>(f), **this) : eastl::forward<U>(u)();
 		}
 
 		/// \group map_or_else
@@ -988,7 +988,7 @@ namespace sol {
 		/// &&;
 		template <class F, class U>
 		detail::invoke_result_t<U> map_or_else(F&& f, U&& u) && {
-			return has_value() ? detail::invoke(std::forward<F>(f), std::move(**this)) : std::forward<U>(u)();
+			return has_value() ? detail::invoke(eastl::forward<F>(f), eastl::move(**this)) : eastl::forward<U>(u)();
 		}
 
 		/// \group map_or_else
@@ -996,7 +996,7 @@ namespace sol {
 		/// const &;
 		template <class F, class U>
 		detail::invoke_result_t<U> map_or_else(F&& f, U&& u) const& {
-			return has_value() ? detail::invoke(std::forward<F>(f), **this) : std::forward<U>(u)();
+			return has_value() ? detail::invoke(eastl::forward<F>(f), **this) : eastl::forward<U>(u)();
 		}
 
 #ifndef SOL_TL_OPTIONAL_NO_CONSTRR
@@ -1005,13 +1005,13 @@ namespace sol {
 		/// const &&;
 		template <class F, class U>
 		detail::invoke_result_t<U> map_or_else(F&& f, U&& u) const&& {
-			return has_value() ? detail::invoke(std::forward<F>(f), std::move(**this)) : std::forward<U>(u)();
+			return has_value() ? detail::invoke(eastl::forward<F>(f), eastl::move(**this)) : eastl::forward<U>(u)();
 		}
 #endif
 
 		/// \returns `u` if `*this` has a value, otherwise an empty optional.
 		template <class U>
-		constexpr optional<typename std::decay<U>::type> conjunction(U&& u) const {
+		constexpr optional<typename eastl::decay<U>::type> conjunction(U&& u) const {
 			using result = optional<detail::decay_t<U>>;
 			return has_value() ? result { u } : result { nullopt };
 		}
@@ -1029,35 +1029,35 @@ namespace sol {
 
 		/// \group disjunction
 		SOL_TL_OPTIONAL_11_CONSTEXPR optional disjunction(const optional& rhs) && {
-			return has_value() ? std::move(*this) : rhs;
+			return has_value() ? eastl::move(*this) : rhs;
 		}
 
 #ifndef SOL_TL_OPTIONAL_NO_CONSTRR
 		/// \group disjunction
 		constexpr optional disjunction(const optional& rhs) const&& {
-			return has_value() ? std::move(*this) : rhs;
+			return has_value() ? eastl::move(*this) : rhs;
 		}
 #endif
 
 		/// \group disjunction
 		SOL_TL_OPTIONAL_11_CONSTEXPR optional disjunction(optional&& rhs) & {
-			return has_value() ? *this : std::move(rhs);
+			return has_value() ? *this : eastl::move(rhs);
 		}
 
 		/// \group disjunction
 		constexpr optional disjunction(optional&& rhs) const& {
-			return has_value() ? *this : std::move(rhs);
+			return has_value() ? *this : eastl::move(rhs);
 		}
 
 		/// \group disjunction
 		SOL_TL_OPTIONAL_11_CONSTEXPR optional disjunction(optional&& rhs) && {
-			return has_value() ? std::move(*this) : std::move(rhs);
+			return has_value() ? eastl::move(*this) : eastl::move(rhs);
 		}
 
 #ifndef SOL_TL_OPTIONAL_NO_CONSTRR
 		/// \group disjunction
 		constexpr optional disjunction(optional&& rhs) const&& {
-			return has_value() ? std::move(*this) : std::move(rhs);
+			return has_value() ? eastl::move(*this) : eastl::move(rhs);
 		}
 #endif
 
@@ -1078,7 +1078,7 @@ namespace sol {
 
 		/// \group take
 		optional take() && {
-			optional ret = std::move(*this);
+			optional ret = eastl::move(*this);
 			reset();
 			return ret;
 		}
@@ -1086,7 +1086,7 @@ namespace sol {
 #ifndef SOL_TL_OPTIONAL_NO_CONSTRR
 		/// \group take
 		optional take() const&& {
-			optional ret = std::move(*this);
+			optional ret = eastl::move(*this);
 			reset();
 			return ret;
 		}
@@ -1118,33 +1118,33 @@ namespace sol {
 		/// \group in_place
 		/// \synopsis template <class... Args> constexpr explicit optional(in_place_t, Args&&... args);
 		template <class... Args>
-		constexpr explicit optional(detail::enable_if_t<std::is_constructible<T, Args...>::value, in_place_t>, Args&&... args)
-		: base(in_place, std::forward<Args>(args)...) {
+		constexpr explicit optional(detail::enable_if_t<eastl::is_constructible<T, Args...>::value, in_place_t>, Args&&... args)
+		: base(in_place, eastl::forward<Args>(args)...) {
 		}
 
 		/// \group in_place
 		/// \synopsis template <class U, class... Args> \n constexpr explicit optional(in_place_t, std::initializer_list<U>&, Args&&... args);
 		template <class U, class... Args>
-		SOL_TL_OPTIONAL_11_CONSTEXPR explicit optional(detail::enable_if_t<std::is_constructible<T, std::initializer_list<U>&, Args&&...>::value, in_place_t>,
+		SOL_TL_OPTIONAL_11_CONSTEXPR explicit optional(detail::enable_if_t<eastl::is_constructible<T, std::initializer_list<U>&, Args&&...>::value, in_place_t>,
 		     std::initializer_list<U> il, Args&&... args) {
-			this->construct(il, std::forward<Args>(args)...);
+			this->construct(il, eastl::forward<Args>(args)...);
 		}
 
 #if 0 // SOL_MODIFICATION
       /// Constructs the stored value with `u`.
       /// \synopsis template <class U=T> constexpr optional(U &&u);
-		template <class U = T, detail::enable_if_t<std::is_convertible<U&&, T>::value>* = nullptr, detail::enable_forward_value<T, U>* = nullptr>
-		constexpr optional(U&& u) : base(in_place, std::forward<U>(u)) {
+		template <class U = T, detail::enable_if_t<eastl::is_convertible<U&&, T>::value>* = nullptr, detail::enable_forward_value<T, U>* = nullptr>
+		constexpr optional(U&& u) : base(in_place, eastl::forward<U>(u)) {
 		}
 
 		/// \exclude
-		template <class U = T, detail::enable_if_t<!std::is_convertible<U&&, T>::value>* = nullptr, detail::enable_forward_value<T, U>* = nullptr>
-		constexpr explicit optional(U&& u) : base(in_place, std::forward<U>(u)) {
+		template <class U = T, detail::enable_if_t<!eastl::is_convertible<U&&, T>::value>* = nullptr, detail::enable_forward_value<T, U>* = nullptr>
+		constexpr explicit optional(U&& u) : base(in_place, eastl::forward<U>(u)) {
 		}
 #else
 		/// Constructs the stored value with `u`.
 		/// \synopsis template <class U=T> constexpr optional(U &&u);
-		constexpr optional(T&& u) : base(in_place, std::move(u)) {
+		constexpr optional(T&& u) : base(in_place, eastl::move(u)) {
 		}
 
 		/// \exclude
@@ -1154,7 +1154,7 @@ namespace sol {
 
 		/// Converting copy constructor.
 		/// \synopsis template <class U> optional(const optional<U> &rhs);
-		template <class U, detail::enable_from_other<T, U, const U&>* = nullptr, detail::enable_if_t<std::is_convertible<const U&, T>::value>* = nullptr>
+		template <class U, detail::enable_from_other<T, U, const U&>* = nullptr, detail::enable_if_t<eastl::is_convertible<const U&, T>::value>* = nullptr>
 		optional(const optional<U>& rhs) {
 			if (rhs.has_value()) {
 				this->construct(*rhs);
@@ -1162,7 +1162,7 @@ namespace sol {
 		}
 
 		/// \exclude
-		template <class U, detail::enable_from_other<T, U, const U&>* = nullptr, detail::enable_if_t<!std::is_convertible<const U&, T>::value>* = nullptr>
+		template <class U, detail::enable_from_other<T, U, const U&>* = nullptr, detail::enable_if_t<!eastl::is_convertible<const U&, T>::value>* = nullptr>
 		explicit optional(const optional<U>& rhs) {
 			if (rhs.has_value()) {
 				this->construct(*rhs);
@@ -1171,17 +1171,17 @@ namespace sol {
 
 		/// Converting move constructor.
 		/// \synopsis template <class U> optional(optional<U> &&rhs);
-		template <class U, detail::enable_from_other<T, U, U&&>* = nullptr, detail::enable_if_t<std::is_convertible<U&&, T>::value>* = nullptr>
+		template <class U, detail::enable_from_other<T, U, U&&>* = nullptr, detail::enable_if_t<eastl::is_convertible<U&&, T>::value>* = nullptr>
 		optional(optional<U>&& rhs) {
 			if (rhs.has_value()) {
-				this->construct(std::move(*rhs));
+				this->construct(eastl::move(*rhs));
 			}
 		}
 
 		/// \exclude
-		template <class U, detail::enable_from_other<T, U, U&&>* = nullptr, detail::enable_if_t<!std::is_convertible<U&&, T>::value>* = nullptr>
+		template <class U, detail::enable_from_other<T, U, U&&>* = nullptr, detail::enable_if_t<!eastl::is_convertible<U&&, T>::value>* = nullptr>
 		explicit optional(optional<U>&& rhs) {
-			this->construct(std::move(*rhs));
+			this->construct(eastl::move(*rhs));
 		}
 
 		/// Destroys the stored value if there is one.
@@ -1217,10 +1217,10 @@ namespace sol {
 		template <class U = T, detail::enable_assign_forward<T, U>* = nullptr>
 		optional& operator=(U&& u) {
 			if (has_value()) {
-				this->m_value = std::forward<U>(u);
+				this->m_value = eastl::forward<U>(u);
 			}
 			else {
-				this->construct(std::forward<U>(u));
+				this->construct(eastl::forward<U>(u));
 			}
 
 			return *this;
@@ -1259,7 +1259,7 @@ namespace sol {
 		optional& operator=(optional<U>&& rhs) {
 			if (has_value()) {
 				if (rhs.has_value()) {
-					this->m_value = std::move(*rhs);
+					this->m_value = eastl::move(*rhs);
 				}
 				else {
 					this->hard_reset();
@@ -1267,7 +1267,7 @@ namespace sol {
 			}
 
 			if (rhs.has_value()) {
-				this->construct(std::move(*rhs));
+				this->construct(eastl::move(*rhs));
 			}
 
 			return *this;
@@ -1278,19 +1278,19 @@ namespace sol {
 		/// \group emplace
 		template <class... Args>
 		T& emplace(Args&&... args) {
-			static_assert(std::is_constructible<T, Args&&...>::value, "T must be constructible with Args");
+			static_assert(eastl::is_constructible<T, Args&&...>::value, "T must be constructible with Args");
 
 			*this = nullopt;
-			this->construct(std::forward<Args>(args)...);
+			this->construct(eastl::forward<Args>(args)...);
 			return value();
 		}
 
 		/// \group emplace
 		/// \synopsis template <class U, class... Args> \n T& emplace(std::initializer_list<U> il, Args &&... args);
 		template <class U, class... Args>
-		detail::enable_if_t<std::is_constructible<T, std::initializer_list<U>&, Args&&...>::value, T&> emplace(std::initializer_list<U> il, Args&&... args) {
+		detail::enable_if_t<eastl::is_constructible<T, std::initializer_list<U>&, Args&&...>::value, T&> emplace(std::initializer_list<U> il, Args&&... args) {
 			*this = nullopt;
-			this->construct(il, std::forward<Args>(args)...);
+			this->construct(il, eastl::forward<Args>(args)...);
 			return value();
 		}
 
@@ -1300,19 +1300,19 @@ namespace sol {
 		/// If both have a value, the values are swapped.
 		/// If one has a value, it is moved to the other and the movee is left
 		/// valueless.
-		void swap(optional& rhs) noexcept(std::is_nothrow_move_constructible<T>::value&& detail::is_nothrow_swappable<T>::value) {
+		void swap(optional& rhs) noexcept(eastl::is_nothrow_move_constructible<T>::value&& detail::is_nothrow_swappable<T>::value) {
 			if (has_value()) {
 				if (rhs.has_value()) {
-					using std::swap;
+					using eastl::swap;
 					swap(**this, *rhs);
 				}
 				else {
-					new (std::addressof(rhs.m_value)) T(std::move(this->m_value));
+					new (eastl::addressof(rhs.m_value)) T(eastl::move(this->m_value));
 					this->m_value.T::~T();
 				}
 			}
 			else if (rhs.has_value()) {
-				new (std::addressof(this->m_value)) T(std::move(rhs.m_value));
+				new (eastl::addressof(this->m_value)) T(eastl::move(rhs.m_value));
 				rhs.m_value.T::~T();
 			}
 		}
@@ -1322,13 +1322,13 @@ namespace sol {
 		/// \group pointer
 		/// \synopsis constexpr const T *operator->() const;
 		constexpr const T* operator->() const {
-			return std::addressof(this->m_value);
+			return eastl::addressof(this->m_value);
 		}
 
 		/// \group pointer
 		/// \synopsis constexpr T *operator->();
 		SOL_TL_OPTIONAL_11_CONSTEXPR T* operator->() {
-			return std::addressof(this->m_value);
+			return eastl::addressof(this->m_value);
 		}
 
 		/// \returns the stored value
@@ -1347,13 +1347,13 @@ namespace sol {
 
 		/// \exclude
 		SOL_TL_OPTIONAL_11_CONSTEXPR T&& operator*() && {
-			return std::move(this->m_value);
+			return eastl::move(this->m_value);
 		}
 
 #ifndef SOL_TL_OPTIONAL_NO_CONSTRR
 		/// \exclude
 		constexpr const T&& operator*() const&& {
-			return std::move(this->m_value);
+			return eastl::move(this->m_value);
 		}
 #endif
 
@@ -1395,7 +1395,7 @@ namespace sol {
 		/// \exclude
 		SOL_TL_OPTIONAL_11_CONSTEXPR T&& value() && {
 			if (has_value())
-				return std::move(this->m_value);
+				return eastl::move(this->m_value);
 #if SOL_IS_OFF(SOL_EXCEPTIONS)
 			std::abort();
 #else
@@ -1407,7 +1407,7 @@ namespace sol {
 		/// \exclude
 		SOL_TL_OPTIONAL_11_CONSTEXPR const T&& value() const&& {
 			if (has_value())
-				return std::move(this->m_value);
+				return eastl::move(this->m_value);
 #if SOL_IS_OFF(SOL_EXCEPTIONS)
 			std::abort();
 #else
@@ -1420,15 +1420,15 @@ namespace sol {
 		/// \group value_or
 		template <class U>
 		constexpr T value_or(U&& u) const& {
-			static_assert(std::is_copy_constructible<T>::value && std::is_convertible<U&&, T>::value, "T must be copy constructible and convertible from U");
-			return has_value() ? **this : static_cast<T>(std::forward<U>(u));
+			static_assert(eastl::is_copy_constructible<T>::value && eastl::is_convertible<U&&, T>::value, "T must be copy constructible and convertible from U");
+			return has_value() ? **this : static_cast<T>(eastl::forward<U>(u));
 		}
 
 		/// \group value_or
 		template <class U>
 		SOL_TL_OPTIONAL_11_CONSTEXPR T value_or(U&& u) && {
-			static_assert(std::is_move_constructible<T>::value && std::is_convertible<U&&, T>::value, "T must be move constructible and convertible from U");
-			return has_value() ? **this : static_cast<T>(std::forward<U>(u));
+			static_assert(eastl::is_move_constructible<T>::value && eastl::is_convertible<U&&, T>::value, "T must be move constructible and convertible from U");
+			return has_value() ? **this : static_cast<T>(eastl::forward<U>(u));
 		}
 
 		/// Destroys the stored value if one exists, making the optional empty
@@ -1605,7 +1605,7 @@ namespace sol {
 	}
 
 	/// \synopsis template <class T>  \n  void swap(optional<T> &lhs, optional<T> &rhs);
-	template <class T, detail::enable_if_t<std::is_move_constructible<T>::value>* = nullptr, detail::enable_if_t<detail::is_swappable<T>::value>* = nullptr>
+	template <class T, detail::enable_if_t<eastl::is_move_constructible<T>::value>* = nullptr, detail::enable_if_t<detail::is_swappable<T>::value>* = nullptr>
 	void swap(optional<T>& lhs, optional<T>& rhs) noexcept(noexcept(lhs.swap(rhs))) {
 		return lhs.swap(rhs);
 	}
@@ -1614,18 +1614,18 @@ namespace sol {
 		struct i_am_secret { };
 	} // namespace detail
 
-	template <class T = detail::i_am_secret, class U, class Ret = detail::conditional_t<std::is_same<T, detail::i_am_secret>::value, detail::decay_t<U>, T>>
+	template <class T = detail::i_am_secret, class U, class Ret = detail::conditional_t<eastl::is_same<T, detail::i_am_secret>::value, detail::decay_t<U>, T>>
 	inline constexpr optional<Ret> make_optional(U&& v) {
-		return optional<Ret>(std::forward<U>(v));
+		return optional<Ret>(eastl::forward<U>(v));
 	}
 
 	template <class T, class... Args>
 	inline constexpr optional<T> make_optional(Args&&... args) {
-		return optional<T>(in_place, std::forward<Args>(args)...);
+		return optional<T>(in_place, eastl::forward<Args>(args)...);
 	}
 	template <class T, class U, class... Args>
 	inline constexpr optional<T> make_optional(std::initializer_list<U> il, Args&&... args) {
-		return optional<T>(in_place, il, std::forward<Args>(args)...);
+		return optional<T>(in_place, il, eastl::forward<Args>(args)...);
 	}
 
 #if __cplusplus >= 201703L
@@ -1636,36 +1636,36 @@ namespace sol {
 	/// \exclude
 	namespace detail {
 #ifdef SOL_TL_OPTIONAL_CXX14
-		template <class Opt, class F, class Ret = decltype(detail::invoke(std::declval<F>(), *std::declval<Opt>())),
-		     detail::enable_if_t<!std::is_void<Ret>::value>* = nullptr>
+		template <class Opt, class F, class Ret = decltype(detail::invoke(eastl::declval<F>(), *eastl::declval<Opt>())),
+		     detail::enable_if_t<!eastl::is_void<Ret>::value>* = nullptr>
 		constexpr auto optional_map_impl(Opt&& opt, F&& f) {
-			return opt.has_value() ? detail::invoke(std::forward<F>(f), *std::forward<Opt>(opt)) : optional<Ret>(nullopt);
+			return opt.has_value() ? detail::invoke(eastl::forward<F>(f), *eastl::forward<Opt>(opt)) : optional<Ret>(nullopt);
 		}
 
-		template <class Opt, class F, class Ret = decltype(detail::invoke(std::declval<F>(), *std::declval<Opt>())),
-		     detail::enable_if_t<std::is_void<Ret>::value>* = nullptr>
+		template <class Opt, class F, class Ret = decltype(detail::invoke(eastl::declval<F>(), *eastl::declval<Opt>())),
+		     detail::enable_if_t<eastl::is_void<Ret>::value>* = nullptr>
 		auto optional_map_impl(Opt&& opt, F&& f) {
 			if (opt.has_value()) {
-				detail::invoke(std::forward<F>(f), *std::forward<Opt>(opt));
+				detail::invoke(eastl::forward<F>(f), *eastl::forward<Opt>(opt));
 				return make_optional(monostate {});
 			}
 
 			return optional<monostate>(nullopt);
 		}
 #else
-		template <class Opt, class F, class Ret = decltype(detail::invoke(std::declval<F>(), *std::declval<Opt>())),
-		     detail::enable_if_t<!std::is_void<Ret>::value>* = nullptr>
+		template <class Opt, class F, class Ret = decltype(detail::invoke(eastl::declval<F>(), *eastl::declval<Opt>())),
+		     detail::enable_if_t<!eastl::is_void<Ret>::value>* = nullptr>
 
 		constexpr auto optional_map_impl(Opt&& opt, F&& f) -> optional<Ret> {
-			return opt.has_value() ? detail::invoke(std::forward<F>(f), *std::forward<Opt>(opt)) : optional<Ret>(nullopt);
+			return opt.has_value() ? detail::invoke(eastl::forward<F>(f), *eastl::forward<Opt>(opt)) : optional<Ret>(nullopt);
 		}
 
-		template <class Opt, class F, class Ret = decltype(detail::invoke(std::declval<F>(), *std::declval<Opt>())),
-		     detail::enable_if_t<std::is_void<Ret>::value>* = nullptr>
+		template <class Opt, class F, class Ret = decltype(detail::invoke(eastl::declval<F>(), *eastl::declval<Opt>())),
+		     detail::enable_if_t<eastl::is_void<Ret>::value>* = nullptr>
 
 		auto optional_map_impl(Opt&& opt, F&& f) -> optional<monostate> {
 			if (opt.has_value()) {
-				detail::invoke(std::forward<F>(f), *std::forward<Opt>(opt));
+				detail::invoke(eastl::forward<F>(f), *eastl::forward<Opt>(opt));
 				return monostate {};
 			}
 
@@ -1706,11 +1706,11 @@ namespace sol {
 #if defined(SOL_TL_OPTIONAL_CXX14) && !defined(SOL_TL_OPTIONAL_GCC49) && !defined(SOL_TL_OPTIONAL_GCC54) && !defined(SOL_TL_OPTIONAL_GCC55)
 		/// \group and_then
 		/// Carries out some operation which returns an optional on the stored
-		/// object if there is one. \requires `std::invoke(std::forward<F>(f),
-		/// value())` returns a `std::optional<U>` for some `U`. \returns Let `U` be
-		/// the result of `std::invoke(std::forward<F>(f), value())`. Returns a
-		/// `std::optional<U>`. The return value is empty if `*this` is empty,
-		/// otherwise the return value of `std::invoke(std::forward<F>(f), value())`
+		/// object if there is one. \requires `eastl::invoke(eastl::forward<F>(f),
+		/// value())` returns a `eastl::optional<U>` for some `U`. \returns Let `U` be
+		/// the result of `eastl::invoke(eastl::forward<F>(f), value())`. Returns a
+		/// `eastl::optional<U>`. The return value is empty if `*this` is empty,
+		/// otherwise the return value of `eastl::invoke(eastl::forward<F>(f), value())`
 		/// is returned.
 		/// \group and_then
 		/// \synopsis template <class F> \n constexpr auto and_then(F &&f) &;
@@ -1719,7 +1719,7 @@ namespace sol {
 			using result = detail::invoke_result_t<F, T&>;
 			static_assert(detail::is_optional<result>::value, "F must return an optional");
 
-			return has_value() ? detail::invoke(std::forward<F>(f), **this) : result(nullopt);
+			return has_value() ? detail::invoke(eastl::forward<F>(f), **this) : result(nullopt);
 		}
 
 		/// \group and_then
@@ -1729,7 +1729,7 @@ namespace sol {
 			using result = detail::invoke_result_t<F, T&>;
 			static_assert(detail::is_optional<result>::value, "F must return an optional");
 
-			return has_value() ? detail::invoke(std::forward<F>(f), **this) : result(nullopt);
+			return has_value() ? detail::invoke(eastl::forward<F>(f), **this) : result(nullopt);
 		}
 
 		/// \group and_then
@@ -1739,7 +1739,7 @@ namespace sol {
 			using result = detail::invoke_result_t<F, const T&>;
 			static_assert(detail::is_optional<result>::value, "F must return an optional");
 
-			return has_value() ? detail::invoke(std::forward<F>(f), **this) : result(nullopt);
+			return has_value() ? detail::invoke(eastl::forward<F>(f), **this) : result(nullopt);
 		}
 
 #ifndef SOL_TL_OPTIONAL_NO_CONSTRR
@@ -1750,17 +1750,17 @@ namespace sol {
 			using result = detail::invoke_result_t<F, const T&>;
 			static_assert(detail::is_optional<result>::value, "F must return an optional");
 
-			return has_value() ? detail::invoke(std::forward<F>(f), **this) : result(nullopt);
+			return has_value() ? detail::invoke(eastl::forward<F>(f), **this) : result(nullopt);
 		}
 #endif
 #else
 		/// \group and_then
 		/// Carries out some operation which returns an optional on the stored
-		/// object if there is one. \requires `std::invoke(std::forward<F>(f),
-		/// value())` returns a `std::optional<U>` for some `U`. \returns Let `U` be
-		/// the result of `std::invoke(std::forward<F>(f), value())`. Returns a
-		/// `std::optional<U>`. The return value is empty if `*this` is empty,
-		/// otherwise the return value of `std::invoke(std::forward<F>(f), value())`
+		/// object if there is one. \requires `eastl::invoke(eastl::forward<F>(f),
+		/// value())` returns a `eastl::optional<U>` for some `U`. \returns Let `U` be
+		/// the result of `eastl::invoke(eastl::forward<F>(f), value())`. Returns a
+		/// `eastl::optional<U>`. The return value is empty if `*this` is empty,
+		/// otherwise the return value of `eastl::invoke(eastl::forward<F>(f), value())`
 		/// is returned.
 		/// \group and_then
 		/// \synopsis template <class F> \n constexpr auto and_then(F &&f) &;
@@ -1769,7 +1769,7 @@ namespace sol {
 			using result = detail::invoke_result_t<F, T&>;
 			static_assert(detail::is_optional<result>::value, "F must return an optional");
 
-			return has_value() ? detail::invoke(std::forward<F>(f), **this) : result(nullopt);
+			return has_value() ? detail::invoke(eastl::forward<F>(f), **this) : result(nullopt);
 		}
 
 		/// \group and_then
@@ -1779,7 +1779,7 @@ namespace sol {
 			using result = detail::invoke_result_t<F, T&>;
 			static_assert(detail::is_optional<result>::value, "F must return an optional");
 
-			return has_value() ? detail::invoke(std::forward<F>(f), **this) : result(nullopt);
+			return has_value() ? detail::invoke(eastl::forward<F>(f), **this) : result(nullopt);
 		}
 
 		/// \group and_then
@@ -1789,7 +1789,7 @@ namespace sol {
 			using result = detail::invoke_result_t<F, const T&>;
 			static_assert(detail::is_optional<result>::value, "F must return an optional");
 
-			return has_value() ? detail::invoke(std::forward<F>(f), **this) : result(nullopt);
+			return has_value() ? detail::invoke(eastl::forward<F>(f), **this) : result(nullopt);
 		}
 
 #ifndef SOL_TL_OPTIONAL_NO_CONSTRR
@@ -1800,90 +1800,90 @@ namespace sol {
 			using result = detail::invoke_result_t<F, const T&>;
 			static_assert(detail::is_optional<result>::value, "F must return an optional");
 
-			return has_value() ? detail::invoke(std::forward<F>(f), **this) : result(nullopt);
+			return has_value() ? detail::invoke(eastl::forward<F>(f), **this) : result(nullopt);
 		}
 #endif
 #endif
 
 #if defined(SOL_TL_OPTIONAL_CXX14) && !defined(SOL_TL_OPTIONAL_GCC49) && !defined(SOL_TL_OPTIONAL_GCC54) && !defined(SOL_TL_OPTIONAL_GCC55)
 		/// \brief Carries out some operation on the stored object if there is one.
-		/// \returns Let `U` be the result of `std::invoke(std::forward<F>(f),
-		/// value())`. Returns a `std::optional<U>`. The return value is empty if
+		/// \returns Let `U` be the result of `eastl::invoke(eastl::forward<F>(f),
+		/// value())`. Returns a `eastl::optional<U>`. The return value is empty if
 		/// `*this` is empty, otherwise an `optional<U>` is constructed from the
-		/// return value of `std::invoke(std::forward<F>(f), value())` and is
+		/// return value of `eastl::invoke(eastl::forward<F>(f), value())` and is
 		/// returned.
 		///
 		/// \group map
 		/// \synopsis template <class F> constexpr auto map(F &&f) &;
 		template <class F>
 		SOL_TL_OPTIONAL_11_CONSTEXPR auto map(F&& f) & {
-			return detail::optional_map_impl(*this, std::forward<F>(f));
+			return detail::optional_map_impl(*this, eastl::forward<F>(f));
 		}
 
 		/// \group map
 		/// \synopsis template <class F> constexpr auto map(F &&f) &&;
 		template <class F>
 		SOL_TL_OPTIONAL_11_CONSTEXPR auto map(F&& f) && {
-			return detail::optional_map_impl(std::move(*this), std::forward<F>(f));
+			return detail::optional_map_impl(eastl::move(*this), eastl::forward<F>(f));
 		}
 
 		/// \group map
 		/// \synopsis template <class F> constexpr auto map(F &&f) const&;
 		template <class F>
 		constexpr auto map(F&& f) const& {
-			return detail::optional_map_impl(*this, std::forward<F>(f));
+			return detail::optional_map_impl(*this, eastl::forward<F>(f));
 		}
 
 		/// \group map
 		/// \synopsis template <class F> constexpr auto map(F &&f) const&&;
 		template <class F>
 		constexpr auto map(F&& f) const&& {
-			return detail::optional_map_impl(std::move(*this), std::forward<F>(f));
+			return detail::optional_map_impl(eastl::move(*this), eastl::forward<F>(f));
 		}
 #else
 		/// \brief Carries out some operation on the stored object if there is one.
-		/// \returns Let `U` be the result of `std::invoke(std::forward<F>(f),
-		/// value())`. Returns a `std::optional<U>`. The return value is empty if
+		/// \returns Let `U` be the result of `eastl::invoke(eastl::forward<F>(f),
+		/// value())`. Returns a `eastl::optional<U>`. The return value is empty if
 		/// `*this` is empty, otherwise an `optional<U>` is constructed from the
-		/// return value of `std::invoke(std::forward<F>(f), value())` and is
+		/// return value of `eastl::invoke(eastl::forward<F>(f), value())` and is
 		/// returned.
 		///
 		/// \group map
 		/// \synopsis template <class F> auto map(F &&f) &;
 		template <class F>
-		SOL_TL_OPTIONAL_11_CONSTEXPR decltype(detail::optional_map_impl(std::declval<optional&>(), std::declval<F&&>())) map(F&& f) & {
-			return detail::optional_map_impl(*this, std::forward<F>(f));
+		SOL_TL_OPTIONAL_11_CONSTEXPR decltype(detail::optional_map_impl(eastl::declval<optional&>(), eastl::declval<F&&>())) map(F&& f) & {
+			return detail::optional_map_impl(*this, eastl::forward<F>(f));
 		}
 
 		/// \group map
 		/// \synopsis template <class F> auto map(F &&f) &&;
 		template <class F>
-		SOL_TL_OPTIONAL_11_CONSTEXPR decltype(detail::optional_map_impl(std::declval<optional&&>(), std::declval<F&&>())) map(F&& f) && {
-			return detail::optional_map_impl(std::move(*this), std::forward<F>(f));
+		SOL_TL_OPTIONAL_11_CONSTEXPR decltype(detail::optional_map_impl(eastl::declval<optional&&>(), eastl::declval<F&&>())) map(F&& f) && {
+			return detail::optional_map_impl(eastl::move(*this), eastl::forward<F>(f));
 		}
 
 		/// \group map
 		/// \synopsis template <class F> auto map(F &&f) const&;
 		template <class F>
-		constexpr decltype(detail::optional_map_impl(std::declval<const optional&>(), std::declval<F&&>())) map(F&& f) const& {
-			return detail::optional_map_impl(*this, std::forward<F>(f));
+		constexpr decltype(detail::optional_map_impl(eastl::declval<const optional&>(), eastl::declval<F&&>())) map(F&& f) const& {
+			return detail::optional_map_impl(*this, eastl::forward<F>(f));
 		}
 
 #ifndef SOL_TL_OPTIONAL_NO_CONSTRR
 		/// \group map
 		/// \synopsis template <class F> auto map(F &&f) const&&;
 		template <class F>
-		constexpr decltype(detail::optional_map_impl(std::declval<const optional&&>(), std::declval<F&&>())) map(F&& f) const&& {
-			return detail::optional_map_impl(std::move(*this), std::forward<F>(f));
+		constexpr decltype(detail::optional_map_impl(eastl::declval<const optional&&>(), eastl::declval<F&&>())) map(F&& f) const&& {
+			return detail::optional_map_impl(eastl::move(*this), eastl::forward<F>(f));
 		}
 #endif
 #endif
 
 		/// \brief Calls `f` if the optional is empty
-		/// \requires `std::invoke_result_t<F>` must be void or convertible to
+		/// \requires `eastl::invoke_result_t<F>` must be void or convertible to
 		/// `optional<T>`. \effects If `*this` has a value, returns `*this`.
-		/// Otherwise, if `f` returns `void`, calls `std::forward<F>(f)` and returns
-		/// `std::nullopt`. Otherwise, returns `std::forward<F>(f)()`.
+		/// Otherwise, if `f` returns `void`, calls `eastl::forward<F>(f)` and returns
+		/// `eastl::nullopt`. Otherwise, returns `eastl::forward<F>(f)()`.
 		///
 		/// \group or_else
 		/// \synopsis template <class F> optional<T> or_else (F &&f) &;
@@ -1892,14 +1892,14 @@ namespace sol {
 			if (has_value())
 				return *this;
 
-			std::forward<F>(f)();
+			eastl::forward<F>(f)();
 			return nullopt;
 		}
 
 		/// \exclude
 		template <class F, detail::disable_if_ret_void<F>* = nullptr>
 		optional<T> SOL_TL_OPTIONAL_11_CONSTEXPR or_else(F&& f) & {
-			return has_value() ? *this : std::forward<F>(f)();
+			return has_value() ? *this : eastl::forward<F>(f)();
 		}
 
 		/// \group or_else
@@ -1907,16 +1907,16 @@ namespace sol {
 		template <class F, detail::enable_if_ret_void<F>* = nullptr>
 		optional<T> or_else(F&& f) && {
 			if (has_value())
-				return std::move(*this);
+				return eastl::move(*this);
 
-			std::forward<F>(f)();
+			eastl::forward<F>(f)();
 			return nullopt;
 		}
 
 		/// \exclude
 		template <class F, detail::disable_if_ret_void<F>* = nullptr>
 		optional<T> SOL_TL_OPTIONAL_11_CONSTEXPR or_else(F&& f) && {
-			return has_value() ? std::move(*this) : std::forward<F>(f)();
+			return has_value() ? eastl::move(*this) : eastl::forward<F>(f)();
 		}
 
 		/// \group or_else
@@ -1926,14 +1926,14 @@ namespace sol {
 			if (has_value())
 				return *this;
 
-			std::forward<F>(f)();
+			eastl::forward<F>(f)();
 			return nullopt;
 		}
 
 		/// \exclude
 		template <class F, detail::disable_if_ret_void<F>* = nullptr>
 		optional<T> SOL_TL_OPTIONAL_11_CONSTEXPR or_else(F&& f) const& {
-			return has_value() ? *this : std::forward<F>(f)();
+			return has_value() ? *this : eastl::forward<F>(f)();
 		}
 
 #ifndef SOL_TL_OPTIONAL_NO_CONSTRR
@@ -1941,16 +1941,16 @@ namespace sol {
 		template <class F, detail::enable_if_ret_void<F>* = nullptr>
 		optional<T> or_else(F&& f) const&& {
 			if (has_value())
-				return std::move(*this);
+				return eastl::move(*this);
 
-			std::forward<F>(f)();
+			eastl::forward<F>(f)();
 			return nullopt;
 		}
 
 		/// \exclude
 		template <class F, detail::disable_if_ret_void<F>* = nullptr>
 		optional<T> or_else(F&& f) const&& {
-			return has_value() ? std::move(*this) : std::forward<F>(f)();
+			return has_value() ? eastl::move(*this) : eastl::forward<F>(f)();
 		}
 #endif
 
@@ -1963,26 +1963,26 @@ namespace sol {
 		/// \group map_or
 		template <class F, class U>
 		U map_or(F&& f, U&& u) & {
-			return has_value() ? detail::invoke(std::forward<F>(f), **this) : std::forward<U>(u);
+			return has_value() ? detail::invoke(eastl::forward<F>(f), **this) : eastl::forward<U>(u);
 		}
 
 		/// \group map_or
 		template <class F, class U>
 		U map_or(F&& f, U&& u) && {
-			return has_value() ? detail::invoke(std::forward<F>(f), std::move(**this)) : std::forward<U>(u);
+			return has_value() ? detail::invoke(eastl::forward<F>(f), eastl::move(**this)) : eastl::forward<U>(u);
 		}
 
 		/// \group map_or
 		template <class F, class U>
 		U map_or(F&& f, U&& u) const& {
-			return has_value() ? detail::invoke(std::forward<F>(f), **this) : std::forward<U>(u);
+			return has_value() ? detail::invoke(eastl::forward<F>(f), **this) : eastl::forward<U>(u);
 		}
 
 #ifndef SOL_TL_OPTIONAL_NO_CONSTRR
 		/// \group map_or
 		template <class F, class U>
 		U map_or(F&& f, U&& u) const&& {
-			return has_value() ? detail::invoke(std::forward<F>(f), std::move(**this)) : std::forward<U>(u);
+			return has_value() ? detail::invoke(eastl::forward<F>(f), eastl::move(**this)) : eastl::forward<U>(u);
 		}
 #endif
 
@@ -1991,13 +1991,13 @@ namespace sol {
 		///
 		/// \details If there is a value stored, then `f` is
 		/// called with `**this` and the value is returned. Otherwise
-		/// `std::forward<U>(u)()` is returned.
+		/// `eastl::forward<U>(u)()` is returned.
 		///
 		/// \group map_or_else
 		/// \synopsis template <class F, class U> \n auto map_or_else(F &&f, U &&u) &;
 		template <class F, class U>
 		detail::invoke_result_t<U> map_or_else(F&& f, U&& u) & {
-			return has_value() ? detail::invoke(std::forward<F>(f), **this) : std::forward<U>(u)();
+			return has_value() ? detail::invoke(eastl::forward<F>(f), **this) : eastl::forward<U>(u)();
 		}
 
 		/// \group map_or_else
@@ -2005,7 +2005,7 @@ namespace sol {
 		/// &&;
 		template <class F, class U>
 		detail::invoke_result_t<U> map_or_else(F&& f, U&& u) && {
-			return has_value() ? detail::invoke(std::forward<F>(f), std::move(**this)) : std::forward<U>(u)();
+			return has_value() ? detail::invoke(eastl::forward<F>(f), eastl::move(**this)) : eastl::forward<U>(u)();
 		}
 
 		/// \group map_or_else
@@ -2013,7 +2013,7 @@ namespace sol {
 		/// const &;
 		template <class F, class U>
 		detail::invoke_result_t<U> map_or_else(F&& f, U&& u) const& {
-			return has_value() ? detail::invoke(std::forward<F>(f), **this) : std::forward<U>(u)();
+			return has_value() ? detail::invoke(eastl::forward<F>(f), **this) : eastl::forward<U>(u)();
 		}
 
 #ifndef SOL_TL_OPTIONAL_NO_CONSTRR
@@ -2022,13 +2022,13 @@ namespace sol {
 		/// const &&;
 		template <class F, class U>
 		detail::invoke_result_t<U> map_or_else(F&& f, U&& u) const&& {
-			return has_value() ? detail::invoke(std::forward<F>(f), std::move(**this)) : std::forward<U>(u)();
+			return has_value() ? detail::invoke(eastl::forward<F>(f), eastl::move(**this)) : eastl::forward<U>(u)();
 		}
 #endif
 
 		/// \returns `u` if `*this` has a value, otherwise an empty optional.
 		template <class U>
-		constexpr optional<typename std::decay<U>::type> conjunction(U&& u) const {
+		constexpr optional<typename eastl::decay<U>::type> conjunction(U&& u) const {
 			using result = optional<detail::decay_t<U>>;
 			return has_value() ? result { u } : result { nullopt };
 		}
@@ -2046,35 +2046,35 @@ namespace sol {
 
 		/// \group disjunction
 		SOL_TL_OPTIONAL_11_CONSTEXPR optional disjunction(const optional& rhs) && {
-			return has_value() ? std::move(*this) : rhs;
+			return has_value() ? eastl::move(*this) : rhs;
 		}
 
 #ifndef SOL_TL_OPTIONAL_NO_CONSTRR
 		/// \group disjunction
 		constexpr optional disjunction(const optional& rhs) const&& {
-			return has_value() ? std::move(*this) : rhs;
+			return has_value() ? eastl::move(*this) : rhs;
 		}
 #endif
 
 		/// \group disjunction
 		SOL_TL_OPTIONAL_11_CONSTEXPR optional disjunction(optional&& rhs) & {
-			return has_value() ? *this : std::move(rhs);
+			return has_value() ? *this : eastl::move(rhs);
 		}
 
 		/// \group disjunction
 		constexpr optional disjunction(optional&& rhs) const& {
-			return has_value() ? *this : std::move(rhs);
+			return has_value() ? *this : eastl::move(rhs);
 		}
 
 		/// \group disjunction
 		SOL_TL_OPTIONAL_11_CONSTEXPR optional disjunction(optional&& rhs) && {
-			return has_value() ? std::move(*this) : std::move(rhs);
+			return has_value() ? eastl::move(*this) : eastl::move(rhs);
 		}
 
 #ifndef SOL_TL_OPTIONAL_NO_CONSTRR
 		/// \group disjunction
 		constexpr optional disjunction(optional&& rhs) const&& {
-			return has_value() ? std::move(*this) : std::move(rhs);
+			return has_value() ? eastl::move(*this) : eastl::move(rhs);
 		}
 #endif
 
@@ -2095,7 +2095,7 @@ namespace sol {
 
 		/// \group take
 		optional take() && {
-			optional ret = std::move(*this);
+			optional ret = eastl::move(*this);
 			reset();
 			return ret;
 		}
@@ -2103,7 +2103,7 @@ namespace sol {
 #ifndef SOL_TL_OPTIONAL_NO_CONSTRR
 		/// \group take
 		optional take() const&& {
-			optional ret = std::move(*this);
+			optional ret = eastl::move(*this);
 			reset();
 			return ret;
 		}
@@ -2135,8 +2135,8 @@ namespace sol {
 		/// Constructs the stored value with `u`.
 		/// \synopsis template <class U=T> constexpr optional(U &&u);
 		template <class U = T, detail::enable_if_t<!detail::is_optional<detail::decay_t<U>>::value>* = nullptr>
-		constexpr optional(U&& u) : m_value(std::addressof(u)) {
-			static_assert(std::is_lvalue_reference<U>::value, "U must be an lvalue");
+		constexpr optional(U&& u) : m_value(eastl::addressof(u)) {
+			static_assert(eastl::is_lvalue_reference<U>::value, "U must be an lvalue");
 		}
 
 		/// \exclude
@@ -2167,8 +2167,8 @@ namespace sol {
 		/// \synopsis optional &operator=(U &&u);
 		template <class U = T, detail::enable_if_t<!detail::is_optional<detail::decay_t<U>>::value>* = nullptr>
 		optional& operator=(U&& u) {
-			static_assert(std::is_lvalue_reference<U>::value, "U must be an lvalue");
-			m_value = std::addressof(u);
+			static_assert(eastl::is_lvalue_reference<U>::value, "U must be an lvalue");
+			m_value = eastl::addressof(u);
 			return *this;
 		}
 
@@ -2178,7 +2178,7 @@ namespace sol {
 		/// resets the stored value in `*this`.
 		template <class U>
 		optional& operator=(const optional<U>& rhs) {
-			m_value = std::addressof(rhs.value());
+			m_value = eastl::addressof(rhs.value());
 			return *this;
 		}
 
@@ -2188,10 +2188,10 @@ namespace sol {
 		/// \group emplace
 		template <class... Args>
 		T& emplace(Args&&... args) noexcept {
-			static_assert(std::is_constructible<T, Args&&...>::value, "T must be constructible with Args");
+			static_assert(eastl::is_constructible<T, Args&&...>::value, "T must be constructible with Args");
 
 			*this = nullopt;
-			this->construct(std::forward<Args>(args)...);
+			this->construct(eastl::forward<Args>(args)...);
 		}
 
 		/// Swaps this optional with the other.
@@ -2201,7 +2201,7 @@ namespace sol {
 		/// If one has a value, it is moved to the other and the movee is left
 		/// valueless.
 		void swap(optional& rhs) noexcept {
-			std::swap(m_value, rhs.m_value);
+			eastl::swap(m_value, rhs.m_value);
 		}
 
 		/// \returns a pointer to the stored value
@@ -2272,8 +2272,8 @@ namespace sol {
 		/// \group value_or
 		template <class U>
 		constexpr T& value_or(U&& u) const {
-			static_assert(std::is_convertible<U&&, T&>::value, "T must be convertible from U");
-			return has_value() ? const_cast<T&>(**this) : static_cast<T&>(std::forward<U>(u));
+			static_assert(eastl::is_convertible<U&&, T&>::value, "T must be convertible from U");
+			return has_value() ? const_cast<T&>(**this) : static_cast<T&>(eastl::forward<U>(u));
 		}
 
 		/// Destroys the stored value if one exists, making the optional empty
@@ -2291,11 +2291,11 @@ namespace std {
 	// TODO SFINAE
 	template <class T>
 	struct hash<::sol::optional<T>> {
-		::std::size_t operator()(const ::sol::optional<T>& o) const {
+		::eastl::size_t operator()(const ::sol::optional<T>& o) const {
 			if (!o.has_value())
 				return 0;
 
-			return ::std::hash<::sol::detail::remove_const_t<T>>()(*o);
+			return ::eastl::hash<::sol::detail::remove_const_t<T>>()(*o);
 		}
 	};
 } // namespace std

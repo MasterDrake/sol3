@@ -27,9 +27,9 @@
 #include <sol/usertype_core.hpp>
 #include <sol/make_reference.hpp>
 
-#include <bitset>
-#include <unordered_map>
-#include <memory>
+#include <EASTL/bitset.h>
+#include <EASTL/unordered_map.h>
+#include <EASTL/memory.h>
 
 namespace sol { namespace u_detail {
 
@@ -72,20 +72,20 @@ namespace sol { namespace u_detail {
 			     || meta::is_c_str_of_v<uF, char8_t>
 #endif
 			     || meta::is_c_str_of_v<uF, char16_t> || meta::is_c_str_of_v<uF, char32_t> || meta::is_c_str_of_v<uF, wchar_t>,
-			std::add_pointer_t<std::add_const_t<std::remove_all_extents_t<Fq>>>, std::decay_t<Fq>>;
+			eastl::add_pointer_t<eastl::add_const_t<eastl::remove_all_extents_t<Fq>>>, eastl::decay_t<Fq>>;
 		F data_;
 
 		template <typename... Args>
-		binding(Args&&... args) : data_(std::forward<Args>(args)...) {
+		binding(Args&&... args) : data_(eastl::forward<Args>(args)...) {
 		}
 
 		virtual void* data() override {
-			return static_cast<void*>(std::addressof(data_));
+			return static_cast<void*>(eastl::addressof(data_));
 		}
 
 		template <bool is_index = true, bool is_variable = false>
 		static inline int call_with_(lua_State* L_, void* target) {
-			constexpr int boost = !detail::is_non_factory_constructor<F>::value && std::is_same<K, call_construction>::value ? 1 : 0;
+			constexpr int boost = !detail::is_non_factory_constructor<F>::value && eastl::is_same<K, call_construction>::value ? 1 : 0;
 			auto& f = *static_cast<F*>(target);
 			return call_detail::call_wrapped<T, is_index, is_variable, boost>(L_, f);
 		}
@@ -110,8 +110,8 @@ namespace sol { namespace u_detail {
 		template <bool is_index = true, bool is_variable = false>
 		static inline int index_call_with_(lua_State* L_, void* target) {
 			if constexpr (!is_variable) {
-				if constexpr (is_lua_c_function_v<std::decay_t<F>>) {
-					auto& f = *static_cast<std::decay_t<F>*>(target);
+				if constexpr (is_lua_c_function_v<eastl::decay_t<F>>) {
+					auto& f = *static_cast<eastl::decay_t<F>*>(target);
 					return stack::push(L_, f);
 				}
 				else {
@@ -125,7 +125,7 @@ namespace sol { namespace u_detail {
 				}
 			}
 			else {
-				constexpr int boost = !detail::is_non_factory_constructor<F>::value && std::is_same<K, call_construction>::value ? 1 : 0;
+				constexpr int boost = !detail::is_non_factory_constructor<F>::value && eastl::is_same<K, call_construction>::value ? 1 : 0;
 				auto& f = *static_cast<F*>(target);
 				return call_detail::call_wrapped<T, is_index, is_variable, boost>(L_, f);
 			}
@@ -182,7 +182,7 @@ namespace sol { namespace u_detail {
 		bool poison_indexing = false;
 		bool is_unqualified_lua_CFunction = false;
 		bool is_unqualified_lua_reference = false;
-		std::string* p_key = nullptr;
+		eastl::string* p_key = nullptr;
 		reference* p_binding_ref = nullptr;
 		lua_CFunction call_func = nullptr;
 		index_call_storage* p_ics = nullptr;
@@ -192,7 +192,7 @@ namespace sol { namespace u_detail {
 		change_indexing_mem_func change_indexing;
 
 		void operator()(lua_State* L_, submetatable_type smt_, stateless_reference& fast_index_table_) {
-			std::string& key = *p_key;
+			eastl::string& key = *p_key;
 			usertype_storage_base& usb = *p_usb;
 			index_call_storage& ics = *p_ics;
 
@@ -212,7 +212,7 @@ namespace sol { namespace u_detail {
 				&& (smt_ == submetatable_type::reference || smt_ == submetatable_type::const_reference || smt_ == submetatable_type::named
 				     || smt_ == submetatable_type::unique)) {
 				// gc does not apply to us here
-				// for reference types (raw T*, std::ref)
+				// for reference types (raw T*, eastl::ref)
 				// for the named metatable itself,
 				// or for unique_usertypes, which do their own custom destroyion
 				t.pop(L_);
@@ -278,7 +278,7 @@ namespace sol { namespace u_detail {
 		binding_data_equals(void* b) : binding_data(b) {
 		}
 
-		bool operator()(const std::unique_ptr<binding_base>& ptr) const {
+		bool operator()(const eastl::unique_ptr<binding_base>& ptr) const {
 			return binding_data == ptr->data();
 		}
 	};
@@ -286,10 +286,10 @@ namespace sol { namespace u_detail {
 	struct usertype_storage_base {
 	public:
 		lua_State* m_L;
-		std::vector<std::unique_ptr<binding_base>> storage;
-		std::vector<std::unique_ptr<char[]>> string_keys_storage;
-		std::unordered_map<string_view, index_call_storage> string_keys;
-		std::unordered_map<stateless_reference, stateless_reference, stateless_reference_hash, stateless_reference_equals> auxiliary_keys;
+		eastl::vector<eastl::unique_ptr<binding_base>> storage;
+		eastl::vector<eastl::unique_ptr<char[]>> string_keys_storage;
+		eastl::unordered_map<string_view, index_call_storage> string_keys;
+		eastl::unordered_map<stateless_reference, stateless_reference, stateless_reference_hash, stateless_reference_equals> auxiliary_keys;
 		stateless_reference value_index_table;
 		stateless_reference reference_index_table;
 		stateless_reference unique_index_table;
@@ -303,7 +303,7 @@ namespace sol { namespace u_detail {
 		new_index_call_storage static_base_index;
 		bool is_using_index;
 		bool is_using_new_index;
-		std::bitset<64> properties;
+		eastl::bitset<64> properties;
 
 		usertype_storage_base(lua_State* L_)
 		: m_L(L_)
@@ -367,10 +367,10 @@ namespace sol { namespace u_detail {
 
 		void add_entry(string_view sv, index_call_storage ics) {
 			string_keys_storage.emplace_back(new char[sv.size()]);
-			std::unique_ptr<char[]>& sv_storage = string_keys_storage.back();
+			eastl::unique_ptr<char[]>& sv_storage = string_keys_storage.back();
 			std::memcpy(sv_storage.get(), sv.data(), sv.size());
 			string_view stored_sv(sv_storage.get(), sv.size());
-			string_keys.insert_or_assign(std::move(stored_sv), std::move(ics));
+			string_keys.insert_or_assign(eastl::move(stored_sv), eastl::move(ics));
 		}
 
 		template <typename T, typename... Bases>
@@ -612,9 +612,9 @@ namespace sol { namespace u_detail {
 				// move the iterator up by 1
 				++auxiliary_first;
 				// extract the node and destroy the key
-				auto extracted_node = auxiliary_keys.extract(auxiliary_target);
-				extracted_node.key().reset(m_L);
-				extracted_node.mapped().reset(m_L);
+				//BUGBUGBUG: auto extracted_node = auxiliary_keys.extract(auxiliary_target);
+				//BUGBUGBUG: extracted_node.key().reset(m_L);
+				//BUGBUGBUG: extracted_node.mapped().reset(m_L);
 				// continue if auxiliary_first hasn't been exhausted
 			}
 		}
@@ -669,15 +669,15 @@ namespace sol { namespace u_detail {
 		using KeyU = meta::unwrap_unqualified_t<Key>;
 		using Binding = binding<KeyU, ValueU, T>;
 		using is_var_bind = is_variable_binding<ValueU>;
-		if constexpr (std::is_same_v<KeyU, call_construction>) {
+		if constexpr (eastl::is_same_v<KeyU, call_construction>) {
 			(void)key;
-			std::unique_ptr<Binding> p_binding = std::make_unique<Binding>(std::forward<Value>(value));
+			eastl::unique_ptr<Binding> p_binding = eastl::make_unique<Binding>(eastl::forward<Value>(value));
 			Binding& b = *p_binding;
-			this->storage.push_back(std::move(p_binding));
+			this->storage.push_back(eastl::move(p_binding));
 
 			this->named_index_table.push(L);
 			absolute_index metametatable_index(L, -1);
-			std::string_view call_metamethod_name = to_string(meta_function::call);
+			eastl::string_view call_metamethod_name = to_string(meta_function::call);
 			lua_pushlstring(L, call_metamethod_name.data(), call_metamethod_name.size());
 			stack::push(L, nullptr);
 			stack::push(L, b.data());
@@ -686,27 +686,27 @@ namespace sol { namespace u_detail {
 			lua_rawset(L, metametatable_index);
 			this->named_index_table.pop(L);
 		}
-		else if constexpr (std::is_same_v<KeyU, base_classes_tag>) {
+		else if constexpr (eastl::is_same_v<KeyU, base_classes_tag>) {
 			(void)key;
-			this->update_bases<T>(L, std::forward<Value>(value));
+			this->update_bases<T>(L, eastl::forward<Value>(value));
 		}
-		else if constexpr ((meta::is_string_like_or_constructible<KeyU>::value || std::is_same_v<KeyU, meta_function>)) {
-			std::string s = u_detail::make_string(std::forward<Key>(key));
+		else if constexpr ((meta::is_string_like_or_constructible<KeyU>::value || eastl::is_same_v<KeyU, meta_function>)) {
+			eastl::string s = u_detail::make_string(eastl::forward<Key>(key));
 			auto storage_it = this->storage.end();
 			auto string_it = this->string_keys.find(s);
 			if (string_it != this->string_keys.cend()) {
 				const auto& binding_data = string_it->second.binding_data;
-				storage_it = std::find_if(this->storage.begin(), this->storage.end(), binding_data_equals(binding_data));
+				storage_it = eastl::find_if(this->storage.begin(), this->storage.end(), binding_data_equals(binding_data));
 				this->string_keys.erase(string_it);
 			}
 
-			std::unique_ptr<Binding> p_binding = std::make_unique<Binding>(std::forward<Value>(value));
+			eastl::unique_ptr<Binding> p_binding = eastl::make_unique<Binding>(eastl::forward<Value>(value));
 			Binding& b = *p_binding;
 			if (storage_it != this->storage.cend()) {
-				*storage_it = std::move(p_binding);
+				*storage_it = eastl::move(p_binding);
 			}
 			else {
-				this->storage.push_back(std::move(p_binding));
+				this->storage.push_back(eastl::move(p_binding));
 			}
 
 			bool is_index = (s == to_string(meta_function::index));
@@ -769,7 +769,7 @@ namespace sol { namespace u_detail {
 				this->static_base_index.new_binding_data = ics.binding_data;
 			}
 			this->for_each_table(L, for_each_fx);
-			this->add_entry(s, std::move(ics));
+			this->add_entry(s, eastl::move(ics));
 		}
 		else {
 			// the reference-based implementation might compare poorly and hash
@@ -777,23 +777,23 @@ namespace sol { namespace u_detail {
 			if constexpr (is_lua_reference_v<KeyU> && is_lua_reference_v<ValueU>) {
 				if (key.get_type() == type::string) {
 					stack::push(L, key);
-					std::string string_key = stack::pop<std::string>(L);
-					this->set<T>(L, string_key, std::forward<Value>(value));
+					eastl::string string_key = stack::pop<eastl::string>(L);
+					this->set<T>(L, string_key, eastl::forward<Value>(value));
 				}
 				else {
 					lua_reference_func ref_additions_fx { key, value };
 
 					this->for_each_table(L, ref_additions_fx);
-					this->auxiliary_keys.insert_or_assign(std::forward<Key>(key), std::forward<Value>(value));
+					this->auxiliary_keys.insert_or_assign(eastl::forward<Key>(key), eastl::forward<Value>(value));
 				}
 			}
 			else {
-				reference ref_key = make_reference(L, std::forward<Key>(key));
-				reference ref_value = make_reference(L, std::forward<Value>(value));
+				reference ref_key = make_reference(L, eastl::forward<Key>(key));
+				reference ref_value = make_reference(L, eastl::forward<Value>(value));
 				lua_reference_func ref_additions_fx { ref_key, ref_value };
 
 				this->for_each_table(L, ref_additions_fx);
-				this->auxiliary_keys.insert_or_assign(std::move(ref_key), std::move(ref_value));
+				this->auxiliary_keys.insert_or_assign(eastl::move(ref_key), eastl::move(ref_value));
 			}
 		}
 	}
@@ -801,7 +801,7 @@ namespace sol { namespace u_detail {
 	template <typename T>
 	template <typename Key, typename Value>
 	void usertype_storage<T>::set(lua_State* L, Key&& key, Value&& value) {
-		static_cast<usertype_storage_base&>(*this).set<T>(L, std::forward<Key>(key), std::forward<Value>(value));
+		static_cast<usertype_storage_base&>(*this).set<T>(L, eastl::forward<Key>(key), eastl::forward<Value>(value));
 	}
 
 	template <typename T>
@@ -1071,7 +1071,7 @@ namespace sol { namespace u_detail {
 			case submetatable_type::named:
 				break;
 			case submetatable_type::unique:
-				if constexpr (std::is_destructible_v<T>) {
+				if constexpr (eastl::is_destructible_v<T>) {
 					stack::set_field<false, true>(L_, meta_function::garbage_collect, &detail::unique_destroy<T>, t.stack_index());
 				}
 				else {
@@ -1081,7 +1081,7 @@ namespace sol { namespace u_detail {
 			case submetatable_type::value:
 			case submetatable_type::const_value:
 			default:
-				if constexpr (std::is_destructible_v<T>) {
+				if constexpr (eastl::is_destructible_v<T>) {
 					stack::set_field<false, true>(L_, meta_function::garbage_collect, detail::make_destructor<T>(), t.stack_index());
 				}
 				else {
@@ -1102,7 +1102,7 @@ namespace sol { namespace u_detail {
 			auto prop_fx = detail::properties_enrollment_allowed(for_each_backing_metatable_calls, storage.properties, enrollments_);
 			auto insert_fx = [&L_, &t, &storage](meta_function mf, lua_CFunction reg) {
 				stack::set_field<false, true>(L_, mf, reg, t.stack_index());
-				storage.properties[static_cast<std::size_t>(mf)] = true;
+				storage.properties[static_cast<eastl::size_t>(mf)] = true;
 			};
 			detail::insert_default_registrations<T>(insert_fx, prop_fx);
 
@@ -1150,7 +1150,7 @@ namespace sol { namespace u_detail {
 		storage.for_each_table(L_, for_each_backing_metatable);
 
 		// can only use set AFTER we initialize all the metatables
-		if constexpr (std::is_default_constructible_v<T> && has_flag(enrollment_flags, automagic_flags::default_constructor)) {
+		if constexpr (eastl::is_default_constructible_v<T> && has_flag(enrollment_flags, automagic_flags::default_constructor)) {
 			if (enrollments_.default_constructor) {
 				storage.set(L_, meta_function::construct, constructors<T()>());
 			}

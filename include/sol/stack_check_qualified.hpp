@@ -33,7 +33,7 @@ namespace sol { namespace stack {
 		template <typename Handler>
 		static bool check(lua_State* L, int index, Handler&& handler, record& tracking) {
 			using no_cv_X = meta::unqualified_t<X>;
-			if constexpr (!std::is_reference_v<X> && is_unique_usertype_v<no_cv_X>) {
+			if constexpr (!eastl::is_reference_v<X> && is_unique_usertype_v<no_cv_X>) {
 				using element = unique_usertype_element_t<no_cv_X>;
 				if constexpr (is_actual_type_rebindable_for_v<no_cv_X>) {
 					using rebound_actual_type = unique_usertype_rebind_actual_t<no_cv_X>;
@@ -64,23 +64,23 @@ namespace sol { namespace stack {
 					return false;
 				}
 				else {
-					return stack::unqualified_check<X>(L, index, std::forward<Handler>(handler), tracking);
+					return stack::unqualified_check<X>(L, index, eastl::forward<Handler>(handler), tracking);
 				}
 			}
-			else if constexpr (!std::is_reference_v<X> && is_container_v<no_cv_X>) {
+			else if constexpr (!eastl::is_reference_v<X> && is_container_v<no_cv_X>) {
 				if (type_of(L, index) == type::userdata) {
-					return stack::unqualified_check<X>(L, index, std::forward<Handler>(handler), tracking);
+					return stack::unqualified_check<X>(L, index, eastl::forward<Handler>(handler), tracking);
 				}
 				else {
-					return stack::unqualified_check<nested<X>>(L, index, std::forward<Handler>(handler), tracking);
+					return stack::unqualified_check<nested<X>>(L, index, eastl::forward<Handler>(handler), tracking);
 				}
 			}
-			else if constexpr (!std::is_reference_v<X> && meta::is_specialization_of_v<X, nested>) {
+			else if constexpr (!eastl::is_reference_v<X> && meta::is_specialization_of_v<X, nested>) {
 				using NestedX = typename meta::unqualified_t<X>::nested_type;
-				return stack::check<NestedX>(L, index, ::std::forward<Handler>(handler), tracking);
+				return stack::check<NestedX>(L, index, ::eastl::forward<Handler>(handler), tracking);
 			}
 			else {
-				return stack::unqualified_check<X>(L, index, std::forward<Handler>(handler), tracking);
+				return stack::unqualified_check<X>(L, index, eastl::forward<Handler>(handler), tracking);
 			}
 		}
 	};

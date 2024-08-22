@@ -27,27 +27,27 @@
 #include <sol/stack.hpp>
 #include <sol/usertype_container.hpp>
 
-#include <unordered_map>
+#include <EASTL/unordered_map.h>
 
 namespace sol {
 
 	namespace container_detail {
 		template <typename X>
 		struct u_c_launch {
-			using T = std::remove_pointer_t<meta::unqualified_t<X>>;
+			using T = eastl::remove_pointer_t<meta::unqualified_t<X>>;
 			using uc = usertype_container<T>;
 			using default_uc = usertype_container_default<T>;
 
-			static inline int real_index_get_traits(std::true_type, lua_State* L) {
+			static inline int real_index_get_traits(eastl::true_type, lua_State* L) {
 				return uc::index_get(L);
 			}
 
-			static inline int real_index_get_traits(std::false_type, lua_State* L) {
+			static inline int real_index_get_traits(eastl::false_type, lua_State* L) {
 				return default_uc::index_get(L);
 			}
 
 			static inline int real_index_call(lua_State* L) {
-				static const std::unordered_map<string_view, lua_CFunction> calls {
+				static const eastl::unordered_map<string_view, lua_CFunction> calls {
 					{ "at", &real_at_call },
 					{ "get", &real_get_call },
 					{ "set", &real_set_call },
@@ -73,11 +73,11 @@ namespace sol {
 				return real_index_get_traits(container_detail::has_traits_index_get<uc>(), L);
 			}
 
-			static inline int real_at_traits(std::true_type, lua_State* L) {
+			static inline int real_at_traits(eastl::true_type, lua_State* L) {
 				return uc::at(L);
 			}
 
-			static inline int real_at_traits(std::false_type, lua_State* L) {
+			static inline int real_at_traits(eastl::false_type, lua_State* L) {
 				return default_uc::at(L);
 			}
 
@@ -85,11 +85,11 @@ namespace sol {
 				return real_at_traits(container_detail::has_traits_at<uc>(), L);
 			}
 
-			static inline int real_get_traits(std::true_type, lua_State* L) {
+			static inline int real_get_traits(eastl::true_type, lua_State* L) {
 				return uc::get(L);
 			}
 
-			static inline int real_get_traits(std::false_type, lua_State* L) {
+			static inline int real_get_traits(eastl::false_type, lua_State* L) {
 				return default_uc::get(L);
 			}
 
@@ -97,11 +97,11 @@ namespace sol {
 				return real_get_traits(container_detail::has_traits_get<uc>(), L);
 			}
 
-			static inline int real_set_traits(std::true_type, lua_State* L) {
+			static inline int real_set_traits(eastl::true_type, lua_State* L) {
 				return uc::set(L);
 			}
 
-			static inline int real_set_traits(std::false_type, lua_State* L) {
+			static inline int real_set_traits(eastl::false_type, lua_State* L) {
 				return default_uc::set(L);
 			}
 
@@ -109,11 +109,11 @@ namespace sol {
 				return real_set_traits(container_detail::has_traits_set<uc>(), L);
 			}
 
-			static inline int real_index_set_traits(std::true_type, lua_State* L) {
+			static inline int real_index_set_traits(eastl::true_type, lua_State* L) {
 				return uc::index_set(L);
 			}
 
-			static inline int real_index_set_traits(std::false_type, lua_State* L) {
+			static inline int real_index_set_traits(eastl::false_type, lua_State* L) {
 				return default_uc::index_set(L);
 			}
 
@@ -121,11 +121,11 @@ namespace sol {
 				return real_index_set_traits(container_detail::has_traits_index_set<uc>(), L);
 			}
 
-			static inline int real_pairs_traits(std::true_type, lua_State* L) {
+			static inline int real_pairs_traits(eastl::true_type, lua_State* L) {
 				return uc::pairs(L);
 			}
 
-			static inline int real_pairs_traits(std::false_type, lua_State* L) {
+			static inline int real_pairs_traits(eastl::false_type, lua_State* L) {
 				return default_uc::pairs(L);
 			}
 
@@ -133,11 +133,11 @@ namespace sol {
 				return real_pairs_traits(container_detail::has_traits_pairs<uc>(), L);
 			}
 
-			static inline int real_ipairs_traits(std::true_type, lua_State* L) {
+			static inline int real_ipairs_traits(eastl::true_type, lua_State* L) {
 				return uc::ipairs(L);
 			}
 
-			static inline int real_ipairs_traits(std::false_type, lua_State* L) {
+			static inline int real_ipairs_traits(eastl::false_type, lua_State* L) {
 				return default_uc::ipairs(L);
 			}
 
@@ -145,11 +145,11 @@ namespace sol {
 				return real_ipairs_traits(container_detail::has_traits_ipairs<uc>(), L);
 			}
 
-			static inline int real_next_traits(std::true_type, lua_State* L) {
+			static inline int real_next_traits(eastl::true_type, lua_State* L) {
 				return uc::next(L);
 			}
 
-			static inline int real_next_traits(std::false_type, lua_State* L) {
+			static inline int real_next_traits(eastl::false_type, lua_State* L) {
 				return default_uc::next(L);
 			}
 
@@ -157,11 +157,11 @@ namespace sol {
 				return real_next_traits(container_detail::has_traits_next<uc>(), L);
 			}
 
-			static inline int real_size_traits(std::true_type, lua_State* L) {
+			static inline int real_size_traits(eastl::true_type, lua_State* L) {
 				return uc::size(L);
 			}
 
-			static inline int real_size_traits(std::false_type, lua_State* L) {
+			static inline int real_size_traits(eastl::false_type, lua_State* L) {
 				return default_uc::size(L);
 			}
 
@@ -169,11 +169,11 @@ namespace sol {
 				return real_size_traits(container_detail::has_traits_size<uc>(), L);
 			}
 
-			static inline int real_add_traits(std::true_type, lua_State* L) {
+			static inline int real_add_traits(eastl::true_type, lua_State* L) {
 				return uc::add(L);
 			}
 
-			static inline int real_add_traits(std::false_type, lua_State* L) {
+			static inline int real_add_traits(eastl::false_type, lua_State* L) {
 				return default_uc::add(L);
 			}
 
@@ -181,11 +181,11 @@ namespace sol {
 				return real_add_traits(container_detail::has_traits_add<uc>(), L);
 			}
 
-			static inline int real_insert_traits(std::true_type, lua_State* L) {
+			static inline int real_insert_traits(eastl::true_type, lua_State* L) {
 				return uc::insert(L);
 			}
 
-			static inline int real_insert_traits(std::false_type, lua_State* L) {
+			static inline int real_insert_traits(eastl::false_type, lua_State* L) {
 				return default_uc::insert(L);
 			}
 
@@ -193,11 +193,11 @@ namespace sol {
 				return real_insert_traits(container_detail::has_traits_insert<uc>(), L);
 			}
 
-			static inline int real_clear_traits(std::true_type, lua_State* L) {
+			static inline int real_clear_traits(eastl::true_type, lua_State* L) {
 				return uc::clear(L);
 			}
 
-			static inline int real_clear_traits(std::false_type, lua_State* L) {
+			static inline int real_clear_traits(eastl::false_type, lua_State* L) {
 				return default_uc::clear(L);
 			}
 
@@ -205,11 +205,11 @@ namespace sol {
 				return real_clear_traits(container_detail::has_traits_clear<uc>(), L);
 			}
 
-			static inline int real_empty_traits(std::true_type, lua_State* L) {
+			static inline int real_empty_traits(eastl::true_type, lua_State* L) {
 				return uc::empty(L);
 			}
 
-			static inline int real_empty_traits(std::false_type, lua_State* L) {
+			static inline int real_empty_traits(eastl::false_type, lua_State* L) {
 				return default_uc::empty(L);
 			}
 
@@ -217,11 +217,11 @@ namespace sol {
 				return real_empty_traits(container_detail::has_traits_empty<uc>(), L);
 			}
 
-			static inline int real_erase_traits(std::true_type, lua_State* L) {
+			static inline int real_erase_traits(eastl::true_type, lua_State* L) {
 				return uc::erase(L);
 			}
 
-			static inline int real_erase_traits(std::false_type, lua_State* L) {
+			static inline int real_erase_traits(eastl::false_type, lua_State* L) {
 				return default_uc::erase(L);
 			}
 
@@ -229,11 +229,11 @@ namespace sol {
 				return real_erase_traits(container_detail::has_traits_erase<uc>(), L);
 			}
 
-			static inline int real_find_traits(std::true_type, lua_State* L) {
+			static inline int real_find_traits(eastl::true_type, lua_State* L) {
 				return uc::find(L);
 			}
 
-			static inline int real_find_traits(std::false_type, lua_State* L) {
+			static inline int real_find_traits(eastl::false_type, lua_State* L) {
 				return default_uc::find(L);
 			}
 
@@ -327,10 +327,10 @@ namespace sol {
 
 				void operator()() {
 					using meta_usertype_container
-					     = container_detail::u_c_launch<meta::conditional_t<is_shim, as_container_t<std::remove_pointer_t<T>>, std::remove_pointer_t<T>>>;
+					     = container_detail::u_c_launch<meta::conditional_t<is_shim, as_container_t<eastl::remove_pointer_t<T>>, eastl::remove_pointer_t<T>>>;
 					static const char* metakey
-					     = is_shim ? &usertype_traits<as_container_t<std::remove_pointer_t<T>>>::metatable()[0] : &usertype_traits<T>::metatable()[0];
-					static const std::array<luaL_Reg, 20> reg = { {
+					     = is_shim ? &usertype_traits<as_container_t<eastl::remove_pointer_t<T>>>::metatable()[0] : &usertype_traits<T>::metatable()[0];
+					static const eastl::array<luaL_Reg, 20> reg = { {
 						// clang-format off
 						{ "__pairs", &meta_usertype_container::pairs_call },
 						{ "__ipairs", &meta_usertype_container::ipairs_call },
@@ -350,7 +350,7 @@ namespace sol {
 						{ "find", &meta_usertype_container::find_call },
 						{ "index_of", &meta_usertype_container::index_of_call },
 						{ "erase", &meta_usertype_container::erase_call },
-						std::is_pointer<T>::value ? luaL_Reg{ nullptr, nullptr } : luaL_Reg{ "__gc", &detail::usertype_alloc_destroy<T> },
+						eastl::is_pointer<T>::value ? luaL_Reg{ nullptr, nullptr } : luaL_Reg{ "__gc", &detail::usertype_alloc_destroy<T> },
 						{ nullptr, nullptr }
 						// clang-format on 
 					} };
@@ -367,37 +367,37 @@ namespace sol {
 		struct unqualified_pusher<as_container_t<T>> {
 			using C = meta::unqualified_t<T>;
 
-			static int push_lvalue(std::true_type, lua_State* L, const C& cont) {
+			static int push_lvalue(eastl::true_type, lua_State* L, const C& cont) {
 				stack_detail::metatable_setup<C*, true> fx(L);
 				return stack::push<detail::as_pointer_tag<const C>>(L, detail::with_function_tag(), fx, detail::ptr(cont));
 			}
 
-			static int push_lvalue(std::false_type, lua_State* L, const C& cont) {
+			static int push_lvalue(eastl::false_type, lua_State* L, const C& cont) {
 				stack_detail::metatable_setup<C, true> fx(L);
 				return stack::push<detail::as_value_tag<C>>(L, detail::with_function_tag(), fx, cont);
 			}
 
-			static int push_rvalue(std::true_type, lua_State* L, C&& cont) {
+			static int push_rvalue(eastl::true_type, lua_State* L, C&& cont) {
 				stack_detail::metatable_setup<C, true> fx(L);
-				return stack::push<detail::as_value_tag<C>>(L, detail::with_function_tag(), fx, std::move(cont));
+				return stack::push<detail::as_value_tag<C>>(L, detail::with_function_tag(), fx, eastl::move(cont));
 			}
 
-			static int push_rvalue(std::false_type, lua_State* L, const C& cont) {
-				return push_lvalue(std::is_lvalue_reference<T>(), L, cont);
+			static int push_rvalue(eastl::false_type, lua_State* L, const C& cont) {
+				return push_lvalue(eastl::is_lvalue_reference<T>(), L, cont);
 			}
 
 			static int push(lua_State* L, const as_container_t<T>& as_cont) {
-				return push_lvalue(std::is_lvalue_reference<T>(), L, as_cont.value());
+				return push_lvalue(eastl::is_lvalue_reference<T>(), L, as_cont.value());
 			}
 
 			static int push(lua_State* L, as_container_t<T>&& as_cont) {
-				return push_rvalue(meta::all<std::is_rvalue_reference<T>, meta::neg<std::is_lvalue_reference<T>>>(), L, std::forward<T>(as_cont.value()));
+				return push_rvalue(meta::all<eastl::is_rvalue_reference<T>, meta::neg<eastl::is_lvalue_reference<T>>>(), L, eastl::forward<T>(as_cont.value()));
 			}
 		};
 
 		template <typename T>
 		struct unqualified_pusher<as_container_t<T*>> {
-			using C = std::add_pointer_t<meta::unqualified_t<std::remove_pointer_t<T>>>;
+			using C = eastl::add_pointer_t<meta::unqualified_t<eastl::remove_pointer_t<T>>>;
 
 			static int push(lua_State* L, T* cont) {
 				stack_detail::metatable_setup<C> fx(L);
@@ -406,19 +406,19 @@ namespace sol {
 		};
 
 		template <typename T>
-		struct unqualified_pusher<T, std::enable_if_t<is_container_v<T>>> {
+		struct unqualified_pusher<T, eastl::enable_if_t<is_container_v<T>>> {
 			using C = T;
 
 			template <typename... Args>
 			static int push(lua_State* L, Args&&... args) {
 				stack_detail::metatable_setup<C> fx(L);
-				return stack::push<detail::as_value_tag<T>>(L, detail::with_function_tag(), fx, std::forward<Args>(args)...);
+				return stack::push<detail::as_value_tag<T>>(L, detail::with_function_tag(), fx, eastl::forward<Args>(args)...);
 			}
 		};
 
 		template <typename T>
-		struct unqualified_pusher<T*, std::enable_if_t<is_container_v<T>>> {
-			using C = std::add_pointer_t<meta::unqualified_t<std::remove_pointer_t<T>>>;
+		struct unqualified_pusher<T*, eastl::enable_if_t<is_container_v<T>>> {
+			using C = eastl::add_pointer_t<meta::unqualified_t<eastl::remove_pointer_t<T>>>;
 
 			static int push(lua_State* L, T* cont) {
 				stack_detail::metatable_setup<C> fx(L);

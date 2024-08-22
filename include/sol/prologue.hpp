@@ -38,9 +38,9 @@
 	#if SOL_IS_ON(SOL_COMPILER_GCC) || SOL_IS_ON(SOL_COMPILER_CLANG)
 		#define _MOVE(...) static_cast<__typeof( __VA_ARGS__ )&&>( __VA_ARGS__ )
 	#else
-		#include <type_traits>
+		#include <EASTL/type_traits.h>
 		
-		#define _MOVE(...) static_cast<::std::remove_reference_t<( __VA_ARGS__ )>&&>( __VA_OPT__(,) )
+		#define _MOVE(...) static_cast<::eastl::remove_reference_t<( __VA_ARGS__ )>&&>( __VA_OPT__(,) )
 	#endif
 #endif
 

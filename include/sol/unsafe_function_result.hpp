@@ -44,11 +44,11 @@ namespace sol {
 		typedef stack_proxy value_type;
 		typedef stack_proxy* pointer;
 		typedef std::ptrdiff_t difference_type;
-		typedef std::size_t size_type;
+		typedef eastl::size_t size_type;
 		typedef stack_iterator<stack_proxy, false> iterator;
 		typedef stack_iterator<stack_proxy, true> const_iterator;
-		typedef std::reverse_iterator<iterator> reverse_iterator;
-		typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+		typedef eastl::reverse_iterator<iterator> reverse_iterator;
+		typedef eastl::reverse_iterator<const_iterator> const_reverse_iterator;
 
 		unsafe_function_result() noexcept : unsafe_function_result(nullptr) {}
 		unsafe_function_result(lua_State* Ls, int idx = -1, int retnum = 0) noexcept : L(Ls), index(idx), returncount(retnum) {
@@ -117,22 +117,22 @@ namespace sol {
 		}
 
 		reverse_iterator rbegin() {
-			return std::reverse_iterator<iterator>(begin());
+			return eastl::reverse_iterator<iterator>(begin());
 		}
 		reverse_iterator rend() {
-			return std::reverse_iterator<iterator>(end());
+			return eastl::reverse_iterator<iterator>(end());
 		}
 		const_reverse_iterator rbegin() const {
-			return std::reverse_iterator<const_iterator>(begin());
+			return eastl::reverse_iterator<const_iterator>(begin());
 		}
 		const_reverse_iterator rend() const {
-			return std::reverse_iterator<const_iterator>(end());
+			return eastl::reverse_iterator<const_iterator>(end());
 		}
 		const_reverse_iterator crbegin() const {
-			return std::reverse_iterator<const_iterator>(cbegin());
+			return eastl::reverse_iterator<const_iterator>(cbegin());
 		}
 		const_reverse_iterator crend() const {
-			return std::reverse_iterator<const_iterator>(cend());
+			return eastl::reverse_iterator<const_iterator>(cend());
 		}
 
 		call_status status() const noexcept {

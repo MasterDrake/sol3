@@ -42,10 +42,10 @@ namespace sol {
 	private:
 		template <typename T>
 		using is_reference_or_lua_value_init_list
-		     = meta::any<meta::is_specialization_of<T, std::initializer_list>, std::is_same<T, reference>, std::is_same<T, arr>>;
+		     = meta::any<meta::is_specialization_of<T, std::initializer_list>, eastl::is_same<T, reference>, eastl::is_same<T, arr>>;
 
 		template <typename T>
-		using is_lua_value_single_constructible = meta::any<std::is_same<T, lua_value>, is_reference_or_lua_value_init_list<T>>;
+		using is_lua_value_single_constructible = meta::any<eastl::is_same<T, lua_value>, is_reference_or_lua_value_init_list<T>>;
 
 		static lua_State*& thread_local_lua_state() {
 #if SOL_IS_ON(SOL_USE_THREAD_LOCAL)
@@ -64,41 +64,41 @@ namespace sol {
 		}
 
 		template <typename T, meta::disable<is_reference_or_lua_value_init_list<meta::unqualified_t<T>>> = meta::enabler>
-		lua_value(lua_State* L_, T&& value) : lua_value(((set_lua_state(L_)), std::forward<T>(value))) {
+		lua_value(lua_State* L_, T&& value) : lua_value(((set_lua_state(L_)), eastl::forward<T>(value))) {
 		}
 
 		template <typename T, meta::disable<is_lua_value_single_constructible<meta::unqualified_t<T>>> = meta::enabler>
-		lua_value(T&& value) : ref_value(make_reference(thread_local_lua_state(), std::forward<T>(value))) {
+		lua_value(T&& value) : ref_value(make_reference(thread_local_lua_state(), eastl::forward<T>(value))) {
 		}
 
-		lua_value(lua_State* L_, std::initializer_list<std::pair<lua_value, lua_value>> il)
+		lua_value(lua_State* L_, std::initializer_list<eastl::pair<lua_value, lua_value>> il)
 		: lua_value([&L_, &il]() {
 			set_lua_state(L_);
-			return std::move(il);
+			return eastl::move(il);
 		}()) {
 		}
 
-		lua_value(std::initializer_list<std::pair<lua_value, lua_value>> il) : ref_value(make_reference(thread_local_lua_state(), std::move(il))) {
+		lua_value(std::initializer_list<eastl::pair<lua_value, lua_value>> il) : ref_value(make_reference(thread_local_lua_state(), eastl::move(il))) {
 		}
 
 		lua_value(lua_State* L_, arr il)
 		: lua_value([&L_, &il]() {
 			set_lua_state(L_);
-			return std::move(il);
+			return eastl::move(il);
 		}()) {
 		}
 
-		lua_value(arr il) : ref_value(make_reference(thread_local_lua_state(), std::move(il.value()))) {
+		lua_value(arr il) : ref_value(make_reference(thread_local_lua_state(), eastl::move(il.value()))) {
 		}
 
 		lua_value(lua_State* L_, reference r)
 		: lua_value([&L_, &r]() {
 			set_lua_state(L_);
-			return std::move(r);
+			return eastl::move(r);
 		}()) {
 		}
 
-		lua_value(reference r) : ref_value(std::move(r)) {
+		lua_value(reference r) : ref_value(eastl::move(r)) {
 		}
 
 		lua_value(const lua_value&) noexcept = default;
@@ -115,7 +115,7 @@ namespace sol {
 		}
 
 		reference&& value() && {
-			return std::move(ref_value);
+			return eastl::move(ref_value);
 		}
 
 		template <typename T>
@@ -146,7 +146,7 @@ namespace sol {
 			}
 
 			static int push(lua_State* L, lua_value&& lv) {
-				return stack::push(L, std::move(lv).value());
+				return stack::push(L, eastl::move(lv).value());
 			}
 		};
 

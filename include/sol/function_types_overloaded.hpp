@@ -31,19 +31,19 @@
 namespace sol { namespace function_detail {
 	template <int start_skew, typename... Functions>
 	struct overloaded_function {
-		typedef std::tuple<Functions...> overload_list;
-		typedef std::make_index_sequence<sizeof...(Functions)> indices;
+		typedef eastl::tuple<Functions...> overload_list;
+		typedef eastl::make_index_sequence<sizeof...(Functions)> indices;
 		overload_list overloads;
 
-		overloaded_function(overload_list set) : overloads(std::move(set)) {
+		overloaded_function(overload_list set) : overloads(eastl::move(set)) {
 		}
 
 		overloaded_function(Functions... fxs) : overloads(fxs...) {
 		}
 
-		template <typename Fx, std::size_t I, typename... R, typename... Args>
+		template <typename Fx, eastl::size_t I, typename... R, typename... Args>
 		static int call(types<Fx>, meta::index_value<I>, types<R...>, types<Args...>, lua_State* L, int, int, overload_list& ol) {
-			auto& func = std::get<I>(ol);
+			auto& func = eastl::get<I>(ol);
 			int nr = call_detail::call_wrapped<void, true, false, start_skew>(L, func);
 			return nr;
 		}
@@ -51,7 +51,7 @@ namespace sol { namespace function_detail {
 		struct on_success {
 			template <typename... Args>
 			int operator()(Args&&... args) const {
-				return call(std::forward<Args>(args)...);
+				return call(eastl::forward<Args>(args)...);
 			}
 		};
 

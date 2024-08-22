@@ -27,14 +27,12 @@
 #include <sol/stack_core.hpp>
 #include <sol/usertype_traits.hpp>
 #include <sol/inheritance.hpp>
-#include <memory>
-#include <functional>
-#include <utility>
+#include <EASTL/memory.h>
+#include <EASTL/functional.h>
+#include <EASTL/utility.h>
 #include <cmath>
-#include <optional>
-#if SOL_IS_ON(SOL_STD_VARIANT)
-#include <variant>
-#endif // variant shenanigans
+#include <EASTL/optional.h>
+#include <EASTL/variant.h>
 
 namespace sol { namespace stack {
 	template <typename Handler>
@@ -52,7 +50,7 @@ namespace sol { namespace stack {
 	}
 
 	namespace stack_detail {
-		inline bool impl_check_metatable(lua_State* L_, int index, const std::string& metakey, bool poptable) {
+		inline bool impl_check_metatable(lua_State* L_, int index, const eastl::string& metakey, bool poptable) {
 			luaL_getmetatable(L_, &metakey[0]);
 			const type expectedmetatabletype = static_cast<type>(lua_type(L_, -1));
 			if (expectedmetatabletype != type::lua_nil) {
@@ -97,7 +95,7 @@ namespace sol { namespace stack {
 	struct qualified_interop_checker {
 		template <typename Handler>
 		static bool check(lua_State* L_, int index, type index_type, Handler&& handler, record& tracking) {
-			return stack_detail::unqualified_interop_check<T>(L_, index, index_type, std::forward<Handler>(handler), tracking);
+			return stack_detail::unqualified_interop_check<T>(L_, index, index_type, eastl::forward<Handler>(handler), tracking);
 		}
 	};
 
@@ -105,7 +103,7 @@ namespace sol { namespace stack {
 	struct unqualified_checker {
 		template <typename Handler>
 		static bool check(lua_State* L_, int index, Handler&& handler, record& tracking) {
-			if constexpr (std::is_same_v<T, bool>) {
+			if constexpr (eastl::is_same_v<T, bool>) {
 				tracking.use(1);
 				bool success = lua_isboolean(L_, index) == 1;
 				if (!success) {
@@ -123,9 +121,9 @@ namespace sol { namespace stack {
 				                   ,
 				                   char16_t,
 				                   char32_t>) {
-				return stack::check<std::basic_string<T>>(L_, index, std::forward<Handler>(handler), tracking);
+				return stack::check<eastl::basic_string<T>>(L_, index, eastl::forward<Handler>(handler), tracking);
 			}
-			else if constexpr (std::is_integral_v<T> || std::is_same_v<T, lua_Integer>) {
+			else if constexpr (eastl::is_integral_v<T> || eastl::is_same_v<T, lua_Integer>) {
 				tracking.use(1);
 #if SOL_LUA_VERSION_I_ >= 503
 				// Lua 5.3 and greater checks for numeric precision
@@ -190,7 +188,7 @@ namespace sol { namespace stack {
 				return success;
 #endif
 			}
-			else if constexpr (std::is_floating_point_v<T> || std::is_same_v<T, lua_Number>) {
+			else if constexpr (eastl::is_floating_point_v<T> || eastl::is_same_v<T, lua_Number>) {
 				tracking.use(1);
 #if SOL_IS_ON(SOL_STRINGS_ARE_NUMBERS)
 				bool success = lua_isnumber(L_, index) == 1;
@@ -252,7 +250,7 @@ namespace sol { namespace stack {
 				handler(L_, index, type::userdata, indextype, "unrecognized userdata (not pushed by sol?)");
 				return false;
 			}
-			else if constexpr (meta::any_same_v<T, lua_nil_t, std::nullopt_t, nullopt_t>) {
+			else if constexpr (meta::any_same_v<T, lua_nil_t, eastl::nullopt_t, nullopt_t>) {
 				bool success = lua_isnil(L_, index);
 				if (success) {
 					tracking.use(1);
@@ -266,7 +264,7 @@ namespace sol { namespace stack {
 				}
 				return success;
 			}
-			else if constexpr (std::is_same_v<T, env_key_t>) {
+			else if constexpr (eastl::is_same_v<T, env_key_t>) {
 				tracking.use(1);
 				type t = type_of(L_, index);
 				if (t == type::table || t == type::none || t == type::lua_nil || t == type::userdata) {
@@ -275,8 +273,8 @@ namespace sol { namespace stack {
 				handler(L_, index, type::table, t, "value cannot not have a valid environment");
 				return true;
 			}
-			else if constexpr (std::is_same_v<T, detail::non_lua_nil_t>) {
-				return !stack::unqualified_check<lua_nil_t>(L_, index, std::forward<Handler>(handler), tracking);
+			else if constexpr (eastl::is_same_v<T, detail::non_lua_nil_t>) {
+				return !stack::unqualified_check<lua_nil_t>(L_, index, eastl::forward<Handler>(handler), tracking);
 			}
 			else if constexpr (meta::is_specialization_of_v<T, basic_lua_table>) {
 				tracking.use(1);
@@ -313,7 +311,7 @@ namespace sol { namespace stack {
 				}
 				return true;
 			}
-			else if constexpr (std::is_same_v<T, metatable_key_t>) {
+			else if constexpr (eastl::is_same_v<T, metatable_key_t>) {
 				tracking.use(1);
 				if (lua_getmetatable(L_, index) == 0) {
 					return true;
@@ -330,7 +328,7 @@ namespace sol { namespace stack {
 				}
 				return true;
 			}
-			else if constexpr (std::is_same_v<T, luaL_Stream*> || std::is_same_v<T, luaL_Stream>) {
+			else if constexpr (eastl::is_same_v<T, luaL_Stream*> || eastl::is_same_v<T, luaL_Stream>) {
 				if (lua_getmetatable(L_, index) == 0) {
 					type t = type_of(L_, index);
 					handler(L_, index, expected, t, "value is not a valid luaL_Stream (has no metatable/is not a valid value)");
@@ -372,8 +370,8 @@ namespace sol { namespace stack {
 				return stack::unqualified_check<ValueType>(L_, index, &no_panic, tracking);
 			}
 #if SOL_IS_ON(SOL_GET_FUNCTION_POINTER_UNSAFE)
-			else if constexpr (std::is_function_v<T> || (std::is_pointer_v<T> && std::is_function_v<std::remove_pointer_t<T>>)) {
-				return stack_detail::check_function_pointer<std::remove_pointer_t<T>>(L_, index, std::forward<Handler>(handler), tracking);
+			else if constexpr (eastl::is_function_v<T> || (eastl::is_pointer_v<T> && eastl::is_function_v<eastl::remove_pointer_t<T>>)) {
+				return stack_detail::check_function_pointer<eastl::remove_pointer_t<T>>(L_, index, eastl::forward<Handler>(handler), tracking);
 			}
 #endif
 			else if constexpr (expected == type::userdata) {
@@ -390,18 +388,18 @@ namespace sol { namespace stack {
 				else if constexpr (meta::is_specialization_of_v<T, user>) {
 					unqualified_checker<lightuserdata_value, type::userdata> c;
 					(void)c;
-					return c.check(L_, index, std::forward<Handler>(handler), tracking);
+					return c.check(L_, index, eastl::forward<Handler>(handler), tracking);
 				}
 				else {
-					if constexpr (std::is_pointer_v<T>) {
-						return check_usertype<T>(L_, index, std::forward<Handler>(handler), tracking);
+					if constexpr (eastl::is_pointer_v<T>) {
+						return check_usertype<T>(L_, index, eastl::forward<Handler>(handler), tracking);
 					}
-					else if constexpr (meta::is_specialization_of_v<T, std::reference_wrapper>) {
+					else if constexpr (meta::is_specialization_of_v<T, eastl::reference_wrapper>) {
 						using T_internal = typename T::type;
-						return stack::check<T_internal>(L_, index, std::forward<Handler>(handler), tracking);
+						return stack::check<T_internal>(L_, index, eastl::forward<Handler>(handler), tracking);
 					}
 					else {
-						return check_usertype<T>(L_, index, std::forward<Handler>(handler), tracking);
+						return check_usertype<T>(L_, index, eastl::forward<Handler>(handler), tracking);
 					}
 				}
 			}
@@ -425,7 +423,7 @@ namespace sol { namespace stack {
 				return success;
 			}
 			else if constexpr (expected == type::function) {
-				if constexpr (meta::any_same_v<T, lua_CFunction, std::remove_pointer_t<lua_CFunction>, c_closure>) {
+				if constexpr (meta::any_same_v<T, lua_CFunction, eastl::remove_pointer_t<lua_CFunction>, c_closure>) {
 					tracking.use(1);
 					bool success = lua_iscfunction(L_, index) == 1;
 					if (!success) {
@@ -469,7 +467,7 @@ namespace sol { namespace stack {
 				}
 			}
 			else if constexpr (expected == type::table) {
-				return stack::loose_table_check(L_, index, std::forward<Handler>(handler), tracking);
+				return stack::loose_table_check(L_, index, eastl::forward<Handler>(handler), tracking);
 			}
 			else {
 				tracking.use(1);
@@ -492,14 +490,14 @@ namespace sol { namespace stack {
 		template <typename Handler>
 		static bool check(lua_State* L_, int index, Handler&& handler, record& tracking) {
 			const type indextype = type_of(L_, index);
-			return check(types<T>(), L_, index, indextype, std::forward<Handler>(handler), tracking);
+			return check(types<T>(), L_, index, indextype, eastl::forward<Handler>(handler), tracking);
 		}
 
 		template <typename U, typename Handler>
 		static bool check(types<U>, lua_State* L_, int index, type indextype, Handler&& handler, record& tracking) {
 			if constexpr (
-				std::is_same_v<T,
-				     lightuserdata_value> || std::is_same_v<T, userdata_value> || std::is_same_v<T, userdata> || std::is_same_v<T, lightuserdata>) {
+				eastl::is_same_v<T,
+				     lightuserdata_value> || eastl::is_same_v<T, userdata_value> || eastl::is_same_v<T, userdata> || eastl::is_same_v<T, lightuserdata>) {
 				tracking.use(1);
 				if (indextype != type::userdata) {
 					handler(L_, index, type::userdata, indextype, "value is not a valid userdata");
@@ -569,17 +567,17 @@ namespace sol { namespace stack {
 				tracking.use(1);
 				return true;
 			}
-			return check_usertype<std::remove_pointer_t<T>>(L_, index, std::forward<Handler>(handler), tracking);
+			return check_usertype<eastl::remove_pointer_t<T>>(L_, index, eastl::forward<Handler>(handler), tracking);
 		}
 
 		template <typename Handler>
 		static bool check(lua_State* L_, int index, Handler&& handler, record& tracking) {
 			const type indextype = type_of(L_, index);
-			return check(L_, index, indextype, std::forward<Handler>(handler), tracking);
+			return check(L_, index, indextype, eastl::forward<Handler>(handler), tracking);
 		}
 	};
 
-	template <typename T, std::size_t N, type expect>
+	template <typename T, eastl::size_t N, type expect>
 	struct unqualified_checker<exhaustive_until<T, N>, expect> {
 		template <typename K, typename V, typename Handler>
 		static bool check_two(types<K, V>, lua_State* arg_L, int relindex, type indextype, Handler&& handler, record& tracking) {
@@ -592,12 +590,12 @@ namespace sol { namespace stack {
 			int index = lua_absindex(arg_L, relindex);
 			lua_pushnil(arg_L);
 			while (lua_next(arg_L, index) != 0) {
-				const bool is_key_okay = stack::check<K>(arg_L, -2, std::forward<Handler>(handler), tracking);
+				const bool is_key_okay = stack::check<K>(arg_L, -2, eastl::forward<Handler>(handler), tracking);
 				if (!is_key_okay) {
 					lua_pop(arg_L, 2);
 					return false;
 				}
-				const bool is_value_okay = stack::check<V>(arg_L, -1, std::forward<Handler>(handler), tracking);
+				const bool is_value_okay = stack::check<V>(arg_L, -1, eastl::forward<Handler>(handler), tracking);
 				if (!is_value_okay) {
 					lua_pop(arg_L, 2);
 					return false;
@@ -613,7 +611,7 @@ namespace sol { namespace stack {
 
 			size_t index = lua_absindex(arg_L, relindex);
 			// Zzzz slower but necessary thanks to the lower version API and missing functions qq
-			std::size_t idx = 0;
+			eastl::size_t idx = 0;
 			int vi = 0;
 			for (lua_Integer i = 0;; (void)(i += lua_size<V>::value), lua_pop(arg_L, static_cast<int>(vi))) {
 				vi = 0;
@@ -638,7 +636,7 @@ namespace sol { namespace stack {
 						return true;
 					}
 				}
-				if (!stack::check<V>(arg_L, -lua_size<V>::value, std::forward<Handler>(handler), tracking)) {
+				if (!stack::check<V>(arg_L, -lua_size<V>::value, eastl::forward<Handler>(handler), tracking)) {
 					lua_pop(arg_L, lua_size<V>::value);
 					return false;
 				}
@@ -655,16 +653,16 @@ namespace sol { namespace stack {
 					typedef typename Tu::value_type P;
 					typedef typename P::first_type K;
 					typedef typename P::second_type V;
-					return check_two(types<K, V>(), arg_L, index, expect, std::forward<Handler>(handler), tracking);
+					return check_two(types<K, V>(), arg_L, index, expect, eastl::forward<Handler>(handler), tracking);
 				}
 				else {
 					typedef typename Tu::value_type V;
-					return check_one(types<V>(), arg_L, index, expect, std::forward<Handler>(handler), tracking);
+					return check_one(types<V>(), arg_L, index, expect, eastl::forward<Handler>(handler), tracking);
 				}
 			}
 			else {
 				unqualified_checker<Tu, expect> c {};
-				return c.check(arg_L, index, std::forward<Handler>(handler), tracking);
+				return c.check(arg_L, index, eastl::forward<Handler>(handler), tracking);
 			}
 		}
 	};
@@ -673,36 +671,34 @@ namespace sol { namespace stack {
 	struct unqualified_checker<non_exhaustive<T>, expect> {
 		template <typename Handler>
 		static bool check(lua_State* arg_L, int index, Handler&& handler, record& tracking) {
-			return stack::check<T>(arg_L, index, std::forward<Handler>(handler), tracking);
+			return stack::check<T>(arg_L, index, eastl::forward<Handler>(handler), tracking);
 		}
 	};
 
 	template <typename... Args>
-	struct unqualified_checker<std::tuple<Args...>, type::poly> {
+	struct unqualified_checker<eastl::tuple<Args...>, type::poly> {
 		template <typename Handler>
 		static bool check(lua_State* L_, int index, Handler&& handler, record& tracking) {
-			return stack::multi_check<Args...>(L_, index, std::forward<Handler>(handler), tracking);
+			return stack::multi_check<Args...>(L_, index, eastl::forward<Handler>(handler), tracking);
 		}
 	};
 
 	template <typename A, typename B>
-	struct unqualified_checker<std::pair<A, B>, type::poly> {
+	struct unqualified_checker<eastl::pair<A, B>, type::poly> {
 		template <typename Handler>
 		static bool check(lua_State* L_, int index, Handler&& handler, record& tracking) {
-			return stack::multi_check<A, B>(L_, index, std::forward<Handler>(handler), tracking);
+			return stack::multi_check<A, B>(L_, index, eastl::forward<Handler>(handler), tracking);
 		}
 	};
 
-#if SOL_IS_ON(SOL_STD_VARIANT)
-
 	template <typename... Tn>
-	struct unqualified_checker<std::variant<Tn...>, type::poly> {
-		typedef std::variant<Tn...> V;
-		typedef std::variant_size<V> V_size;
-		typedef std::integral_constant<bool, V_size::value == 0> V_is_empty;
+	struct unqualified_checker<eastl::variant<Tn...>, type::poly> {
+		typedef eastl::variant<Tn...> V;
+		typedef eastl::variant_size<V> V_size;
+		typedef eastl::integral_constant<bool, V_size::value == 0> V_is_empty;
 
 		template <typename Handler>
-		static bool is_one(std::integral_constant<std::size_t, 0>, lua_State* L_, int index, Handler&& handler, record& tracking) {
+		static bool is_one(eastl::integral_constant<eastl::size_t, 0>, lua_State* L_, int index, Handler&& handler, record& tracking) {
 			if constexpr (V_is_empty::value) {
 				if (lua_isnone(L_, index)) {
 					return true;
@@ -713,24 +709,22 @@ namespace sol { namespace stack {
 			return false;
 		}
 
-		template <std::size_t I, typename Handler>
-		static bool is_one(std::integral_constant<std::size_t, I>, lua_State* L_, int index, Handler&& handler, record& tracking) {
-			typedef std::variant_alternative_t<I - 1, V> T;
+		template <eastl::size_t I, typename Handler>
+		static bool is_one(eastl::integral_constant<eastl::size_t, I>, lua_State* L_, int index, Handler&& handler, record& tracking) {
+			typedef eastl::variant_alternative_t<I - 1, V> T;
 			record temp_tracking = tracking;
 			if (stack::check<T>(L_, index, &no_panic, temp_tracking)) {
 				tracking = temp_tracking;
 				return true;
 			}
-			return is_one(std::integral_constant<std::size_t, I - 1>(), L_, index, std::forward<Handler>(handler), tracking);
+			return is_one(eastl::integral_constant<eastl::size_t, I - 1>(), L_, index, eastl::forward<Handler>(handler), tracking);
 		}
 
 		template <typename Handler>
 		static bool check(lua_State* L_, int index, Handler&& handler, record& tracking) {
-			return is_one(std::integral_constant<std::size_t, V_size::value>(), L_, index, std::forward<Handler>(handler), tracking);
+			return is_one(eastl::integral_constant<eastl::size_t, V_size::value>(), L_, index, eastl::forward<Handler>(handler), tracking);
 		}
 	};
-
-#endif // variant shenanigans
 
 }} // namespace sol::stack
 

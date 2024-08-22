@@ -39,7 +39,7 @@ namespace sol {
 
 		template <typename... Args>
 		decltype(auto) operator()(Args&&... args) {
-			return call<>(std::forward<Args>(args)...);
+			return call<>(eastl::forward<Args>(args)...);
 		}
 	};
 

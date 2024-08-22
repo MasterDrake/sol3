@@ -67,11 +67,11 @@ You can find [donation and sponorship options here](https://github.com/ThePhD/.g
 
 - [Fastest in the land](http://sol2.readthedocs.io/en/latest/benchmarks.html) (see: sol2 bar in graph).
 - Supports retrieval and setting of multiple types including: 
-  * `std::string`, `std::wstring`, `std::u16string` and `std::u32string` support (and for views).
-  * understands and works with containers such as `std::map/unordered_map`, c-style arrays, vectors, non-standard custom containers and more.
+  * `eastl::string`, `eastl::wstring`, `eastl::u16string` and `eastl::u32string` support (and for views).
+  * understands and works with containers such as `eastl::map/unordered_map`, c-style arrays, vectors, non-standard custom containers and more.
   * user-defined types, with or **without** registering that type 
-  * `std::unique_ptr`, `std::shared_ptr`, and optional support of other pointer types like `boost::shared_ptr`.
-  * custom `optional<T>` that works with references, and support for the inferior `std::optional`.
+  * `eastl::unique_ptr`, `eastl::shared_ptr`, and optional support of other pointer types like `boost::shared_ptr`.
+  * custom `optional<T>` that works with references, and support for the inferior `eastl::optional`.
   * C++17 support for variants and similar new types.
 - Lambda, function, and member function bindings are supported.
 - Intermediate type for checking if a variable exists.

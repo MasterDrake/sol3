@@ -31,7 +31,7 @@
 #include <sol/protected_function.hpp>
 #include <sol/assert.hpp>
 
-#include <optional>
+#include <EASTL/optional.h>
 
 namespace sol { namespace stack { namespace stack_detail {
 
@@ -55,11 +55,11 @@ namespace sol { namespace stack { namespace stack_detail {
 		return false;
 	}
 
-	inline std::optional<protected_function> find_lua_next_function(lua_State* L_) {
+	inline eastl::optional<protected_function> find_lua_next_function(lua_State* L_) {
 		if (maybe_push_lua_next_function(L_)) {
 			return stack::pop<protected_function>(L_);
 		}
-		return std::nullopt;
+		return eastl::nullopt;
 	}
 
 	inline int c_lua_next(lua_State* L_) noexcept {

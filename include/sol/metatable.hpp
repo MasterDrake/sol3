@@ -43,33 +43,33 @@ namespace sol {
 		basic_metatable(detail::no_safety_tag, lua_State* L, ref_index index) : base_t(L, index) {
 		}
 		template <typename T,
-		     meta::enable<meta::neg<meta::any_same<meta::unqualified_t<T>, basic_metatable>>, meta::neg<std::is_same<base_type, stack_reference>>,
-		          meta::neg<std::is_same<lua_nil_t, meta::unqualified_t<T>>>, is_lua_reference<meta::unqualified_t<T>>> = meta::enabler>
-		basic_metatable(detail::no_safety_tag, T&& r) noexcept : base_t(std::forward<T>(r)) {
+		     meta::enable<meta::neg<meta::any_same<meta::unqualified_t<T>, basic_metatable>>, meta::neg<eastl::is_same<base_type, stack_reference>>,
+		          meta::neg<eastl::is_same<lua_nil_t, meta::unqualified_t<T>>>, is_lua_reference<meta::unqualified_t<T>>> = meta::enabler>
+		basic_metatable(detail::no_safety_tag, T&& r) noexcept : base_t(eastl::forward<T>(r)) {
 		}
 		template <typename T, meta::enable<is_lua_reference<meta::unqualified_t<T>>> = meta::enabler>
-		basic_metatable(detail::no_safety_tag, lua_State* L, T&& r) noexcept : base_t(L, std::forward<T>(r)) {
+		basic_metatable(detail::no_safety_tag, lua_State* L, T&& r) noexcept : base_t(L, eastl::forward<T>(r)) {
 		}
 
-		template <typename R, typename... Args, typename Fx, typename Key, typename = std::invoke_result_t<Fx, Args...>>
+		template <typename R, typename... Args, typename Fx, typename Key, typename = eastl::invoke_result_t<Fx, Args...>>
 		void set_fx(types<R(Args...)>, Key&& key, Fx&& fx) {
-			set_resolved_function<R(Args...)>(std::forward<Key>(key), std::forward<Fx>(fx));
+			set_resolved_function<R(Args...)>(eastl::forward<Key>(key), eastl::forward<Fx>(fx));
 		}
 
 		template <typename Fx, typename Key, meta::enable<meta::is_specialization_of<meta::unqualified_t<Fx>, overload_set>> = meta::enabler>
 		void set_fx(types<>, Key&& key, Fx&& fx) {
-			set(std::forward<Key>(key), std::forward<Fx>(fx));
+			set(eastl::forward<Key>(key), eastl::forward<Fx>(fx));
 		}
 
 		template <typename Fx, typename Key, typename... Args,
 		     meta::disable<meta::is_specialization_of<meta::unqualified_t<Fx>, overload_set>> = meta::enabler>
 		void set_fx(types<>, Key&& key, Fx&& fx, Args&&... args) {
-			set(std::forward<Key>(key), as_function_reference(std::forward<Fx>(fx), std::forward<Args>(args)...));
+			set(eastl::forward<Key>(key), as_function_reference(eastl::forward<Fx>(fx), eastl::forward<Args>(args)...));
 		}
 
 		template <typename... Sig, typename... Args, typename Key>
 		void set_resolved_function(Key&& key, Args&&... args) {
-			set(std::forward<Key>(key), as_function_reference<function_sig<Sig...>>(std::forward<Args>(args)...));
+			set(eastl::forward<Key>(key), as_function_reference<function_sig<Sig...>>(eastl::forward<Args>(args)...));
 		}
 
 	public:
@@ -85,7 +85,7 @@ namespace sol {
 		basic_metatable(stack_reference&& r) : basic_metatable(r.lua_state(), r.stack_index()) {
 		}
 		template <typename T, meta::enable_any<is_lua_reference<meta::unqualified_t<T>>> = meta::enabler>
-		basic_metatable(lua_State* L, T&& r) : base_t(L, std::forward<T>(r)) {
+		basic_metatable(lua_State* L, T&& r) : base_t(L, eastl::forward<T>(r)) {
 #if SOL_IS_ON(SOL_SAFE_REFERENCES)
 			auto pp = stack::push_pop(*this);
 			constructor_handler handler {};
@@ -106,9 +106,9 @@ namespace sol {
 #endif // Safety
 		}
 		template <typename T,
-		     meta::enable<meta::neg<meta::any_same<meta::unqualified_t<T>, basic_metatable>>, meta::neg<std::is_same<base_type, stack_reference>>,
-		          meta::neg<std::is_same<lua_nil_t, meta::unqualified_t<T>>>, is_lua_reference<meta::unqualified_t<T>>> = meta::enabler>
-		basic_metatable(T&& r) noexcept : basic_metatable(detail::no_safety, std::forward<T>(r)) {
+		     meta::enable<meta::neg<meta::any_same<meta::unqualified_t<T>, basic_metatable>>, meta::neg<eastl::is_same<base_type, stack_reference>>,
+		          meta::neg<eastl::is_same<lua_nil_t, meta::unqualified_t<T>>>, is_lua_reference<meta::unqualified_t<T>>> = meta::enabler>
+		basic_metatable(T&& r) noexcept : basic_metatable(detail::no_safety, eastl::forward<T>(r)) {
 #if SOL_IS_ON(SOL_SAFE_REFERENCES)
 			if (!is_table<meta::unqualified_t<T>>::value) {
 				auto pp = stack::push_pop(*this);
@@ -125,13 +125,13 @@ namespace sol {
 
 		template <typename Sig, typename Key, typename... Args>
 		basic_metatable& set_function(Key&& key, Args&&... args) {
-			set_fx(types<Sig>(), std::forward<Key>(key), std::forward<Args>(args)...);
+			set_fx(types<Sig>(), eastl::forward<Key>(key), eastl::forward<Args>(args)...);
 			return *this;
 		}
 
 		template <typename Key, typename... Args>
 		basic_metatable& set_function(Key&& key, Args&&... args) {
-			set_fx(types<>(), std::forward<Key>(key), std::forward<Args>(args)...);
+			set_fx(types<>(), eastl::forward<Key>(key), eastl::forward<Args>(args)...);
 			return *this;
 		}
 
@@ -156,8 +156,8 @@ namespace sol {
 				return;
 			}
 			ustorage_base& base_storage = *static_cast<ustorage_base*>(stack::get<void*>(L, -1));
-			std::array<string_view, 6> registry_traits;
-			for (std::size_t i = 0; i < registry_traits.size(); ++i) {
+			eastl::array<string_view, 6> registry_traits;
+			for (eastl::size_t i = 0; i < registry_traits.size(); ++i) {
 				u_detail::submetatable_type smt = static_cast<u_detail::submetatable_type>(i);
 				stack::get_field<false, true>(L, smt, gc_names_table.stack_index());
 				registry_traits[i] = stack::get<string_view>(L, -1);
@@ -170,7 +170,7 @@ namespace sol {
 			// in the registry (luaL_newmetatable does
 			// [name] = new table
 			// in registry upon creation)
-			for (std::size_t i = 0; i < registry_traits.size(); ++i) {
+			for (eastl::size_t i = 0; i < registry_traits.size(); ++i) {
 				u_detail::submetatable_type smt = static_cast<u_detail::submetatable_type>(i);
 				const string_view& gcmetakey = registry_traits[i];
 				if (smt == u_detail::submetatable_type::named) {

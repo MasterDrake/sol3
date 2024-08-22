@@ -50,24 +50,24 @@ namespace sol {
 #endif
 		}
 
-		template <std::size_t... I, typename... Ret>
-		auto invoke(types<Ret...>, std::index_sequence<I...>, std::ptrdiff_t n) {
+		template <eastl::size_t... I, typename... Ret>
+		auto invoke(types<Ret...>, eastl::index_sequence<I...>, std::ptrdiff_t n) {
 			luacall(n, sizeof...(Ret));
-			return stack::pop<std::tuple<Ret...>>(lua_state());
+			return stack::pop<eastl::tuple<Ret...>>(lua_state());
 		}
 
-		template <std::size_t I, typename Ret>
-		Ret invoke(types<Ret>, std::index_sequence<I>, std::ptrdiff_t n) {
+		template <eastl::size_t I, typename Ret>
+		Ret invoke(types<Ret>, eastl::index_sequence<I>, std::ptrdiff_t n) {
 			luacall(n, 1);
 			return stack::pop<Ret>(lua_state());
 		}
 
-		template <std::size_t I>
-		void invoke(types<void>, std::index_sequence<I>, std::ptrdiff_t n) {
+		template <eastl::size_t I>
+		void invoke(types<void>, eastl::index_sequence<I>, std::ptrdiff_t n) {
 			luacall(n, 0);
 		}
 
-		protected_function_result invoke(types<>, std::index_sequence<>, std::ptrdiff_t n) {
+		protected_function_result invoke(types<>, eastl::index_sequence<>, std::ptrdiff_t n) {
 			int firstreturn = 1;
 			luacall(n, LUA_MULTRET);
 			int poststacksize = lua_gettop(this->lua_state());
@@ -89,11 +89,11 @@ namespace sol {
 
 		basic_coroutine() = default;
 		template <typename T,
-		     meta::enable<meta::neg<std::is_same<meta::unqualified_t<T>, basic_coroutine>>,
-		          meta::neg<std::is_base_of<proxy_base_tag, meta::unqualified_t<T>>>, meta::neg<std::is_same<base_t, stack_reference>>,
-		          meta::neg<std::is_same<lua_nil_t, meta::unqualified_t<T>>>, is_lua_reference<meta::unqualified_t<T>>> = meta::enabler>
+		     meta::enable<meta::neg<eastl::is_same<meta::unqualified_t<T>, basic_coroutine>>,
+		          meta::neg<eastl::is_base_of<proxy_base_tag, meta::unqualified_t<T>>>, meta::neg<eastl::is_same<base_t, stack_reference>>,
+		          meta::neg<eastl::is_same<lua_nil_t, meta::unqualified_t<T>>>, is_lua_reference<meta::unqualified_t<T>>> = meta::enabler>
 		basic_coroutine(T&& r) noexcept
-		: base_t(std::forward<T>(r)), m_error_handler(detail::get_default_handler<reference, is_main_threaded<base_t>::value>(r.lua_state())) {
+		: base_t(eastl::forward<T>(r)), m_error_handler(detail::get_default_handler<reference, is_main_threaded<base_t>::value>(r.lua_state())) {
 #if SOL_IS_ON(SOL_SAFE_REFERENCES)
 			if (!is_function<meta::unqualified_t<T>>::value) {
 				auto pp = stack::push_pop(*this);
@@ -106,13 +106,13 @@ namespace sol {
 		basic_coroutine(const basic_coroutine& other) = default;
 		basic_coroutine& operator=(const basic_coroutine&) = default;
 
-		basic_coroutine(basic_coroutine&& other) noexcept : base_t(std::move(other)), m_error_handler(this->lua_state(), std::move(other.m_error_handler)) {
+		basic_coroutine(basic_coroutine&& other) noexcept : base_t(eastl::move(other)), m_error_handler(this->lua_state(), eastl::move(other.m_error_handler)) {
 		}
 
 		basic_coroutine& operator=(basic_coroutine&& other) noexcept {
-			base_t::operator=(std::move(other));
+			base_t::operator=(eastl::move(other));
 			// must change the state, since it could change on the coroutine type
-			m_error_handler = handler_t(this->lua_state(), std::move(other.m_error_handler));
+			m_error_handler = handler_t(this->lua_state(), eastl::move(other.m_error_handler));
 			return *this;
 		}
 
@@ -120,11 +120,11 @@ namespace sol {
 		: basic_coroutine(b, detail::get_default_handler<reference, is_main_threaded<base_t>::value>(b.lua_state())) {
 		}
 		basic_coroutine(basic_function<base_t>&& b) noexcept
-		: basic_coroutine(std::move(b), detail::get_default_handler<reference, is_main_threaded<base_t>::value>(b.lua_state())) {
+		: basic_coroutine(eastl::move(b), detail::get_default_handler<reference, is_main_threaded<base_t>::value>(b.lua_state())) {
 		}
-		basic_coroutine(const basic_function<base_t>& b, handler_t eh) noexcept : base_t(b), m_error_handler(std::move(eh)) {
+		basic_coroutine(const basic_function<base_t>& b, handler_t eh) noexcept : base_t(b), m_error_handler(eastl::move(eh)) {
 		}
-		basic_coroutine(basic_function<base_t>&& b, handler_t eh) noexcept : base_t(std::move(b)), m_error_handler(std::move(eh)) {
+		basic_coroutine(basic_function<base_t>&& b, handler_t eh) noexcept : base_t(eastl::move(b)), m_error_handler(eastl::move(eh)) {
 		}
 		basic_coroutine(const stack_reference& r) noexcept
 		: basic_coroutine(r.lua_state(), r.stack_index(), detail::get_default_handler<reference, is_main_threaded<base_t>::value>(r.lua_state())) {
@@ -132,9 +132,9 @@ namespace sol {
 		basic_coroutine(stack_reference&& r) noexcept
 		: basic_coroutine(r.lua_state(), r.stack_index(), detail::get_default_handler<reference, is_main_threaded<base_t>::value>(r.lua_state())) {
 		}
-		basic_coroutine(const stack_reference& r, handler_t eh) noexcept : basic_coroutine(r.lua_state(), r.stack_index(), std::move(eh)) {
+		basic_coroutine(const stack_reference& r, handler_t eh) noexcept : basic_coroutine(r.lua_state(), r.stack_index(), eastl::move(eh)) {
 		}
-		basic_coroutine(stack_reference&& r, handler_t eh) noexcept : basic_coroutine(r.lua_state(), r.stack_index(), std::move(eh)) {
+		basic_coroutine(stack_reference&& r, handler_t eh) noexcept : basic_coroutine(r.lua_state(), r.stack_index(), eastl::move(eh)) {
 		}
 
 		template <typename Super>
@@ -143,20 +143,20 @@ namespace sol {
 		}
 		template <typename Super>
 		basic_coroutine(proxy_base<Super>&& p)
-		: basic_coroutine(std::move(p), detail::get_default_handler<reference, is_main_threaded<base_t>::value>(p.lua_state())) {
+		: basic_coroutine(eastl::move(p), detail::get_default_handler<reference, is_main_threaded<base_t>::value>(p.lua_state())) {
 		}
 		template <typename Proxy, typename HandlerReference,
-		     meta::enable<std::is_base_of<proxy_base_tag, meta::unqualified_t<Proxy>>,
+		     meta::enable<eastl::is_base_of<proxy_base_tag, meta::unqualified_t<Proxy>>,
 		          meta::neg<is_lua_index<meta::unqualified_t<HandlerReference>>>> = meta::enabler>
-		basic_coroutine(Proxy&& p, HandlerReference&& eh) : basic_coroutine(detail::force_cast<base_t>(p), std::forward<HandlerReference>(eh)) {
+		basic_coroutine(Proxy&& p, HandlerReference&& eh) : basic_coroutine(detail::force_cast<base_t>(p), eastl::forward<HandlerReference>(eh)) {
 		}
 
 		template <typename T, meta::enable<is_lua_reference<meta::unqualified_t<T>>> = meta::enabler>
 		basic_coroutine(lua_State* L, T&& r) noexcept
-		: basic_coroutine(L, std::forward<T>(r), detail::get_default_handler<reference, is_main_threaded<base_t>::value>(L)) {
+		: basic_coroutine(L, eastl::forward<T>(r), detail::get_default_handler<reference, is_main_threaded<base_t>::value>(L)) {
 		}
 		template <typename T, meta::enable<is_lua_reference<meta::unqualified_t<T>>> = meta::enabler>
-		basic_coroutine(lua_State* L, T&& r, handler_t eh) : base_t(L, std::forward<T>(r)), m_error_handler(std::move(eh)) {
+		basic_coroutine(lua_State* L, T&& r, handler_t eh) : base_t(L, eastl::forward<T>(r)), m_error_handler(eastl::move(eh)) {
 #if SOL_IS_ON(SOL_SAFE_REFERENCES)
 			auto pp = stack::push_pop(*this);
 			constructor_handler handler {};
@@ -170,7 +170,7 @@ namespace sol {
 		basic_coroutine(lua_State* L, int index = -1)
 		: basic_coroutine(L, index, detail::get_default_handler<reference, is_main_threaded<base_t>::value>(L)) {
 		}
-		basic_coroutine(lua_State* L, int index, handler_t eh) : base_t(L, index), m_error_handler(std::move(eh)) {
+		basic_coroutine(lua_State* L, int index, handler_t eh) : base_t(L, index), m_error_handler(eastl::move(eh)) {
 #ifdef SOL_SAFE_REFERENCES
 			constructor_handler handler {};
 			stack::check<basic_coroutine>(L, index, handler);
@@ -179,7 +179,7 @@ namespace sol {
 		basic_coroutine(lua_State* L, absolute_index index)
 		: basic_coroutine(L, index, detail::get_default_handler<reference, is_main_threaded<base_t>::value>(L)) {
 		}
-		basic_coroutine(lua_State* L, absolute_index index, handler_t eh) : base_t(L, index), m_error_handler(std::move(eh)) {
+		basic_coroutine(lua_State* L, absolute_index index, handler_t eh) : base_t(L, index), m_error_handler(eastl::move(eh)) {
 #if SOL_IS_ON(SOL_SAFE_REFERENCES)
 			constructor_handler handler {};
 			stack::check<basic_coroutine>(L, index, handler);
@@ -188,7 +188,7 @@ namespace sol {
 		basic_coroutine(lua_State* L, raw_index index)
 		: basic_coroutine(L, index, detail::get_default_handler<reference, is_main_threaded<base_t>::value>(L)) {
 		}
-		basic_coroutine(lua_State* L, raw_index index, handler_t eh) : base_t(L, index), m_error_handler(std::move(eh)) {
+		basic_coroutine(lua_State* L, raw_index index, handler_t eh) : base_t(L, index), m_error_handler(eastl::move(eh)) {
 #if SOL_IS_ON(SOL_SAFE_REFERENCES)
 			constructor_handler handler {};
 			stack::check<basic_coroutine>(L, index, handler);
@@ -197,7 +197,7 @@ namespace sol {
 		basic_coroutine(lua_State* L, ref_index index)
 		: basic_coroutine(L, index, detail::get_default_handler<reference, is_main_threaded<base_t>::value>(L)) {
 		}
-		basic_coroutine(lua_State* L, ref_index index, handler_t eh) : base_t(L, index), m_error_handler(std::move(eh)) {
+		basic_coroutine(lua_State* L, ref_index index, handler_t eh) : base_t(L, index), m_error_handler(eastl::move(eh)) {
 #if SOL_IS_ON(SOL_SAFE_REFERENCES)
 			auto pp = stack::push_pop(*this);
 			constructor_handler handler {};
@@ -224,12 +224,12 @@ namespace sol {
 
 		template <typename... Args>
 		protected_function_result operator()(Args&&... args) {
-			return call<>(std::forward<Args>(args)...);
+			return call<>(eastl::forward<Args>(args)...);
 		}
 
 		template <typename... Ret, typename... Args>
 		decltype(auto) operator()(types<Ret...>, Args&&... args) {
-			return call<Ret...>(std::forward<Args>(args)...);
+			return call<Ret...>(eastl::forward<Args>(args)...);
 		}
 
 		template <typename... Ret, typename... Args>
@@ -239,8 +239,8 @@ namespace sol {
 			// this makes the stack incompatible with other kinds of stacks: protect against this
 			// make sure coroutines don't screw us over
 			base_t::push();
-			int pushcount = stack::multi_push_reference(lua_state(), std::forward<Args>(args)...);
-			return invoke(types<Ret...>(), std::make_index_sequence<sizeof...(Ret)>(), pushcount);
+			int pushcount = stack::multi_push_reference(lua_state(), eastl::forward<Args>(args)...);
+			return invoke(types<Ret...>(), eastl::make_index_sequence<sizeof...(Ret)>(), pushcount);
 		}
 
 	private:

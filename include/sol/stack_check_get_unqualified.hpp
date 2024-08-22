@@ -31,16 +31,16 @@
 
 #include <cstdlib>
 #include <cmath>
-#include <optional>
+#include <EASTL/optional.h>
 #if SOL_IS_ON(SOL_STD_VARIANT)
-#include <variant>
+#include <EASTL/variant.h>
 #endif // variant shenanigans (thanks, Mac OSX)
 
 
 namespace sol { namespace stack {
 	template <typename T, typename>
 	struct unqualified_check_getter {
-		typedef decltype(stack_detail::unchecked_unqualified_get<T>(nullptr, -1, std::declval<record&>())) R;
+		typedef decltype(stack_detail::unchecked_unqualified_get<T>(nullptr, -1, eastl::declval<record&>())) R;
 
 		template <typename Optional, typename Handler>
 		static Optional get_using(lua_State* L, int index, Handler&& handler, record& tracking) {
@@ -66,7 +66,7 @@ namespace sol { namespace stack {
 						return stack_detail::unchecked_get<T>(L, index, tracking);
 					}
 				}
-				else if constexpr ((std::is_integral_v<T> || std::is_same_v<T, lua_Integer>)&&!std::is_same_v<T, bool>) {
+				else if constexpr ((eastl::is_integral_v<T> || eastl::is_same_v<T, lua_Integer>)&&!eastl::is_same_v<T, bool>) {
 #if SOL_LUA_VERSION_I_ >= 503
 					if (lua_isinteger(L, index) != 0) {
 						tracking.use(1);
@@ -92,7 +92,7 @@ namespace sol { namespace stack {
 					handler(L, index, type::number, t, "not an integer");
 					return detail::associated_nullopt_v<Optional>;
 				}
-				else if constexpr (std::is_floating_point_v<T> || std::is_same_v<T, lua_Number>) {
+				else if constexpr (eastl::is_floating_point_v<T> || eastl::is_same_v<T, lua_Number>) {
 					int isnum = 0;
 					lua_Number value = lua_tonumberx(L, index, &isnum);
 					if (isnum == 0) {
@@ -104,7 +104,7 @@ namespace sol { namespace stack {
 					tracking.use(1);
 					return static_cast<T>(value);
 				}
-				else if constexpr (std::is_enum_v<T> && !meta::any_same_v<T, meta_function, type>) {
+				else if constexpr (eastl::is_enum_v<T> && !meta::any_same_v<T, meta_function, type>) {
 					int isnum = 0;
 					lua_Integer value = lua_tointegerx(L, index, &isnum);
 					if (isnum == 0) {
@@ -117,7 +117,7 @@ namespace sol { namespace stack {
 					return static_cast<T>(value);
 				}
 				else {
-					if (!unqualified_check<T>(L, index, std::forward<Handler>(handler))) {
+					if (!unqualified_check<T>(L, index, eastl::forward<Handler>(handler))) {
 						tracking.use(static_cast<int>(!lua_isnone(L, index)));
 						return detail::associated_nullopt_v<Optional>;
 					}
@@ -125,7 +125,7 @@ namespace sol { namespace stack {
 				}
 			}
 			else {
-				if (!unqualified_check<T>(L, index, std::forward<Handler>(handler))) {
+				if (!unqualified_check<T>(L, index, eastl::forward<Handler>(handler))) {
 					tracking.use(static_cast<int>(!lua_isnone(L, index)));
 					return detail::associated_nullopt_v<Optional>;
 				}
@@ -135,24 +135,24 @@ namespace sol { namespace stack {
 
 		template <typename Handler>
 		static optional<R> get(lua_State* L, int index, Handler&& handler, record& tracking) {
-			return get_using<optional<R>>(L, index, std::forward<Handler>(handler), tracking);
+			return get_using<optional<R>>(L, index, eastl::forward<Handler>(handler), tracking);
 		}
 	};
 
 #if SOL_IS_ON(SOL_STD_VARIANT)
 	template <typename... Tn, typename C>
-	struct unqualified_check_getter<std::variant<Tn...>, C> {
-		typedef std::variant<Tn...> V;
-		typedef std::variant_size<V> V_size;
-		typedef std::integral_constant<bool, V_size::value == 0> V_is_empty;
+	struct unqualified_check_getter<eastl::variant<Tn...>, C> {
+		typedef eastl::variant<Tn...> V;
+		typedef eastl::variant_size<V> V_size;
+		typedef eastl::integral_constant<bool, V_size::value == 0> V_is_empty;
 
 		template <typename Handler>
-		static optional<V> get_empty(std::true_type, lua_State*, int, Handler&&, record&) {
+		static optional<V> get_empty(eastl::true_type, lua_State*, int, Handler&&, record&) {
 			return nullopt;
 		}
 
 		template <typename Handler>
-		static optional<V> get_empty(std::false_type, lua_State* L, int index, Handler&& handler, record&) {
+		static optional<V> get_empty(eastl::false_type, lua_State* L, int index, Handler&& handler, record&) {
 			// This should never be reached...
 			// please check your code and understand what you did to bring yourself here
 			// maybe file a bug report, or 5
@@ -162,22 +162,22 @@ namespace sol { namespace stack {
 		}
 
 		template <typename Handler>
-		static optional<V> get_one(std::integral_constant<std::size_t, 0>, lua_State* L, int index, Handler&& handler, record& tracking) {
-			return get_empty(V_is_empty(), L, index, std::forward<Handler>(handler), tracking);
+		static optional<V> get_one(eastl::integral_constant<eastl::size_t, 0>, lua_State* L, int index, Handler&& handler, record& tracking) {
+			return get_empty(V_is_empty(), L, index, eastl::forward<Handler>(handler), tracking);
 		}
 
-		template <std::size_t I, typename Handler>
-		static optional<V> get_one(std::integral_constant<std::size_t, I>, lua_State* L, int index, Handler&& handler, record& tracking) {
-			typedef std::variant_alternative_t<I - 1, V> T;
+		template <eastl::size_t I, typename Handler>
+		static optional<V> get_one(eastl::integral_constant<eastl::size_t, I>, lua_State* L, int index, Handler&& handler, record& tracking) {
+			typedef eastl::variant_alternative_t<I - 1, V> T;
 			if (stack::check<T>(L, index, &no_panic, tracking)) {
-				return V(std::in_place_index<I - 1>, stack::get<T>(L, index));
+				return V(eastl::in_place_index_t<I - 1>, stack::get<T>(L, index));
 			}
-			return get_one(std::integral_constant<std::size_t, I - 1>(), L, index, std::forward<Handler>(handler), tracking);
+			return get_one(eastl::integral_constant<eastl::size_t, I - 1>(), L, index, eastl::forward<Handler>(handler), tracking);
 		}
 
 		template <typename Handler>
 		static optional<V> get(lua_State* L, int index, Handler&& handler, record& tracking) {
-			return get_one(std::integral_constant<std::size_t, V_size::value>(), L, index, std::forward<Handler>(handler), tracking);
+			return get_one(eastl::integral_constant<eastl::size_t, V_size::value>(), L, index, eastl::forward<Handler>(handler), tracking);
 		}
 	};
 #endif // standard variant

@@ -28,28 +28,28 @@
 #include <sol/object.hpp>
 
 #include <cstddef>
-#include <string>
+#include <EASTL/string.h>
 
 namespace sol::utility {
 
 	// Converts any object into a string using luaL_tolstring.
 	//
 	// Note: Uses the metamethod __tostring if available.
-	inline std::string to_string(const sol::stack_object& object) {
-		std::size_t len;
+	inline eastl::string to_string(const sol::stack_object& object) {
+		eastl::size_t len;
 		const char* str = luaL_tolstring(object.lua_state(), object.stack_index(), &len);
 
-		auto result = std::string(str, len);
+		auto result = eastl::string(str, len);
 
 		// luaL_tolstring pushes the string onto the stack, but since
-		// we have copied it into our std::string by now we should
+		// we have copied it into our eastl::string by now we should
 		// remove it from the stack.
 		lua_pop(object.lua_state(), 1);
 
 		return result;
 	}
 
-	inline std::string to_string(const sol::object& object) {
+	inline eastl::string to_string(const sol::object& object) {
 		auto pp = sol::stack::push_pop(object);
 		return to_string(sol::stack_object(object.lua_state(), -1));
 	}

@@ -26,8 +26,8 @@
 
 #include <sol/types.hpp>
 #include <sol/ebco.hpp>
-#include <type_traits>
-#include <utility>
+#include <EASTL/type_traits.h>
+#include <EASTL/utility.h>
 
 namespace sol {
 	namespace detail {
@@ -42,7 +42,7 @@ namespace sol {
 
 	public:
 		template <typename Rx, typename Wx>
-		property_wrapper(Rx&& r, Wx&& w) : read_base_t(std::forward<Rx>(r)), write_base_t(std::forward<Wx>(w)) {
+		property_wrapper(Rx&& r, Wx&& w) : read_base_t(eastl::forward<Rx>(r)), write_base_t(eastl::forward<Wx>(w)) {
 		}
 
 		W& write() {
@@ -67,10 +67,10 @@ namespace sol {
 		typedef lua_bind_traits<meta::unqualified_t<F>> left_traits;
 		typedef lua_bind_traits<meta::unqualified_t<G>> right_traits;
 		if constexpr (left_traits::free_arity < right_traits::free_arity) {
-			return property_wrapper<std::decay_t<F>, std::decay_t<G>>(std::forward<F>(f), std::forward<G>(g));
+			return property_wrapper<eastl::decay_t<F>, eastl::decay_t<G>>(eastl::forward<F>(f), eastl::forward<G>(g));
 		}
 		else {
-			return property_wrapper<std::decay_t<G>, std::decay_t<F>>(std::forward<G>(g), std::forward<F>(f));
+			return property_wrapper<eastl::decay_t<G>, eastl::decay_t<F>>(eastl::forward<G>(g), eastl::forward<F>(f));
 		}
 	}
 
@@ -78,21 +78,21 @@ namespace sol {
 	inline decltype(auto) property(F&& f) {
 		typedef lua_bind_traits<meta::unqualified_t<F>> left_traits;
 		if constexpr (left_traits::free_arity < 2) {
-			return property_wrapper<std::decay_t<F>, detail::no_prop>(std::forward<F>(f), detail::no_prop());
+			return property_wrapper<eastl::decay_t<F>, detail::no_prop>(eastl::forward<F>(f), detail::no_prop());
 		}
 		else {
-			return property_wrapper<detail::no_prop, std::decay_t<F>>(detail::no_prop(), std::forward<F>(f));
+			return property_wrapper<detail::no_prop, eastl::decay_t<F>>(detail::no_prop(), eastl::forward<F>(f));
 		}
 	}
 
 	template <typename F>
 	inline decltype(auto) readonly_property(F&& f) {
-		return property_wrapper<std::decay_t<F>, detail::no_prop>(std::forward<F>(f), detail::no_prop());
+		return property_wrapper<eastl::decay_t<F>, detail::no_prop>(eastl::forward<F>(f), detail::no_prop());
 	}
 
 	template <typename F>
 	inline decltype(auto) writeonly_property(F&& f) {
-		return property_wrapper<detail::no_prop, std::decay_t<F>>(detail::no_prop(), std::forward<F>(f));
+		return property_wrapper<detail::no_prop, eastl::decay_t<F>>(detail::no_prop(), eastl::forward<F>(f));
 	}
 
 	template <typename T>
@@ -128,19 +128,19 @@ namespace sol {
 
 	template <typename V>
 	inline auto var(V&& v) {
-		typedef std::decay_t<V> T;
-		return var_wrapper<T>(std::forward<V>(v));
+		typedef eastl::decay_t<V> T;
+		return var_wrapper<T>(eastl::forward<V>(v));
 	}
 
 	namespace meta {
 		template <typename T>
-		using is_member_object = std::integral_constant<bool, std::is_member_object_pointer_v<T> || is_specialization_of_v<T, readonly_wrapper>>;
+		using is_member_object = eastl::integral_constant<bool, eastl::is_member_object_pointer_v<T> || is_specialization_of_v<T, readonly_wrapper>>;
 
 		template <typename T>
 		inline constexpr bool is_member_object_v = is_member_object<T>::value;
 
 		template <typename T>
-		using is_member_object_or_function = std::integral_constant<bool, is_member_object_v<T> || std::is_member_pointer_v<T>>;
+		using is_member_object_or_function = eastl::integral_constant<bool, is_member_object_v<T> || eastl::is_member_pointer_v<T>>;
 
 		template <typename T>
 		inline constexpr bool is_member_object_or_function_v = is_member_object_or_function<T>::value;

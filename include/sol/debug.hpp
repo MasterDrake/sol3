@@ -27,11 +27,19 @@
 #include <sol/stack.hpp>
 #include <iostream>
 
+namespace std
+{
+    std::ostream & operator<<(std::ostream &sout, eastl::string const & p)
+    {
+        return sout << p.c_str();
+    }
+}
+
 namespace sol { namespace detail { namespace debug {
-	inline std::string dump_types(lua_State* L) {
-		std::string visual;
-		std::size_t size = lua_gettop(L) + 1;
-		for (std::size_t i = 1; i < size; ++i) {
+	inline eastl::string dump_types(lua_State* L) {
+		eastl::string visual;
+		eastl::size_t size = lua_gettop(L) + 1;
+		for (eastl::size_t i = 1; i < size; ++i) {
 			if (i != 1) {
 				visual += " | ";
 			}
@@ -44,7 +52,7 @@ namespace sol { namespace detail { namespace debug {
 		std::cout << dump_types(L) << std::endl;
 	}
 
-	inline void print_section(const std::string& message, lua_State* L) {
+	inline void print_section(const eastl::string& message, lua_State* L) {
 		std::cout << "-- " << message << " -- [ " << dump_types(L) << " ]" << std::endl;
 	}
 }}} // namespace sol::detail::debug

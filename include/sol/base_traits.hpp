@@ -24,7 +24,7 @@
 #ifndef SOL_BASE_TRAITS_HPP
 #define SOL_BASE_TRAITS_HPP
 
-#include <type_traits>
+#include <EASTL/type_traits.h>
 
 namespace sol {
 	namespace detail {
@@ -33,14 +33,14 @@ namespace sol {
 	} // namespace detail
 
 	namespace meta {
-		using sfinae_yes_t = std::true_type;
-		using sfinae_no_t = std::false_type;
+		using sfinae_yes_t = eastl::true_type;
+		using sfinae_no_t = eastl::false_type;
 
 		template <typename...>
 		using void_t = void;
 
 		template <typename T>
-		using unqualified = std::remove_cv<std::remove_reference_t<T>>;
+		using unqualified = eastl::remove_cv<eastl::remove_reference_t<T>>;
 
 		template <typename T>
 		using unqualified_t = typename unqualified<T>::type;
@@ -50,10 +50,10 @@ namespace sol {
 			struct unqualified_non_alias : unqualified<T> { };
 
 			template <template <class...> class Test, class, class... Args>
-			struct is_detected : std::false_type { };
+			struct is_detected : eastl::false_type { };
 
 			template <template <class...> class Test, class... Args>
-			struct is_detected<Test, void_t<Test<Args...>>, Args...> : std::true_type { };
+			struct is_detected<Test, void_t<Test<Args...>>, Args...> : eastl::true_type { };
 		} // namespace meta_detail
 
 		template <template <class...> class Trait, class... Args>
@@ -65,14 +65,14 @@ namespace sol {
 		template <typename _Default, typename _Void, template <typename...> typename _Op, typename... _Args>
 		class detector {
 		public:
-			using value_t = ::std::false_type;
+			using value_t = ::eastl::false_type;
 			using type = _Default;
 		};
 
 		template <typename _Default, template <typename...> typename _Op, typename... _Args>
 		class detector<_Default, void_t<_Op<_Args...>>, _Op, _Args...> {
 		public:
-			using value_t = ::std::true_type;
+			using value_t = ::eastl::true_type;
 			using type = _Op<_Args...>;
 		};
 
@@ -95,8 +95,8 @@ namespace sol {
 		template <typename _Default, template <typename...> typename _Op, typename... _Args>
 		constexpr inline bool detected_or_v = detector<_Default, void, _Op, _Args...>::value;
 
-		template <std::size_t I>
-		using index_value = std::integral_constant<std::size_t, I>;
+		template <eastl::size_t I>
+		using index_value = eastl::integral_constant<eastl::size_t, I>;
 
 		template <bool>
 		struct conditional {
@@ -115,16 +115,16 @@ namespace sol {
 
 		namespace meta_detail {
 			template <typename T, template <typename...> class Templ>
-			struct is_specialization_of : std::false_type { };
+			struct is_specialization_of : eastl::false_type { };
 			template <typename... T, template <typename...> class Templ>
-			struct is_specialization_of<Templ<T...>, Templ> : std::true_type { };
+			struct is_specialization_of<Templ<T...>, Templ> : eastl::true_type { };
 		} // namespace meta_detail
 
 		template <typename T, template <typename...> class Templ>
-		using is_specialization_of = meta_detail::is_specialization_of<std::remove_cv_t<T>, Templ>;
+		using is_specialization_of = meta_detail::is_specialization_of<eastl::remove_cv_t<T>, Templ>;
 
 		template <typename T, template <typename...> class Templ>
-		inline constexpr bool is_specialization_of_v = is_specialization_of<std::remove_cv_t<T>, Templ>::value;
+		inline constexpr bool is_specialization_of_v = is_specialization_of<eastl::remove_cv_t<T>, Templ>::value;
 
 		template <typename T>
 		struct identity {
@@ -135,13 +135,13 @@ namespace sol {
 		using identity_t = typename identity<T>::type;
 
 		template <typename T>
-		using is_builtin_type = std::integral_constant<bool, std::is_arithmetic<T>::value || std::is_pointer<T>::value || std::is_array<T>::value>;
+		using is_builtin_type = eastl::integral_constant<bool, eastl::is_arithmetic<T>::value || eastl::is_pointer<T>::value || eastl::is_array<T>::value>;
 
 		namespace meta_detail {
 			template <typename T, typename = void>
-			struct has_internal_marker_impl : std::false_type { };
+			struct has_internal_marker_impl : eastl::false_type { };
 			template <typename T>
-			struct has_internal_marker_impl<T, void_t<typename T::SOL_INTERNAL_UNSPECIALIZED_MARKER_>> : std::true_type { };
+			struct has_internal_marker_impl<T, void_t<typename T::SOL_INTERNAL_UNSPECIALIZED_MARKER_>> : eastl::true_type { };
 
 			template <typename T>
 			using has_internal_marker = has_internal_marker_impl<T>;

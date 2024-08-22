@@ -63,7 +63,7 @@ namespace sol { namespace stack {
 					return OptionalType(stack_detail::unchecked_get<T>(L, index, tracking));
 				}
 			}
-			else if constexpr (!std::is_reference_v<T> && is_unique_usertype_v<Tu> && !is_actual_type_rebindable_for_v<Tu>) {
+			else if constexpr (!eastl::is_reference_v<T> && is_unique_usertype_v<Tu> && !is_actual_type_rebindable_for_v<Tu>) {
 				// we can take shortcuts here to save on separate checking, and just return nullopt!
 				using element = unique_usertype_element_t<Tu>;
 				using actual = unique_usertype_actual_t<Tu>;
@@ -106,7 +106,7 @@ namespace sol { namespace stack {
 					case 2:
 						// it's a base match, return the
 						// aliased creation
-						return OptionalType(std::move(r));
+						return OptionalType(eastl::move(r));
 					default:
 						break;
 					}
@@ -114,7 +114,7 @@ namespace sol { namespace stack {
 				}
 			}
 			else {
-				if (!check<T>(L, index, std::forward<Handler>(handler))) {
+				if (!check<T>(L, index, eastl::forward<Handler>(handler))) {
 					tracking.use(static_cast<int>(!lua_isnone(L, index)));
 					return OptionalType();
 				}
@@ -129,16 +129,16 @@ namespace sol { namespace stack {
 
 	template <typename T, typename>
 	struct qualified_check_getter {
-		typedef decltype(stack_detail::unchecked_get<T>(nullptr, -1, std::declval<record&>())) R;
+		typedef decltype(stack_detail::unchecked_get<T>(nullptr, -1, eastl::declval<record&>())) R;
 
 		template <typename Handler>
 		optional<R> get(lua_State* L, int index, Handler&& handler, record& tracking) {
-			return stack_detail::get_optional<optional<R>, T>(L, index, std::forward<Handler>(handler), tracking);
+			return stack_detail::get_optional<optional<R>, T>(L, index, eastl::forward<Handler>(handler), tracking);
 		}
 	};
 
 	template <typename Optional>
-	struct qualified_getter<Optional, std::enable_if_t<meta::is_optional_v<Optional>>> {
+	struct qualified_getter<Optional, eastl::enable_if_t<meta::is_optional_v<Optional>>> {
 		static Optional get(lua_State* L, int index, record& tracking) {
 			using T = typename meta::unqualified_t<Optional>::value_type;
 			return stack_detail::get_optional<Optional, T>(L, index, &no_panic, tracking);

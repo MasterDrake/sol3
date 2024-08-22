@@ -25,7 +25,7 @@
 #define SOL_PROTECT_HPP
 
 #include <sol/traits.hpp>
-#include <utility>
+#include <EASTL/utility.h>
 
 namespace sol {
 
@@ -33,8 +33,8 @@ namespace sol {
 	struct protect_t {
 		T value;
 
-		template <typename Arg, typename... Args, meta::disable<std::is_same<protect_t, meta::unqualified_t<Arg>>> = meta::enabler>
-		protect_t(Arg&& arg, Args&&... args) : value(std::forward<Arg>(arg), std::forward<Args>(args)...) {
+		template <typename Arg, typename... Args, meta::disable<eastl::is_same<protect_t, meta::unqualified_t<Arg>>> = meta::enabler>
+		protect_t(Arg&& arg, Args&&... args) : value(eastl::forward<Arg>(arg), eastl::forward<Args>(args)...) {
 		}
 
 		protect_t(const protect_t&) = default;
@@ -45,7 +45,7 @@ namespace sol {
 
 	template <typename T>
 	auto protect(T&& value) {
-		return protect_t<std::decay_t<T>>(std::forward<T>(value));
+		return protect_t<eastl::decay_t<T>>(eastl::forward<T>(value));
 	}
 
 } // namespace sol

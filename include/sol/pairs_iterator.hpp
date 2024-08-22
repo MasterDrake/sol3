@@ -44,8 +44,8 @@ namespace sol {
 	public:
 		using key_type = object;
 		using mapped_type = object;
-		using value_type = std::pair<object, object>;
-		using iterator_category = std::input_iterator_tag;
+		using value_type = eastl::pair<object, object>;
+		using iterator_category = eastl::input_iterator_tag;
 		using difference_type = std::ptrdiff_t;
 		using pointer = value_type*;
 		using const_pointer = value_type const*;
@@ -66,9 +66,9 @@ namespace sol {
 
 		pairs_iterator(pairs_iterator&& right) noexcept
 		: m_L(right.m_L)
-		, m_next_function_ref(std::move(right.m_next_function_ref))
-		, m_table_ref(std::move(right.m_table_ref))
-		, m_cached_key_value_pair(std::move(right.m_cached_key_value_pair))
+		, m_next_function_ref(eastl::move(right.m_next_function_ref))
+		, m_table_ref(eastl::move(right.m_table_ref))
+		, m_cached_key_value_pair(eastl::move(right.m_cached_key_value_pair))
 		, m_key_index(right.m_key_index)
 		, m_iteration_index(right.m_iteration_index) {
 			right.m_key_index = empty_key_index;
@@ -76,9 +76,9 @@ namespace sol {
 
 		pairs_iterator& operator=(pairs_iterator&& right) noexcept {
 			m_L = right.m_L;
-			m_next_function_ref = std::move(right.m_next_function_ref);
-			m_table_ref = std::move(right.m_table_ref);
-			m_cached_key_value_pair = std::move(right.m_cached_key_value_pair);
+			m_next_function_ref = eastl::move(right.m_next_function_ref);
+			m_table_ref = eastl::move(right.m_table_ref);
+			m_cached_key_value_pair = eastl::move(right.m_cached_key_value_pair);
 			m_key_index = right.m_key_index;
 			m_iteration_index = right.m_iteration_index;
 			right.m_key_index = empty_key_index;
@@ -122,7 +122,7 @@ namespace sol {
 			{
 				auto maybe_next = stack::stack_detail::find_lua_next_function(m_L);
 				if (maybe_next.has_value()) {
-					m_next_function_ref = std::move(*maybe_next);
+					m_next_function_ref = eastl::move(*maybe_next);
 					m_table_ref = source_;
 
 					stack::push(m_L, lua_nil);
@@ -228,7 +228,7 @@ namespace sol {
 		lua_State* m_L;
 		protected_function m_next_function_ref;
 		sol::reference m_table_ref;
-		std::pair<object, object> m_cached_key_value_pair;
+		eastl::pair<object, object> m_cached_key_value_pair;
 		int m_key_index;
 		int m_iteration_index;
 	};
@@ -236,7 +236,7 @@ namespace sol {
 	template <typename Source>
 	class basic_pairs_range {
 	private:
-		using source_t = std::add_lvalue_reference_t<Source>;
+		using source_t = eastl::add_lvalue_reference_t<Source>;
 		source_t m_source;
 
 	public:

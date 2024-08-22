@@ -36,35 +36,35 @@ namespace sol {
 	private:
 		using key_type = detail::proxy_key_t<Key>;
 
-		template <typename T, std::size_t... I>
-		decltype(auto) tuple_get(std::index_sequence<I...>) const& {
-			return tbl.template traverse_get<T>(std::get<I>(key)...);
+		template <typename T, eastl::size_t... I>
+		decltype(auto) tuple_get(eastl::index_sequence<I...>) const& {
+			return tbl.template traverse_get<T>(eastl::get<I>(key)...);
 		}
 
-		template <typename T, std::size_t... I>
-		decltype(auto) tuple_get(std::index_sequence<I...>) && {
-			return tbl.template traverse_get<T>(std::get<I>(std::move(key))...);
+		template <typename T, eastl::size_t... I>
+		decltype(auto) tuple_get(eastl::index_sequence<I...>) && {
+			return tbl.template traverse_get<T>(eastl::get<I>(eastl::move(key))...);
 		}
 
-		template <std::size_t... I, typename T>
-		void tuple_set(std::index_sequence<I...>, T&& value) & {
-			tbl.traverse_set(std::get<I>(key)..., std::forward<T>(value));
+		template <eastl::size_t... I, typename T>
+		void tuple_set(eastl::index_sequence<I...>, T&& value) & {
+			tbl.traverse_set(eastl::get<I>(key)..., eastl::forward<T>(value));
 		}
 
-		template <std::size_t... I, typename T>
-		void tuple_set(std::index_sequence<I...>, T&& value) && {
-			tbl.traverse_set(std::get<I>(std::move(key))..., std::forward<T>(value));
+		template <eastl::size_t... I, typename T>
+		void tuple_set(eastl::index_sequence<I...>, T&& value) && {
+			tbl.traverse_set(eastl::get<I>(eastl::move(key))..., eastl::forward<T>(value));
 		}
 
-		auto setup_table(std::true_type) {
-			auto p = stack::probe_get_field<std::is_same_v<meta::unqualified_t<Table>, global_table>>(lua_state(), key, tbl.stack_index());
+		auto setup_table(eastl::true_type) {
+			auto p = stack::probe_get_field<eastl::is_same_v<meta::unqualified_t<Table>, global_table>>(lua_state(), key, tbl.stack_index());
 			lua_pop(lua_state(), p.levels);
 			return p;
 		}
 
-		bool is_valid(std::false_type) {
+		bool is_valid(eastl::false_type) {
 			auto pp = stack::push_pop(tbl);
-			auto p = stack::probe_get_field<std::is_same_v<meta::unqualified_t<Table>, global_table>>(lua_state(), key, lua_gettop(lua_state()));
+			auto p = stack::probe_get_field<eastl::is_same_v<meta::unqualified_t<Table>, global_table>>(lua_state(), key, lua_gettop(lua_state()));
 			lua_pop(lua_state(), p.levels);
 			return p;
 		}
@@ -74,7 +74,7 @@ namespace sol {
 		key_type key;
 
 		template <typename T>
-		table_proxy(Table table, T&& k) : tbl(table), key(std::forward<T>(k)) {
+		table_proxy(Table table, T&& k) : tbl(table), key(eastl::forward<T>(k)) {
 		}
 
 		table_proxy(const table_proxy&) = default;
@@ -83,63 +83,63 @@ namespace sol {
 			return set(right);
 		}
 		table_proxy& operator=(table_proxy&& right) {
-			return set(std::move(right));
+			return set(eastl::move(right));
 		}
 
 		template <typename T>
 		table_proxy& set(T&& item) & {
-			tuple_set(std::make_index_sequence<std::tuple_size_v<meta::unqualified_t<key_type>>>(), std::forward<T>(item));
+			tuple_set(eastl::make_index_sequence<eastl::tuple_size_v<meta::unqualified_t<key_type>>>(), eastl::forward<T>(item));
 			return *this;
 		}
 
 		template <typename T>
 		table_proxy&& set(T&& item) && {
-			std::move(*this).tuple_set(std::make_index_sequence<std::tuple_size_v<meta::unqualified_t<key_type>>>(), std::forward<T>(item));
-			return std::move(*this);
+			eastl::move(*this).tuple_set(eastl::make_index_sequence<eastl::tuple_size_v<meta::unqualified_t<key_type>>>(), eastl::forward<T>(item));
+			return eastl::move(*this);
 		}
 
 		template <typename... Args>
 		table_proxy& set_function(Args&&... args) & {
-			tbl.set_function(key, std::forward<Args>(args)...);
+			tbl.set_function(key, eastl::forward<Args>(args)...);
 			return *this;
 		}
 
 		template <typename... Args>
 		table_proxy&& set_function(Args&&... args) && {
-			tbl.set_function(std::move(key), std::forward<Args>(args)...);
-			return std::move(*this);
+			tbl.set_function(eastl::move(key), eastl::forward<Args>(args)...);
+			return eastl::move(*this);
 		}
 
-		template <typename T, std::enable_if_t<!std::is_same_v<meta::unqualified_t<T>, table_proxy>>* = nullptr>
+		template <typename T, eastl::enable_if_t<!eastl::is_same_v<meta::unqualified_t<T>, table_proxy>>* = nullptr>
 		table_proxy& operator=(T&& other) & {
 			using Tu = meta::unwrap_unqualified_t<T>;
 			if constexpr (!is_lua_reference_or_proxy_v<Tu> && meta::is_invocable_v<Tu>) {
-				return set_function(std::forward<T>(other));
+				return set_function(eastl::forward<T>(other));
 			}
 			else {
-				return set(std::forward<T>(other));
+				return set(eastl::forward<T>(other));
 			}
 		}
 
-		template <typename T, std::enable_if_t<!std::is_same_v<meta::unqualified_t<T>, table_proxy>>* = nullptr>
+		template <typename T, eastl::enable_if_t<!eastl::is_same_v<meta::unqualified_t<T>, table_proxy>>* = nullptr>
 		table_proxy&& operator=(T&& other) && {
 			using Tu = meta::unwrap_unqualified_t<T>;
 			if constexpr (!is_lua_reference_or_proxy_v<Tu> && meta::is_invocable_v<Tu> && !detail::is_msvc_callable_rigged_v<T>) {
-				return std::move(*this).set_function(std::forward<T>(other));
+				return eastl::move(*this).set_function(eastl::forward<T>(other));
 			}
 			else {
-				return std::move(*this).set(std::forward<T>(other));
+				return eastl::move(*this).set(eastl::forward<T>(other));
 			}
 		}
 
 		template <typename T>
 		table_proxy& operator=(std::initializer_list<T> other) & {
-			return set(std::move(other));
+			return set(eastl::move(other));
 		}
 
 		template <typename T>
 		table_proxy&& operator=(std::initializer_list<T> other) && {
-			return std::move(*this).set(std::move(other));
+			return eastl::move(*this).set(eastl::move(other));
 		}
 
 		template <typename T>
@@ -151,14 +151,14 @@ namespace sol {
 
 		template <typename T>
 		decltype(auto) get() const& {
-			using idx_seq = std::make_index_sequence<std::tuple_size_v<meta::unqualified_t<key_type>>>;
+			using idx_seq = eastl::make_index_sequence<eastl::tuple_size_v<meta::unqualified_t<key_type>>>;
 			return tuple_get<T>(idx_seq());
 		}
 
 		template <typename T>
 		decltype(auto) get() && {
-			using idx_seq = std::make_index_sequence<std::tuple_size_v<meta::unqualified_t<key_type>>>;
-			return std::move(*this).template tuple_get<T>(idx_seq());
+			using idx_seq = eastl::make_index_sequence<eastl::tuple_size_v<meta::unqualified_t<key_type>>>;
+			return eastl::move(*this).template tuple_get<T>(idx_seq());
 		}
 
 		template <typename T>
@@ -168,7 +168,7 @@ namespace sol {
 			if (option) {
 				return static_cast<U>(option.value());
 			}
-			return static_cast<U>(std::forward<T>(otherwise));
+			return static_cast<U>(eastl::forward<T>(otherwise));
 		}
 
 		template <typename T, typename D>
@@ -177,7 +177,7 @@ namespace sol {
 			if (option) {
 				return static_cast<T>(option.value());
 			}
-			return static_cast<T>(std::forward<D>(otherwise));
+			return static_cast<T>(eastl::forward<D>(otherwise));
 		}
 
 
@@ -189,27 +189,27 @@ namespace sol {
 		template <typename T, typename Otherwise>
 		decltype(auto) get_or_create(Otherwise&& other) {
 			if (!this->valid()) {
-				this->set(std::forward<Otherwise>(other));
+				this->set(eastl::forward<Otherwise>(other));
 			}
 			return get<T>();
 		}
 
 		template <typename K>
 		decltype(auto) operator[](K&& k) const& {
-			auto keys = meta::tuplefy(key, std::forward<K>(k));
-			return table_proxy<Table, decltype(keys)>(tbl, std::move(keys));
+			auto keys = meta::tuplefy(key, eastl::forward<K>(k));
+			return table_proxy<Table, decltype(keys)>(tbl, eastl::move(keys));
 		}
 
 		template <typename K>
 		decltype(auto) operator[](K&& k) & {
-			auto keys = meta::tuplefy(key, std::forward<K>(k));
-			return table_proxy<Table, decltype(keys)>(tbl, std::move(keys));
+			auto keys = meta::tuplefy(key, eastl::forward<K>(k));
+			return table_proxy<Table, decltype(keys)>(tbl, eastl::move(keys));
 		}
 
 		template <typename K>
 		decltype(auto) operator[](K&& k) && {
-			auto keys = meta::tuplefy(std::move(key), std::forward<K>(k));
-			return table_proxy<Table, decltype(keys)>(tbl, std::move(keys));
+			auto keys = meta::tuplefy(eastl::move(key), eastl::forward<K>(k));
+			return table_proxy<Table, decltype(keys)>(tbl, eastl::move(keys));
 		}
 
 		template <typename... Ret, typename... Args>
@@ -218,17 +218,17 @@ namespace sol {
 			push(L);
 			int idx = lua_gettop(L);
 			stack_aligned_function func(L, idx);
-			return func.call<Ret...>(std::forward<Args>(args)...);
+			return func.call<Ret...>(eastl::forward<Args>(args)...);
 		}
 
 		template <typename... Args>
 		decltype(auto) operator()(Args&&... args) {
-			return call<>(std::forward<Args>(args)...);
+			return call<>(eastl::forward<Args>(args)...);
 		}
 
 		bool valid() const {
 			auto pp = stack::push_pop(tbl);
-			auto p = stack::probe_get_field<std::is_same<meta::unqualified_t<Table>, global_table>::value>(lua_state(), key, lua_gettop(lua_state()));
+			auto p = stack::probe_get_field<eastl::is_same<meta::unqualified_t<Table>, global_table>::value>(lua_state(), key, lua_gettop(lua_state()));
 			lua_pop(lua_state(), p.levels);
 			return p;
 		}
@@ -238,7 +238,7 @@ namespace sol {
 		}
 
 		int push(lua_State* L) const noexcept {
-			if constexpr (std::is_same_v<meta::unqualified_t<Table>, global_table> || is_stack_table_v<meta::unqualified_t<Table>>) {
+			if constexpr (eastl::is_same_v<meta::unqualified_t<Table>, global_table> || is_stack_table_v<meta::unqualified_t<Table>>) {
 				auto pp = stack::push_pop<true>(tbl);
 				int tableindex = pp.index_of(tbl);
 				int top_index = lua_gettop(L);
@@ -260,7 +260,7 @@ namespace sol {
 		type get_type() const {
 			type t = type::none;
 			auto pp = stack::push_pop(tbl);
-			auto p = stack::probe_get_field<std::is_same<meta::unqualified_t<Table>, global_table>::value>(lua_state(), key, lua_gettop(lua_state()));
+			auto p = stack::probe_get_field<eastl::is_same<meta::unqualified_t<Table>, global_table>::value>(lua_state(), key, lua_gettop(lua_state()));
 			if (p) {
 				t = type_of(lua_state(), -1);
 			}
@@ -328,7 +328,7 @@ namespace sol {
 	template <typename Super>
 	basic_reference<b>& basic_reference<b>::operator=(proxy_base<Super>&& r) {
 		basic_reference<b> v = r;
-		this->operator=(std::move(v));
+		this->operator=(eastl::move(v));
 		return *this;
 	}
 
@@ -336,7 +336,7 @@ namespace sol {
 	template <typename Super>
 	basic_reference<b>& basic_reference<b>::operator=(const proxy_base<Super>& r) {
 		basic_reference<b> v = r;
-		this->operator=(std::move(v));
+		this->operator=(eastl::move(v));
 		return *this;
 	}
 

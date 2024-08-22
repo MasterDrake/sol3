@@ -30,28 +30,28 @@ namespace sol {
 
 	template <typename T>
 	struct usertype_traits {
-		static const std::string& name() {
-			static const std::string& n = detail::short_demangle<T>();
+		static const eastl::string& name() {
+			static const eastl::string& n = detail::short_demangle<T>();
 			return n;
 		}
-		static const std::string& qualified_name() {
-			static const std::string& q_n = detail::demangle<T>();
+		static const eastl::string& qualified_name() {
+			static const eastl::string& q_n = detail::demangle<T>();
 			return q_n;
 		}
-		static const std::string& metatable() {
-			static const std::string m = std::string("sol.").append(detail::demangle<T>());
+		static const eastl::string& metatable() {
+			static const eastl::string m = eastl::string("sol.").append(detail::demangle<T>());
 			return m;
 		}
-		static const std::string& user_metatable() {
-			static const std::string u_m = std::string("sol.").append(detail::demangle<T>()).append(".user");
+		static const eastl::string& user_metatable() {
+			static const eastl::string u_m = eastl::string("sol.").append(detail::demangle<T>()).append(".user");
 			return u_m;
 		}
-		static const std::string& user_gc_metatable() {
-			static const std::string u_g_m = std::string("sol.").append(detail::demangle<T>()).append(".user\xE2\x99\xBB");
+		static const eastl::string& user_gc_metatable() {
+			static const eastl::string u_g_m = eastl::string("sol.").append(detail::demangle<T>()).append(".user\xE2\x99\xBB");
 			return u_g_m;
 		}
-		static const std::string& gc_table() {
-			static const std::string g_t = std::string("sol.").append(detail::demangle<T>()).append(".\xE2\x99\xBB");
+		static const eastl::string& gc_table() {
+			static const eastl::string g_t = eastl::string("sol.").append(detail::demangle<T>()).append(".\xE2\x99\xBB");
 			return g_t;
 		}
 	};

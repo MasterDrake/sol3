@@ -82,16 +82,16 @@ namespace sol {
 #if SOL_IS_ON(SOL_SAFE_STACK_CHECK)
 			luaL_checkstack(L, static_cast<int>(sdeps.size()), detail::not_enough_stack_space_generic);
 #endif // make sure stack doesn't overflow
-			for (std::size_t i = 0; i < sdeps.size(); ++i) {
+			for (eastl::size_t i = 0; i < sdeps.size(); ++i) {
 				lua_pushvalue(L, sdeps.stack_indices[i]);
 				luaL_ref(L, deps.stack_index());
 			}
 			lua_setuservalue(L, ai);
 		}
 
-		template <typename P, meta::disable<std::is_base_of<detail::policy_base_tag, meta::unqualified_t<P>>> = meta::enabler>
+		template <typename P, meta::disable<eastl::is_base_of<detail::policy_base_tag, meta::unqualified_t<P>>> = meta::enabler>
 		inline void handle_policy(P&& p, lua_State* L, int& pushed) {
-			pushed = std::forward<P>(p)(L, pushed);
+			pushed = eastl::forward<P>(p)(L, pushed);
 		}
 	} // namespace policy_detail
 
@@ -104,12 +104,12 @@ namespace sol {
 	namespace call_detail {
 
 		template <typename R, typename W>
-		inline auto& pick(std::true_type, property_wrapper<R, W>& f) {
+		inline auto& pick(eastl::true_type, property_wrapper<R, W>& f) {
 			return f.read();
 		}
 
 		template <typename R, typename W>
-		inline auto& pick(std::false_type, property_wrapper<R, W>& f) {
+		inline auto& pick(eastl::false_type, property_wrapper<R, W>& f) {
 			return f.write();
 		}
 
@@ -132,7 +132,7 @@ namespace sol {
 			: obj_(obj_ptr), obj_lua_ref_(&obj_lua_ref), p_umf_(&umf) {
 			}
 
-			template <typename Fx, std::size_t I, typename... R, typename... Args>
+			template <typename Fx, eastl::size_t I, typename... R, typename... Args>
 			int operator()(types<Fx>, meta::index_value<I>, types<R...> r, types<Args...> a, lua_State* L, int, int start) const {
 				detail::default_construct func {};
 				int result = stack::call_into_lua<checked, clean_stack>(r, a, L, start, func, this->obj_);
@@ -152,13 +152,13 @@ namespace sol {
 		};
 
 		namespace overload_detail {
-			template <std::size_t... M, typename Match, typename... Args>
-			inline int overload_match_arity(types<>, std::index_sequence<>, std::index_sequence<M...>, Match&&, lua_State* L, int, int, Args&&...) {
+			template <eastl::size_t... M, typename Match, typename... Args>
+			inline int overload_match_arity(types<>, eastl::index_sequence<>, eastl::index_sequence<M...>, Match&&, lua_State* L, int, int, Args&&...) {
 				return luaL_error(L, "sol: no matching function call takes this number of arguments and the specified types");
 			}
 
-			template <typename Fx, typename... Fxs, std::size_t I, std::size_t... In, std::size_t... M, typename Match, typename... Args>
-			inline int overload_match_arity(types<Fx, Fxs...>, std::index_sequence<I, In...>, std::index_sequence<M...>, Match&& matchfx, lua_State* L,
+			template <typename Fx, typename... Fxs, eastl::size_t I, eastl::size_t... In, eastl::size_t... M, typename Match, typename... Args>
+			inline int overload_match_arity(types<Fx, Fxs...>, eastl::index_sequence<I, In...>, eastl::index_sequence<M...>, Match&& matchfx, lua_State* L,
 			     int fxarity, int start, Args&&... args) {
 				typedef lua_bind_traits<meta::unwrap_unqualified_t<Fx>> traits;
 				typedef meta::tuple_types<typename traits::return_type> return_types;
@@ -167,58 +167,58 @@ namespace sol {
 				if constexpr (!traits::runtime_variadics_t::value
 				     && meta::find_in_pack_v<meta::index_value<traits::free_arity>, meta::index_value<M>...>::value) {
 					return overload_match_arity(types<Fxs...>(),
-					     std::index_sequence<In...>(),
-					     std::index_sequence<M...>(),
-					     std::forward<Match>(matchfx),
+					     eastl::index_sequence<In...>(),
+					     eastl::index_sequence<M...>(),
+					     eastl::forward<Match>(matchfx),
 					     L,
 					     fxarity,
 					     start,
-					     std::forward<Args>(args)...);
+					     eastl::forward<Args>(args)...);
 				}
 				else {
 					if constexpr (!traits::runtime_variadics_t::value) {
 						if (traits::free_arity != fxarity) {
 							return overload_match_arity(types<Fxs...>(),
-							     std::index_sequence<In...>(),
-							     std::index_sequence<traits::free_arity, M...>(),
-							     std::forward<Match>(matchfx),
+							     eastl::index_sequence<In...>(),
+							     eastl::index_sequence<traits::free_arity, M...>(),
+							     eastl::forward<Match>(matchfx),
 							     L,
 							     fxarity,
 							     start,
-							     std::forward<Args>(args)...);
+							     eastl::forward<Args>(args)...);
 						}
 					}
 					stack::record tracking {};
 					if (!stack::stack_detail::check_types(args_list(), L, start, &no_panic, tracking)) {
 						return overload_match_arity(types<Fxs...>(),
-						     std::index_sequence<In...>(),
-						     std::index_sequence<M...>(),
-						     std::forward<Match>(matchfx),
+						     eastl::index_sequence<In...>(),
+						     eastl::index_sequence<M...>(),
+						     eastl::forward<Match>(matchfx),
 						     L,
 						     fxarity,
 						     start,
-						     std::forward<Args>(args)...);
+						     eastl::forward<Args>(args)...);
 					}
-					return matchfx(types<Fx>(), meta::index_value<I>(), return_types(), args_list(), L, fxarity, start, std::forward<Args>(args)...);
+					return matchfx(types<Fx>(), meta::index_value<I>(), return_types(), args_list(), L, fxarity, start, eastl::forward<Args>(args)...);
 				}
 			}
 
-			template <std::size_t... M, typename Match, typename... Args>
+			template <eastl::size_t... M, typename Match, typename... Args>
 			inline int overload_match_arity_single(
-			     types<>, std::index_sequence<>, std::index_sequence<M...>, Match&& matchfx, lua_State* L, int fxarity, int start, Args&&... args) {
+			     types<>, eastl::index_sequence<>, eastl::index_sequence<M...>, Match&& matchfx, lua_State* L, int fxarity, int start, Args&&... args) {
 				return overload_match_arity(types<>(),
-				     std::index_sequence<>(),
-				     std::index_sequence<M...>(),
-				     std::forward<Match>(matchfx),
+				     eastl::index_sequence<>(),
+				     eastl::index_sequence<M...>(),
+				     eastl::forward<Match>(matchfx),
 				     L,
 				     fxarity,
 				     start,
-				     std::forward<Args>(args)...);
+				     eastl::forward<Args>(args)...);
 			}
 
-			template <typename Fx, std::size_t I, std::size_t... M, typename Match, typename... Args>
+			template <typename Fx, eastl::size_t I, eastl::size_t... M, typename Match, typename... Args>
 			inline int overload_match_arity_single(
-			     types<Fx>, std::index_sequence<I>, std::index_sequence<M...>, Match&& matchfx, lua_State* L, int fxarity, int start, Args&&... args) {
+			     types<Fx>, eastl::index_sequence<I>, eastl::index_sequence<M...>, Match&& matchfx, lua_State* L, int fxarity, int start, Args&&... args) {
 				typedef lua_bind_traits<meta::unwrap_unqualified_t<Fx>> traits;
 				typedef meta::tuple_types<typename traits::return_type> return_types;
 				typedef typename traits::free_args_list args_list;
@@ -226,32 +226,32 @@ namespace sol {
 				if constexpr (!traits::runtime_variadics_t::value
 				     && meta::find_in_pack_v<meta::index_value<traits::free_arity>, meta::index_value<M>...>::value) {
 					return overload_match_arity(types<>(),
-					     std::index_sequence<>(),
-					     std::index_sequence<M...>(),
-					     std::forward<Match>(matchfx),
+					     eastl::index_sequence<>(),
+					     eastl::index_sequence<M...>(),
+					     eastl::forward<Match>(matchfx),
 					     L,
 					     fxarity,
 					     start,
-					     std::forward<Args>(args)...);
+					     eastl::forward<Args>(args)...);
 				}
 				if constexpr (!traits::runtime_variadics_t::value) {
 					if (traits::free_arity != fxarity) {
 						return overload_match_arity(types<>(),
-						     std::index_sequence<>(),
-						     std::index_sequence<traits::free_arity, M...>(),
-						     std::forward<Match>(matchfx),
+						     eastl::index_sequence<>(),
+						     eastl::index_sequence<traits::free_arity, M...>(),
+						     eastl::forward<Match>(matchfx),
 						     L,
 						     fxarity,
 						     start,
-						     std::forward<Args>(args)...);
+						     eastl::forward<Args>(args)...);
 					}
 				}
-				return matchfx(types<Fx>(), meta::index_value<I>(), return_types(), args_list(), L, fxarity, start, std::forward<Args>(args)...);
+				return matchfx(types<Fx>(), meta::index_value<I>(), return_types(), args_list(), L, fxarity, start, eastl::forward<Args>(args)...);
 			}
 
-			template <typename Fx, typename Fx1, typename... Fxs, std::size_t I, std::size_t I1, std::size_t... In, std::size_t... M, typename Match,
+			template <typename Fx, typename Fx1, typename... Fxs, eastl::size_t I, eastl::size_t I1, eastl::size_t... In, eastl::size_t... M, typename Match,
 			     typename... Args>
-			inline int overload_match_arity_single(types<Fx, Fx1, Fxs...>, std::index_sequence<I, I1, In...>, std::index_sequence<M...>, Match&& matchfx,
+			inline int overload_match_arity_single(types<Fx, Fx1, Fxs...>, eastl::index_sequence<I, I1, In...>, eastl::index_sequence<M...>, Match&& matchfx,
 			     lua_State* L, int fxarity, int start, Args&&... args) {
 				typedef lua_bind_traits<meta::unwrap_unqualified_t<Fx>> traits;
 				typedef meta::tuple_types<typename traits::return_type> return_types;
@@ -260,39 +260,39 @@ namespace sol {
 				if constexpr (!traits::runtime_variadics_t::value
 				     && meta::find_in_pack_v<meta::index_value<traits::free_arity>, meta::index_value<M>...>::value) {
 					return overload_match_arity(types<Fx1, Fxs...>(),
-					     std::index_sequence<I1, In...>(),
-					     std::index_sequence<M...>(),
-					     std::forward<Match>(matchfx),
+					     eastl::index_sequence<I1, In...>(),
+					     eastl::index_sequence<M...>(),
+					     eastl::forward<Match>(matchfx),
 					     L,
 					     fxarity,
 					     start,
-					     std::forward<Args>(args)...);
+					     eastl::forward<Args>(args)...);
 				}
 				else {
 					if constexpr (!traits::runtime_variadics_t::value) {
 						if (traits::free_arity != fxarity) {
 							return overload_match_arity(types<Fx1, Fxs...>(),
-							     std::index_sequence<I1, In...>(),
-							     std::index_sequence<traits::free_arity, M...>(),
-							     std::forward<Match>(matchfx),
+							     eastl::index_sequence<I1, In...>(),
+							     eastl::index_sequence<traits::free_arity, M...>(),
+							     eastl::forward<Match>(matchfx),
 							     L,
 							     fxarity,
 							     start,
-							     std::forward<Args>(args)...);
+							     eastl::forward<Args>(args)...);
 						}
 					}
 					stack::record tracking {};
 					if (!stack::stack_detail::check_types(args_list(), L, start, &no_panic, tracking)) {
 						return overload_match_arity(types<Fx1, Fxs...>(),
-						     std::index_sequence<I1, In...>(),
-						     std::index_sequence<M...>(),
-						     std::forward<Match>(matchfx),
+						     eastl::index_sequence<I1, In...>(),
+						     eastl::index_sequence<M...>(),
+						     eastl::forward<Match>(matchfx),
 						     L,
 						     fxarity,
 						     start,
-						     std::forward<Args>(args)...);
+						     eastl::forward<Args>(args)...);
 					}
-					return matchfx(types<Fx>(), meta::index_value<I>(), return_types(), args_list(), L, fxarity, start, std::forward<Args>(args)...);
+					return matchfx(types<Fx>(), meta::index_value<I>(), return_types(), args_list(), L, fxarity, start, eastl::forward<Args>(args)...);
 				}
 			}
 		} // namespace overload_detail
@@ -300,26 +300,26 @@ namespace sol {
 		template <typename... Functions, typename Match, typename... Args>
 		inline int overload_match_arity(Match&& matchfx, lua_State* L, int fxarity, int start, Args&&... args) {
 			return overload_detail::overload_match_arity_single(types<Functions...>(),
-			     std::make_index_sequence<sizeof...(Functions)>(),
-			     std::index_sequence<>(),
-			     std::forward<Match>(matchfx),
+			     eastl::make_index_sequence<sizeof...(Functions)>(),
+			     eastl::index_sequence<>(),
+			     eastl::forward<Match>(matchfx),
 			     L,
 			     fxarity,
 			     start,
-			     std::forward<Args>(args)...);
+			     eastl::forward<Args>(args)...);
 		}
 
 		template <typename... Functions, typename Match, typename... Args>
 		inline int overload_match(Match&& matchfx, lua_State* L, int start, Args&&... args) {
 			int fxarity = lua_gettop(L) - (start - 1);
-			return overload_match_arity<Functions...>(std::forward<Match>(matchfx), L, fxarity, start, std::forward<Args>(args)...);
+			return overload_match_arity<Functions...>(eastl::forward<Match>(matchfx), L, fxarity, start, eastl::forward<Args>(args)...);
 		}
 
 		template <typename T, typename... TypeLists, typename Match, typename... Args>
 		inline int construct_match(Match&& matchfx, lua_State* L, int fxarity, int start, Args&&... args) {
 			// use same overload resolution matching as all other parts of the framework
 			return overload_match_arity<decltype(void_call<T, TypeLists>::call)...>(
-			     std::forward<Match>(matchfx), L, fxarity, start, std::forward<Args>(args)...);
+			     eastl::forward<Match>(matchfx), L, fxarity, start, eastl::forward<Args>(args)...);
 		}
 
 		template <typename T, bool checked, bool clean_stack, typename... TypeLists>
@@ -354,10 +354,10 @@ namespace sol {
 				static constexpr bool is_ref = is_lua_reference_v<uFx>;
 				if constexpr (is_ref) {
 					if constexpr (is_index) {
-						return stack::push(L, std::forward<Fx>(f), std::forward<Args>(args)...);
+						return stack::push(L, eastl::forward<Fx>(f), eastl::forward<Args>(args)...);
 					}
 					else {
-						std::forward<Fx>(f) = stack::unqualified_get<F>(L, boost + (is_variable ? 3 : 1));
+						eastl::forward<Fx>(f) = stack::unqualified_get<F>(L, boost + (is_variable ? 3 : 1));
 						return 0;
 					}
 				}
@@ -365,18 +365,18 @@ namespace sol {
 					using wrap = wrapper<uFx>;
 					using traits_type = typename wrap::traits_type;
 					using fp_t = typename traits_type::function_pointer_type;
-					constexpr bool is_function_pointer_convertible = std::is_class_v<uFx> && std::is_convertible_v<std::decay_t<Fx>, fp_t>;
+					constexpr bool is_function_pointer_convertible = eastl::is_class_v<uFx> && eastl::is_convertible_v<eastl::decay_t<Fx>, fp_t>;
 					if constexpr (is_function_pointer_convertible) {
 						fp_t fx = f;
 						return agnostic_lua_call_wrapper<fp_t, is_index, is_variable, checked, boost, clean_stack> {}.call(
-						     L, fx, std::forward<Args>(args)...);
+						     L, fx, eastl::forward<Args>(args)...);
 					}
 					else {
 						using returns_list = typename wrap::returns_list;
 						using args_list = typename wrap::free_args_list;
 						using caller = typename wrap::caller;
 						return stack::call_into_lua<checked, clean_stack>(
-						     returns_list(), args_list(), L, boost + 1, caller(), std::forward<Fx>(f), std::forward<Args>(args)...);
+						     returns_list(), args_list(), L, boost + 1, caller(), eastl::forward<Fx>(f), eastl::forward<Args>(args)...);
 					}
 				}
 			}
@@ -394,13 +394,13 @@ namespace sol {
 					return stack::push_reference(L, detail::unwrap(f.value()));
 				}
 				else {
-					if constexpr (std::is_const_v<meta::unwrapped_t<T>>) {
+					if constexpr (eastl::is_const_v<meta::unwrapped_t<T>>) {
 						(void)f;
 						return luaL_error(L, "sol: cannot write to a readonly (const) variable");
 					}
 					else {
 						using R = meta::unwrapped_t<T>;
-						if constexpr (std::is_assignable_v<std::add_lvalue_reference_t<meta::unqualified_t<R>>, R>) {
+						if constexpr (eastl::is_assignable_v<eastl::add_lvalue_reference_t<meta::unqualified_t<R>>, R>) {
 							detail::unwrap(f.value()) = stack::unqualified_get<meta::unwrapped_t<T>>(L, boost + (is_variable ? 3 : 1));
 							if (clean_stack) {
 								lua_settop(L, 0);
@@ -461,8 +461,8 @@ namespace sol {
 		};
 
 		template <typename T, bool is_index, bool is_variable, bool checked, int boost, bool clean_stack, typename C>
-		struct agnostic_lua_call_wrapper<std::reference_wrapper<T>, is_index, is_variable, checked, boost, clean_stack, C> {
-			static int call(lua_State* L, std::reference_wrapper<T> f) {
+		struct agnostic_lua_call_wrapper<eastl::reference_wrapper<T>, is_index, is_variable, checked, boost, clean_stack, C> {
+			static int call(lua_State* L, eastl::reference_wrapper<T> f) {
 				agnostic_lua_call_wrapper<T, is_index, is_variable, checked, boost, clean_stack> alcw {};
 				return alcw.call(L, f.get());
 			}
@@ -473,12 +473,12 @@ namespace sol {
 		struct lua_call_wrapper {
 			template <typename Fx, typename... Args>
 			static int call(lua_State* L, Fx&& fx, Args&&... args) {
-				if constexpr (std::is_member_function_pointer_v<F>) {
+				if constexpr (eastl::is_member_function_pointer_v<F>) {
 					using wrap = wrapper<F>;
 					using object_type = typename wrap::object_type;
 					if constexpr (sizeof...(Args) < 1) {
-						using Ta = meta::conditional_t<std::is_void_v<T>, object_type, T>;
-						static_assert(std::is_base_of_v<object_type, Ta>,
+						using Ta = meta::conditional_t<eastl::is_void_v<T>, object_type, T>;
+						static_assert(eastl::is_base_of_v<object_type, Ta>,
 						     "It seems like you might have accidentally bound a class type with a member function method that does not correspond to the "
 						     "class. For example, there could be a small type in your new_usertype<T>(...) binding, where you specify one class \"T\" "
 						     "but then bind member methods from a complete unrelated class. Check things over!");
@@ -491,10 +491,10 @@ namespace sol {
 							     "actual object with '.' syntax)");
 						}
 						object_type* o = static_cast<object_type*>(maybeo.value());
-						return call(L, std::forward<Fx>(fx), *o);
+						return call(L, eastl::forward<Fx>(fx), *o);
 #else
 						object_type& o = static_cast<object_type&>(*stack::unqualified_get<non_null<Ta*>>(L, 1));
-						return call(L, std::forward<Fx>(fx), o);
+						return call(L, eastl::forward<Fx>(fx), o);
 #endif // Safety
 					}
 					else {
@@ -502,16 +502,16 @@ namespace sol {
 						using args_list = typename wrap::args_list;
 						using caller = typename wrap::caller;
 						return stack::call_into_lua<checked, clean_stack>(
-						     returns_list(), args_list(), L, boost + (is_variable ? 3 : 2), caller(), std::forward<Fx>(fx), std::forward<Args>(args)...);
+						     returns_list(), args_list(), L, boost + (is_variable ? 3 : 2), caller(), eastl::forward<Fx>(fx), eastl::forward<Args>(args)...);
 					}
 				}
-				else if constexpr (std::is_member_object_pointer_v<F>) {
+				else if constexpr (eastl::is_member_object_pointer_v<F>) {
 					using wrap = wrapper<F>;
 					using object_type = typename wrap::object_type;
 					if constexpr (is_index) {
 						if constexpr (sizeof...(Args) < 1) {
-							using Ta = meta::conditional_t<std::is_void_v<T>, object_type, T>;
-							static_assert(std::is_base_of_v<object_type, Ta>,
+							using Ta = meta::conditional_t<eastl::is_void_v<T>, object_type, T>;
+							static_assert(eastl::is_base_of_v<object_type, Ta>,
 							     "It seems like you might have accidentally bound a class type with a member function method that does not correspond "
 							     "to the class. For example, there could be a small type in your new_usertype<T>(...) binding, where you specify one "
 							     "class \"T\" but then bind member methods from a complete unrelated class. Check things over!");
@@ -524,10 +524,10 @@ namespace sol {
 								return luaL_error(L, "sol: 'self' argument is lua_nil (pass 'self' as first argument)");
 							}
 							object_type* o = static_cast<object_type*>(maybeo.value());
-							return call(L, std::forward<Fx>(fx), *o);
+							return call(L, eastl::forward<Fx>(fx), *o);
 #else
 							object_type& o = static_cast<object_type&>(*stack::get<non_null<Ta*>>(L, 1));
-							return call(L, std::forward<Fx>(fx), o);
+							return call(L, eastl::forward<Fx>(fx), o);
 #endif // Safety
 						}
 						else {
@@ -538,14 +538,14 @@ namespace sol {
 							     L,
 							     boost + (is_variable ? 3 : 2),
 							     caller(),
-							     std::forward<Fx>(fx),
-							     std::forward<Args>(args)...);
+							     eastl::forward<Fx>(fx),
+							     eastl::forward<Args>(args)...);
 						}
 					}
 					else {
 						using traits_type = lua_bind_traits<F>;
 						using return_type = typename traits_type::return_type;
-						constexpr bool ret_is_const = std::is_const_v<std::remove_reference_t<return_type>>;
+						constexpr bool ret_is_const = eastl::is_const_v<eastl::remove_reference_t<return_type>>;
 						if constexpr (ret_is_const) {
 							(void)fx;
 							(void)detail::swallow { 0, (static_cast<void>(args), 0)... };
@@ -553,7 +553,7 @@ namespace sol {
 						}
 						else {
 							using u_return_type = meta::unqualified_t<return_type>;
-							constexpr bool is_assignable = std::is_copy_assignable_v<u_return_type> || std::is_array_v<u_return_type>;
+							constexpr bool is_assignable = eastl::is_copy_assignable_v<u_return_type> || eastl::is_array_v<u_return_type>;
 							if constexpr (!is_assignable) {
 								(void)fx;
 								(void)detail::swallow { 0, ((void)args, 0)... };
@@ -568,11 +568,11 @@ namespace sol {
 									     L,
 									     boost + (is_variable ? 3 : 2),
 									     caller(),
-									     std::forward<Fx>(fx),
-									     std::forward<Args>(args)...);
+									     eastl::forward<Fx>(fx),
+									     eastl::forward<Args>(args)...);
 								}
 								else {
-									using Ta = meta::conditional_t<std::is_void_v<T>, object_type, T>;
+									using Ta = meta::conditional_t<eastl::is_void_v<T>, object_type, T>;
 #if SOL_IS_ON(SOL_SAFE_USERTYPE)
 									auto maybeo = stack::check_get<Ta*>(L, 1);
 									if (!maybeo || maybeo.value() == nullptr) {
@@ -588,7 +588,7 @@ namespace sol {
 #endif // Safety
 
 									return stack::call_into_lua<checked, clean_stack>(
-									     types<void>(), args_list(), L, boost + (is_variable ? 3 : 2), caller(), std::forward<Fx>(fx), o);
+									     types<void>(), args_list(), L, boost + (is_variable ? 3 : 2), caller(), eastl::forward<Fx>(fx), o);
 								}
 							}
 						}
@@ -596,7 +596,7 @@ namespace sol {
 				}
 				else {
 					agnostic_lua_call_wrapper<F, is_index, is_variable, checked, boost, clean_stack> alcw {};
-					return alcw.call(L, std::forward<Fx>(fx), std::forward<Args>(args)...);
+					return alcw.call(L, eastl::forward<Fx>(fx), eastl::forward<Args>(args)...);
 				}
 			}
 		};
@@ -614,14 +614,14 @@ namespace sol {
 				}
 				else {
 					lua_call_wrapper<T, F, true, is_variable, checked, boost, clean_stack, C> lcw;
-					return lcw.call(L, std::move(rw.value()));
+					return lcw.call(L, eastl::move(rw.value()));
 				}
 			}
 
 			static int call(lua_State* L, readonly_wrapper<F>&& rw, object_type& o) {
 				if constexpr (!is_index) {
 					(void)o;
-					return call(L, std::move(rw));
+					return call(L, eastl::move(rw));
 				}
 				else {
 					lua_call_wrapper<T, F, true, is_variable, checked, boost, clean_stack, C> lcw;
@@ -685,7 +685,7 @@ namespace sol {
 			typedef constructor_wrapper<Cxs...> F;
 
 			struct onmatch {
-				template <typename Fx, std::size_t I, typename... R, typename... Args>
+				template <typename Fx, eastl::size_t I, typename... R, typename... Args>
 				int operator()(types<Fx>, meta::index_value<I>, types<R...> r, types<Args...> a, lua_State* L, int, int start, F& f) {
 					const auto& meta = usertype_traits<T>::metatable();
 					T* obj = detail::usertype_allocate<T>(L);
@@ -693,7 +693,7 @@ namespace sol {
 					stack::stack_detail::undefined_metatable umf(L, &meta[0], &stack::stack_detail::set_undefined_methods_on<T>);
 					umf();
 
-					auto& func = std::get<I>(f.functions);
+					auto& func = eastl::get<I>(f.functions);
 					// put userdata at the first index
 					lua_insert(L, 1);
 					stack::call_into_lua<checked, clean_stack>(r, a, L, boost + 1 + start, func, detail::implicit_wrapper<T>(obj));
@@ -716,13 +716,13 @@ namespace sol {
 
 			template <typename F>
 			static int call(lua_State* L, F&& f) {
-				if constexpr (std::is_void_v<Fx>) {
+				if constexpr (eastl::is_void_v<Fx>) {
 					return detail::usertype_alloc_destroy<T>(L);
 				}
 				else {
 					using uFx = meta::unqualified_t<Fx>;
 					lua_call_wrapper<T, uFx, is_index, is_variable, checked, boost, clean_stack> lcw {};
-					return lcw.call(L, std::forward<F>(f).fx);
+					return lcw.call(L, eastl::forward<F>(f).fx);
 				}
 			}
 		};
@@ -732,9 +732,9 @@ namespace sol {
 			typedef overload_set<Fs...> F;
 
 			struct on_match {
-				template <typename Fx, std::size_t I, typename... R, typename... Args>
+				template <typename Fx, eastl::size_t I, typename... R, typename... Args>
 				int operator()(types<Fx>, meta::index_value<I>, types<R...>, types<Args...>, lua_State* L, int, int, F& fx) {
-					auto& f = std::get<I>(fx.functions);
+					auto& f = eastl::get<I>(fx.functions);
 					return lua_call_wrapper<T, Fx, is_index, is_variable, checked, boost> {}.call(L, f);
 				}
 			};
@@ -749,9 +749,9 @@ namespace sol {
 			typedef factory_wrapper<Fs...> F;
 
 			struct on_match {
-				template <typename Fx, std::size_t I, typename... R, typename... Args>
+				template <typename Fx, eastl::size_t I, typename... R, typename... Args>
 				int operator()(types<Fx>, meta::index_value<I>, types<R...>, types<Args...>, lua_State* L, int, int, F& fx) {
-					auto& f = std::get<I>(fx.functions);
+					auto& f = eastl::get<I>(fx.functions);
 					return lua_call_wrapper<T, Fx, is_index, is_variable, checked, boost, clean_stack> {}.call(L, f);
 				}
 			};
@@ -771,25 +771,25 @@ namespace sol {
 
 			template <typename F, typename... Args>
 			static int call(lua_State* L, F&& f, Args&&... args) {
-				constexpr bool is_specialized = meta::any<std::is_same<U, detail::no_prop>,
+				constexpr bool is_specialized = meta::any<eastl::is_same<U, detail::no_prop>,
 				     meta::is_specialization_of<U, var_wrapper>,
 				     meta::is_specialization_of<U, constructor_wrapper>,
 				     meta::is_specialization_of<U, constructor_list>,
-				     std::is_member_pointer<U>>::value;
+				     eastl::is_member_pointer<U>>::value;
 				if constexpr (is_specialized) {
 					if constexpr (is_index) {
 						decltype(auto) p = f.read();
 						lua_call_wrapper<T, meta::unqualified_t<decltype(p)>, is_index, is_variable, checked, boost, clean_stack> lcw {};
-						return lcw.call(L, p, std::forward<Args>(args)...);
+						return lcw.call(L, p, eastl::forward<Args>(args)...);
 					}
 					else {
 						decltype(auto) p = f.write();
 						lua_call_wrapper<T, meta::unqualified_t<decltype(p)>, is_index, is_variable, checked, boost, clean_stack> lcw {};
-						return lcw.call(L, p, std::forward<Args>(args)...);
+						return lcw.call(L, p, eastl::forward<Args>(args)...);
 					}
 				}
 				else {
-					constexpr bool non_class_object_type = meta::any<std::is_void<object_type>,
+					constexpr bool non_class_object_type = meta::any<eastl::is_void<object_type>,
 					     meta::boolean<lua_type_of<meta::unwrap_unqualified_t<object_type>>::value != type::userdata>>::value;
 					if constexpr (non_class_object_type) {
 						// The type being void means we don't have any arguments, so it might be a free functions?
@@ -810,7 +810,7 @@ namespace sol {
 					else {
 						using args_list = meta::pop_front_type_t<typename traits_type::free_args_list>;
 						using Ta = T;
-						using Oa = std::remove_pointer_t<object_type>;
+						using Oa = eastl::remove_pointer_t<object_type>;
 #if SOL_IS_ON(SOL_SAFE_USERTYPE)
 						auto maybeo = stack::check_get<Ta*>(L, 1);
 						if (!maybeo || maybeo.value() == nullptr) {
@@ -846,7 +846,7 @@ namespace sol {
 
 			template <typename... Args>
 			static int call(lua_State* L, F& fx, Args&&... args) {
-				return lua_call_wrapper<T, V, is_index, is_variable, true, boost, clean_stack> {}.call(L, fx.value, std::forward<Args>(args)...);
+				return lua_call_wrapper<T, V, is_index, is_variable, true, boost, clean_stack> {}.call(L, fx.value, eastl::forward<Args>(args)...);
 			}
 		};
 
@@ -854,10 +854,10 @@ namespace sol {
 		struct lua_call_wrapper<T, policy_wrapper<F, Policies...>, is_index, is_variable, checked, boost, clean_stack, C> {
 			typedef policy_wrapper<F, Policies...> P;
 
-			template <std::size_t... In>
-			static int call(std::index_sequence<In...>, lua_State* L, P& fx) {
+			template <eastl::size_t... In>
+			static int call(eastl::index_sequence<In...>, lua_State* L, P& fx) {
 				int pushed = lua_call_wrapper<T, F, is_index, is_variable, checked, boost, false, C> {}.call(L, fx.value);
-				(void)detail::swallow { int(), (policy_detail::handle_policy(std::get<In>(fx.policies), L, pushed), int())... };
+				(void)detail::swallow { int(), (policy_detail::handle_policy(eastl::get<In>(fx.policies), L, pushed), int())... };
 				return pushed;
 			}
 
@@ -879,17 +879,17 @@ namespace sol {
 		struct lua_call_wrapper<T, function_arguments<Sig, P>, is_index, is_variable, checked, boost, clean_stack, C> {
 			static int call(lua_State* L, const function_arguments<Sig, P>& f) {
 				lua_call_wrapper<T, meta::unqualified_t<P>, is_index, is_variable, checked, boost, clean_stack> lcw {};
-				return lcw.call(L, std::get<0>(f.arguments));
+				return lcw.call(L, eastl::get<0>(f.arguments));
 			}
 
 			static int call(lua_State* L, function_arguments<Sig, P>& f) {
 				lua_call_wrapper<T, meta::unqualified_t<P>, is_index, is_variable, checked, boost, clean_stack> lcw {};
-				return lcw.call(L, std::get<0>(f.arguments));
+				return lcw.call(L, eastl::get<0>(f.arguments));
 			}
 
 			static int call(lua_State* L, function_arguments<Sig, P>&& f) {
 				lua_call_wrapper<T, meta::unqualified_t<P>, is_index, is_variable, checked, boost, clean_stack> lcw {};
-				return lcw.call(L, std::get<0>(std::move(f.arguments)));
+				return lcw.call(L, eastl::get<0>(eastl::move(f.arguments)));
 			}
 		};
 
@@ -898,13 +898,13 @@ namespace sol {
 		inline int call_wrapped(lua_State* L, Fx&& fx, Args&&... args) {
 			using uFx = meta::unqualified_t<Fx>;
 			if constexpr (meta::is_specialization_of_v<uFx, yielding_t>) {
-				using real_fx = meta::unqualified_t<decltype(std::forward<Fx>(fx).func)>;
+				using real_fx = meta::unqualified_t<decltype(eastl::forward<Fx>(fx).func)>;
 				lua_call_wrapper<T, real_fx, is_index, is_variable, checked, boost, clean_stack> lcw {};
-				return lcw.call(L, std::forward<Fx>(fx).func, std::forward<Args>(args)...);
+				return lcw.call(L, eastl::forward<Fx>(fx).func, eastl::forward<Args>(args)...);
 			}
 			else {
 				lua_call_wrapper<T, uFx, is_index, is_variable, checked, boost, clean_stack> lcw {};
-				return lcw.call(L, std::forward<Fx>(fx), std::forward<Args>(args)...);
+				return lcw.call(L, eastl::forward<Fx>(fx), eastl::forward<Args>(args)...);
 			}
 		}
 
@@ -923,22 +923,22 @@ namespace sol {
 		}
 
 		template <typename T, typename = void>
-		struct is_var_bind : std::false_type { };
+		struct is_var_bind : eastl::false_type { };
 
 		template <typename T>
-		struct is_var_bind<T, std::enable_if_t<std::is_member_object_pointer<T>::value>> : std::true_type { };
+		struct is_var_bind<T, eastl::enable_if_t<eastl::is_member_object_pointer<T>::value>> : eastl::true_type { };
 
 		template <typename T>
-		struct is_var_bind<T, std::enable_if_t<is_lua_reference_or_proxy<T>::value>> : std::true_type { };
+		struct is_var_bind<T, eastl::enable_if_t<is_lua_reference_or_proxy<T>::value>> : eastl::true_type { };
 
 		template <>
-		struct is_var_bind<detail::no_prop> : std::true_type { };
+		struct is_var_bind<detail::no_prop> : eastl::true_type { };
 
 		template <typename R, typename W>
-		struct is_var_bind<property_wrapper<R, W>> : std::true_type { };
+		struct is_var_bind<property_wrapper<R, W>> : eastl::true_type { };
 
 		template <typename T>
-		struct is_var_bind<var_wrapper<T>> : std::true_type { };
+		struct is_var_bind<var_wrapper<T>> : eastl::true_type { };
 
 		template <typename T>
 		struct is_var_bind<readonly_wrapper<T>> : is_var_bind<meta::unqualified_t<T>> { };

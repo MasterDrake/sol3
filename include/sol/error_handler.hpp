@@ -48,7 +48,7 @@ namespace sol {
 		constexpr const char* not_enough_stack_space_environment = "not enough space left on Lua stack to retrieve environment";
 		constexpr const char* protected_function_error = "caught (...) unknown error during protected_function call";
 
-		inline void accumulate_and_mark(const std::string& n, std::string& aux_message, int& marker) {
+		inline void accumulate_and_mark(const eastl::string& n, eastl::string& aux_message, int& marker) {
 			if (marker > 0) {
 				aux_message += ", ";
 			}
@@ -57,7 +57,7 @@ namespace sol {
 		}
 	} // namespace detail
 
-	inline std::string associated_type_name(lua_State* L, int index, type t) {
+	inline eastl::string associated_type_name(lua_State* L, int index, type t) {
 		switch (t) {
 		case type::poly:
 			return "anything";
@@ -72,7 +72,7 @@ namespace sol {
 			lua_rawget(L, -2);
 			size_t sz;
 			const char* name = lua_tolstring(L, -1, &sz);
-			std::string tn(name, static_cast<std::string::size_type>(sz));
+			eastl::string tn(name, static_cast<eastl::string::size_type>(sz));
 			lua_pop(L, 2);
 			return tn;
 		}
@@ -88,7 +88,7 @@ namespace sol {
 		     : "stack index %d, expected %s, received %s: %s %s";
 		const char* type_name = expected == type::poly ? "anything" : lua_typename(L, static_cast<int>(expected));
 		{
-			std::string actual_name = associated_type_name(L, index, actual);
+			eastl::string actual_name = associated_type_name(L, index, actual);
 			lua_pushfstring(L, err, index, type_name, actual_name.c_str(), message.data(), aux_message.data());
 		}
 		return 1;
@@ -134,7 +134,7 @@ namespace sol {
 	struct argument_handler<types<R, Args...>> {
 		int operator()(lua_State* L, int index, type expected, type actual, string_view message) const noexcept(false) {
 			{
-				std::string aux_message = "(bad argument into '";
+				eastl::string aux_message = "(bad argument into '";
 				aux_message += detail::demangle<R>();
 				aux_message += "(";
 				int marker = 0;

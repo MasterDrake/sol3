@@ -26,16 +26,16 @@
 
 #include <sol/compatibility.hpp>
 #include <sol/string_view.hpp>
-#include <vector>
+#include <EASTL/vector.h>
 #include <cstdint>
 #include <cstddef>
 
 namespace sol {
 
-	template <typename Allocator = std::allocator<std::byte>>
-	class basic_bytecode : private std::vector<std::byte, Allocator> {
+	template <typename Allocator = eastl::allocator>
+	class basic_bytecode : private eastl::vector<std::byte, Allocator> {
 	private:
-		using base_t = std::vector<std::byte, Allocator>;
+		using base_t = eastl::vector<std::byte, Allocator>;
 
 	public:
 		using typename base_t::allocator_type;
@@ -56,7 +56,7 @@ namespace sol {
 
 		using base_t::data;
 		using base_t::empty;
-		using base_t::max_size;
+		//TODO: eastl::vector doesn't have max_size using base_t::max_size;
 		using base_t::size;
 
 		using base_t::at;
@@ -89,7 +89,8 @@ namespace sol {
 		using base_t::resize;
 		using base_t::shrink_to_fit;
 
-		string_view as_string_view() const {
+		string_view as_string_view() const
+		{
 			return string_view(reinterpret_cast<const char*>(this->data()), this->size());
 		}
 	};

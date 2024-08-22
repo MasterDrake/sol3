@@ -46,10 +46,10 @@ namespace sol {
 		basic_environment(stack_reference&& r) : basic_environment(r.lua_state(), r.stack_index()) {
 		}
 
-		basic_environment(lua_State* L, new_table nt) : base_t(L, std::move(nt)) {
+		basic_environment(lua_State* L, new_table nt) : base_t(L, eastl::move(nt)) {
 		}
 		template <bool b>
-		basic_environment(lua_State* L, new_table t, const basic_reference<b>& fallback) : basic_environment(L, std::move(t)) {
+		basic_environment(lua_State* L, new_table t, const basic_reference<b>& fallback) : basic_environment(L, eastl::move(t)) {
 			stack_table mt(L, new_table(0, 1));
 			mt.set(meta_function::index, fallback);
 			this->set(metatable_key, mt);
@@ -87,9 +87,9 @@ namespace sol {
 #endif // Safety
 		}
 		template <typename T,
-		     meta::enable<meta::neg<meta::any_same<meta::unqualified_t<T>, basic_environment>>, meta::neg<std::is_same<base_type, stack_reference>>,
-		          meta::neg<std::is_same<lua_nil_t, meta::unqualified_t<T>>>, is_lua_reference<meta::unqualified_t<T>>> = meta::enabler>
-		basic_environment(T&& r) noexcept : base_t(detail::no_safety, std::forward<T>(r)) {
+		     meta::enable<meta::neg<meta::any_same<meta::unqualified_t<T>, basic_environment>>, meta::neg<eastl::is_same<base_type, stack_reference>>,
+		          meta::neg<eastl::is_same<lua_nil_t, meta::unqualified_t<T>>>, is_lua_reference<meta::unqualified_t<T>>> = meta::enabler>
+		basic_environment(T&& r) noexcept : base_t(detail::no_safety, eastl::forward<T>(r)) {
 #if SOL_IS_ON(SOL_SAFE_REFERENCES)
 			if (!is_environment<meta::unqualified_t<T>>::value) {
 				auto pp = stack::push_pop(*this);
@@ -102,7 +102,7 @@ namespace sol {
 		}
 
 		template <typename T, meta::enable<is_lua_reference<meta::unqualified_t<T>>> = meta::enabler>
-		basic_environment(lua_State* L, T&& r) noexcept : base_t(detail::no_safety, L, std::forward<T>(r)) {
+		basic_environment(lua_State* L, T&& r) noexcept : base_t(detail::no_safety, L, eastl::forward<T>(r)) {
 #if SOL_IS_ON(SOL_SAFE_REFERENCES)
 			if (!is_environment<meta::unqualified_t<T>>::value) {
 				auto pp = stack::push_pop(*this);
@@ -193,7 +193,7 @@ namespace sol {
 
 		this_environment() : env(nullopt) {
 		}
-		this_environment(environment e) : env(std::move(e)) {
+		this_environment(environment e) : env(eastl::move(e)) {
 		}
 		this_environment(const this_environment&) = default;
 		this_environment(this_environment&&) = default;
@@ -255,7 +255,7 @@ namespace sol {
 					lua_settop(L, pre_stack_size);
 					return this_environment();
 				}
-				return this_environment(std::move(env));
+				return this_environment(eastl::move(env));
 			}
 		};
 	} // namespace stack

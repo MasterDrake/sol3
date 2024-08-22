@@ -25,7 +25,7 @@
 #define SOL_TABLE_ITERATOR_HPP
 
 #include <sol/object.hpp>
-#include <iterator>
+#include <EASTL/iterator.h>
 
 namespace sol {
 
@@ -34,15 +34,15 @@ namespace sol {
 	public:
 		typedef object key_type;
 		typedef object mapped_type;
-		typedef std::pair<object, object> value_type;
-		typedef std::input_iterator_tag iterator_category;
+		typedef eastl::pair<object, object> value_type;
+		typedef eastl::input_iterator_tag iterator_category;
 		typedef std::ptrdiff_t difference_type;
 		typedef value_type* pointer;
 		typedef value_type& reference;
 		typedef const value_type& const_reference;
 
 	private:
-		std::pair<object, object> kvp;
+		eastl::pair<object, object> kvp;
 		reference_type ref;
 		int tableidx = 0;
 		int keyidx = 0;
@@ -52,7 +52,7 @@ namespace sol {
 		basic_table_iterator() noexcept : keyidx(-1), idx(-1) {
 		}
 
-		basic_table_iterator(reference_type x) noexcept : ref(std::move(x)) {
+		basic_table_iterator(reference_type x) noexcept : ref(eastl::move(x)) {
 			ref.push();
 			tableidx = lua_gettop(ref.lua_state());
 			stack::push(ref.lua_state(), lua_nil);

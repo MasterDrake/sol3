@@ -91,11 +91,11 @@ namespace sol {
 			using UT = meta::unqualified_t<T>;
 			if constexpr (meta::is_optional_v<UT>) {
 				using ValueType = typename UT::value_type;
-				if constexpr (std::is_same_v<ValueType, error>) {
+				if constexpr (eastl::is_same_v<ValueType, error>) {
 					if (valid()) {
 						return UT(nullopt);
 					}
-					return error(detail::direct_error, stack::get<std::string>(L, index));
+					return error(detail::direct_error, stack::get<eastl::string>(L, index));
 				}
 				else {
 					if (!valid()) {
@@ -105,13 +105,13 @@ namespace sol {
 				}
 			}
 			else {
-				if constexpr (std::is_same_v<T, error>) {
+				if constexpr (eastl::is_same_v<T, error>) {
 #if SOL_IS_ON(SOL_SAFE_PROXIES)
 					if (valid()) {
 						type_panic_c_str(L, index, type_of(L, index), type::none, "expecting an error type (a string, from Lua)");
 					}
 #endif // Check proxy type's safety
-					return error(detail::direct_error, stack::get<std::string>(L, index));
+					return error(detail::direct_error, stack::get<eastl::string>(L, index));
 				}
 				else {
 #if SOL_IS_ON(SOL_SAFE_PROXIES)
@@ -126,12 +126,12 @@ namespace sol {
 
 		template <typename... Ret, typename... Args>
 		decltype(auto) call(Args&&... args) {
-			return get<protected_function>().template call<Ret...>(std::forward<Args>(args)...);
+			return get<protected_function>().template call<Ret...>(eastl::forward<Args>(args)...);
 		}
 
 		template <typename... Args>
 		decltype(auto) operator()(Args&&... args) {
-			return call<>(std::forward<Args>(args)...);
+			return call<>(eastl::forward<Args>(args)...);
 		}
 
 		lua_State* lua_state() const noexcept {

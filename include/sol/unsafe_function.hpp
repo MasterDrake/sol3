@@ -43,26 +43,26 @@ namespace sol {
 			lua_call(lua_state(), static_cast<int>(argcount), static_cast<int>(resultcount));
 		}
 
-		template <std::size_t... I, typename... Ret>
-		auto invoke(types<Ret...>, std::index_sequence<I...>, std::ptrdiff_t n) const {
-			luacall(n, lua_size<std::tuple<Ret...>>::value);
-			return stack::pop<std::tuple<Ret...>>(lua_state());
+		template <eastl::size_t... I, typename... Ret>
+		auto invoke(types<Ret...>, eastl::index_sequence<I...>, std::ptrdiff_t n) const {
+			luacall(n, lua_size<eastl::tuple<Ret...>>::value);
+			return stack::pop<eastl::tuple<Ret...>>(lua_state());
 		}
 
-		template <std::size_t I, typename Ret, meta::enable<meta::neg<std::is_void<Ret>>> = meta::enabler>
-		Ret invoke(types<Ret>, std::index_sequence<I>, std::ptrdiff_t n) const {
+		template <eastl::size_t I, typename Ret, meta::enable<meta::neg<eastl::is_void<Ret>>> = meta::enabler>
+		Ret invoke(types<Ret>, eastl::index_sequence<I>, std::ptrdiff_t n) const {
 			luacall(n, lua_size<Ret>::value);
 			return stack::pop<Ret>(lua_state());
 		}
 
-		template <std::size_t I>
-		void invoke(types<void>, std::index_sequence<I>, std::ptrdiff_t n) const {
+		template <eastl::size_t I>
+		void invoke(types<void>, eastl::index_sequence<I>, std::ptrdiff_t n) const {
 			luacall(n, 0);
 		}
 
-		unsafe_function_result invoke(types<>, std::index_sequence<>, std::ptrdiff_t n) const {
+		unsafe_function_result invoke(types<>, eastl::index_sequence<>, std::ptrdiff_t n) const {
 			int stacksize = lua_gettop(lua_state());
-			int firstreturn = (std::max)(1, stacksize - static_cast<int>(n));
+			int firstreturn = (eastl::max)(1, stacksize - static_cast<int>(n));
 			luacall(n, LUA_MULTRET);
 			int poststacksize = lua_gettop(lua_state());
 			int returncount = poststacksize - (firstreturn - 1);
@@ -74,9 +74,9 @@ namespace sol {
 
 		basic_function() = default;
 		template <typename T,
-		     meta::enable<meta::neg<std::is_same<meta::unqualified_t<T>, basic_function>>, meta::neg<std::is_same<base_t, stack_reference>>,
-		          meta::neg<std::is_same<lua_nil_t, meta::unqualified_t<T>>>, is_lua_reference<meta::unqualified_t<T>>> = meta::enabler>
-		basic_function(T&& r) noexcept : base_t(std::forward<T>(r)) {
+		     meta::enable<meta::neg<eastl::is_same<meta::unqualified_t<T>, basic_function>>, meta::neg<eastl::is_same<base_t, stack_reference>>,
+		          meta::neg<eastl::is_same<lua_nil_t, meta::unqualified_t<T>>>, is_lua_reference<meta::unqualified_t<T>>> = meta::enabler>
+		basic_function(T&& r) noexcept : base_t(eastl::forward<T>(r)) {
 #if SOL_IS_ON(SOL_SAFE_REFERENCES)
 			if (!is_function<meta::unqualified_t<T>>::value) {
 				auto pp = stack::push_pop(*this);
@@ -96,7 +96,7 @@ namespace sol {
 		basic_function(lua_nil_t n) : base_t(n) {
 		}
 		template <typename T, meta::enable<is_lua_reference<meta::unqualified_t<T>>> = meta::enabler>
-		basic_function(lua_State* L, T&& r) : base_t(L, std::forward<T>(r)) {
+		basic_function(lua_State* L, T&& r) : base_t(L, eastl::forward<T>(r)) {
 #if SOL_IS_ON(SOL_SAFE_REFERENCES)
 			auto pp = stack::push_pop(*this);
 			constructor_handler handler {};
@@ -142,18 +142,18 @@ namespace sol {
 		template <typename Container = bytecode, typename Fx>
 		Container dump(Fx&& on_error) const {
 			Container bc;
-			(void)dump(static_cast<lua_Writer>(&basic_insert_dump_writer<Container>), static_cast<void*>(&bc), false, std::forward<Fx>(on_error));
+			(void)dump(static_cast<lua_Writer>(&basic_insert_dump_writer<Container>), static_cast<void*>(&bc), false, eastl::forward<Fx>(on_error));
 			return bc;
 		}
 
 		template <typename... Args>
 		unsafe_function_result operator()(Args&&... args) const {
-			return call<>(std::forward<Args>(args)...);
+			return call<>(eastl::forward<Args>(args)...);
 		}
 
 		template <typename... Ret, typename... Args>
 		decltype(auto) operator()(types<Ret...>, Args&&... args) const {
-			return call<Ret...>(std::forward<Args>(args)...);
+			return call<Ret...>(eastl::forward<Args>(args)...);
 		}
 
 		template <typename... Ret, typename... Args>
@@ -161,8 +161,8 @@ namespace sol {
 			if (!aligned) {
 				base_t::push();
 			}
-			int pushcount = stack::multi_push_reference(lua_state(), std::forward<Args>(args)...);
-			return invoke(types<Ret...>(), std::make_index_sequence<sizeof...(Ret)>(), static_cast<std::ptrdiff_t>(pushcount));
+			int pushcount = stack::multi_push_reference(lua_state(), eastl::forward<Args>(args)...);
+			return invoke(types<Ret...>(), eastl::make_index_sequence<sizeof...(Ret)>(), static_cast<std::ptrdiff_t>(pushcount));
 		}
 	};
 } // namespace sol

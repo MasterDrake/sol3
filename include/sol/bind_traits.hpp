@@ -42,39 +42,39 @@ namespace sol { namespace meta {
 
 	namespace meta_detail {
 
-		template <std::size_t I, typename T>
+		template <eastl::size_t I, typename T>
 		struct void_tuple_element : meta::tuple_element<I, T> { };
 
-		template <std::size_t I>
-		struct void_tuple_element<I, std::tuple<>> {
+		template <eastl::size_t I>
+		struct void_tuple_element<I, eastl::tuple<>> {
 			typedef void type;
 		};
 
-		template <std::size_t I, typename T>
+		template <eastl::size_t I, typename T>
 		using void_tuple_element_t = typename void_tuple_element<I, T>::type;
 
 		template <bool it_is_noexcept, bool has_c_variadic, typename T, typename R, typename... Args>
 		struct basic_traits {
 		private:
-			using first_type = meta::conditional_t<std::is_void<T>::value, int, T>&;
+			using first_type = meta::conditional_t<eastl::is_void<T>::value, int, T>&;
 
 		public:
 			inline static constexpr const bool is_noexcept = it_is_noexcept;
-			inline static constexpr bool is_member_function = std::is_void<T>::value;
+			inline static constexpr bool is_member_function = eastl::is_void<T>::value;
 			inline static constexpr bool has_c_var_arg = has_c_variadic;
-			inline static constexpr std::size_t arity = sizeof...(Args);
-			inline static constexpr std::size_t free_arity = sizeof...(Args) + static_cast<std::size_t>(!std::is_void<T>::value);
+			inline static constexpr eastl::size_t arity = sizeof...(Args);
+			inline static constexpr eastl::size_t free_arity = sizeof...(Args) + static_cast<eastl::size_t>(!eastl::is_void<T>::value);
 			typedef types<Args...> args_list;
-			typedef std::tuple<Args...> args_tuple;
+			typedef eastl::tuple<Args...> args_tuple;
 			typedef T object_type;
 			typedef R return_type;
 			typedef tuple_types<R> returns_list;
 			typedef R(function_type)(Args...);
-			typedef meta::conditional_t<std::is_void<T>::value, args_list, types<first_type, Args...>> free_args_list;
-			typedef meta::conditional_t<std::is_void<T>::value, R(Args...), R(first_type, Args...)> free_function_type;
-			typedef meta::conditional_t<std::is_void<T>::value, R (*)(Args...), R (*)(first_type, Args...)> free_function_pointer_type;
-			typedef std::remove_pointer_t<free_function_pointer_type> signature_type;
-			template <std::size_t i>
+			typedef meta::conditional_t<eastl::is_void<T>::value, args_list, types<first_type, Args...>> free_args_list;
+			typedef meta::conditional_t<eastl::is_void<T>::value, R(Args...), R(first_type, Args...)> free_function_type;
+			typedef meta::conditional_t<eastl::is_void<T>::value, R (*)(Args...), R (*)(first_type, Args...)> free_function_pointer_type;
+			typedef eastl::remove_pointer_t<free_function_pointer_type> signature_type;
+			template <eastl::size_t i>
 			using arg_at = void_tuple_element_t<i, args_tuple>;
 		};
 
@@ -497,27 +497,27 @@ namespace sol { namespace meta {
 		template <typename Signature>
 		struct fx_traits<Signature, true> : public fx_traits<typename fx_traits<decltype(&Signature::operator())>::function_type, false> { };
 
-		template <typename Signature, bool b = std::is_member_object_pointer<Signature>::value>
-		struct callable_traits : public fx_traits<std::decay_t<Signature>> { };
+		template <typename Signature, bool b = eastl::is_member_object_pointer<Signature>::value>
+		struct callable_traits : public fx_traits<eastl::decay_t<Signature>> { };
 
 		template <typename R, typename T>
 		struct callable_traits<R(T::*), true> {
-			typedef meta::conditional_t<std::is_array_v<R>, std::add_lvalue_reference_t<R>, R> return_type;
+			typedef meta::conditional_t<eastl::is_array_v<R>, eastl::add_lvalue_reference_t<R>, R> return_type;
 			typedef return_type Arg;
 			typedef T object_type;
 			using signature_type = R(T::*);
 			inline static constexpr bool is_noexcept = false;
 			inline static constexpr bool is_member_function = false;
-			inline static constexpr std::size_t arity = 1;
-			inline static constexpr std::size_t free_arity = 2;
-			typedef std::tuple<Arg> args_tuple;
+			inline static constexpr eastl::size_t arity = 1;
+			inline static constexpr eastl::size_t free_arity = 2;
+			typedef eastl::tuple<Arg> args_tuple;
 			typedef types<Arg> args_list;
 			typedef types<T, Arg> free_args_list;
 			typedef meta::tuple_types<return_type> returns_list;
 			typedef return_type(function_type)(T&, return_type);
 			typedef return_type (*function_pointer_type)(T&, Arg);
 			typedef return_type (*free_function_pointer_type)(T&, Arg);
-			template <std::size_t i>
+			template <eastl::size_t i>
 			using arg_at = void_tuple_element_t<i, args_tuple>;
 		};
 
@@ -528,14 +528,14 @@ namespace sol { namespace meta {
 
 	namespace meta_detail {
 		template <typename, bool>
-		struct is_probably_stateless_lambda : std::false_type { };
+		struct is_probably_stateless_lambda : eastl::false_type { };
 
 		template <typename T>
-		struct is_probably_stateless_lambda<T, true> : std::is_convertible<T, typename bind_traits<T>::function_type*>::type { };
+		struct is_probably_stateless_lambda<T, true> : eastl::is_convertible<T, typename bind_traits<T>::function_type*>::type { };
 	} // namespace meta_detail
 
 	template <typename T>
-	using is_probably_stateless_lambda = typename meta_detail::is_probably_stateless_lambda<T, std::is_empty_v<T> && call_operator_deducible_v<T>>::type;
+	using is_probably_stateless_lambda = typename meta_detail::is_probably_stateless_lambda<T, eastl::is_empty_v<T> && call_operator_deducible_v<T>>::type;
 
 	template <typename T>
 	inline constexpr bool is_probably_stateless_lambda_v = is_probably_stateless_lambda<T>::value;

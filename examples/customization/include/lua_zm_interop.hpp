@@ -11,7 +11,7 @@
 #include <functional>
 
 bool sol_lua_check(sol::types<zm::vec3>, lua_State* L, int index,
-     std::function<sol::check_handler_type> handler,
+     eastl::function<sol::check_handler_type> handler,
      sol::stack::record& tracking);
 
 zm::vec3 sol_lua_get(sol::types<zm::vec3>, lua_State* L,

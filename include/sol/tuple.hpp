@@ -27,7 +27,7 @@
 #include <sol/forward.hpp>
 #include <sol/base_traits.hpp>
 
-#include <tuple>
+#include <EASTL/tuple.h>
 #include <cstddef>
 
 namespace sol {
@@ -37,7 +37,7 @@ namespace sol {
 
 	namespace meta {
 		template <typename T>
-		using is_tuple = is_specialization_of<T, std::tuple>;
+		using is_tuple = is_specialization_of<T, eastl::tuple>;
 
 		template <typename T>
 		constexpr inline bool is_tuple_v = is_tuple<T>::value;
@@ -49,7 +49,7 @@ namespace sol {
 			};
 
 			template <typename... Args>
-			struct tuple_types_<std::tuple<Args...>> {
+			struct tuple_types_<eastl::tuple<Args...>> {
 				typedef types<Args...> type;
 			};
 		} // namespace detail
@@ -75,16 +75,16 @@ namespace sol {
 			typedef types<Args...> type;
 		};
 
-		template <std::size_t N, typename Tuple>
-		using tuple_element = std::tuple_element<N, std::remove_reference_t<Tuple>>;
+		template <eastl::size_t N, typename Tuple>
+		using tuple_element = eastl::tuple_element<N, eastl::remove_reference_t<Tuple>>;
 
-		template <std::size_t N, typename Tuple>
-		using tuple_element_t = std::tuple_element_t<N, std::remove_reference_t<Tuple>>;
+		template <eastl::size_t N, typename Tuple>
+		using tuple_element_t = eastl::tuple_element_t<N, eastl::remove_reference_t<Tuple>>;
 
-		template <std::size_t N, typename Tuple>
+		template <eastl::size_t N, typename Tuple>
 		using unqualified_tuple_element = unqualified<tuple_element_t<N, Tuple>>;
 
-		template <std::size_t N, typename Tuple>
+		template <eastl::size_t N, typename Tuple>
 		using unqualified_tuple_element_t = unqualified_t<tuple_element_t<N, Tuple>>;
 
 	} // namespace meta

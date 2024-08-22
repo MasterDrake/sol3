@@ -6,7 +6,7 @@
 #include <sol/sol.hpp>
 
 bool sol_lua_check(sol::types<zm::vec3>, lua_State* L, int index,
-     std::function<sol::check_handler_type> handler,
+     eastl::function<sol::check_handler_type> handler,
      sol::stack::record& tracking) {
 	// use sol's method for checking
 	// specifically for a table

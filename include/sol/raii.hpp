@@ -27,7 +27,7 @@
 #include <sol/traits.hpp>
 #include <sol/compatibility.hpp>
 
-#include <memory>
+#include <EASTL/unique_ptr.h>
 
 namespace sol {
 	namespace detail {
@@ -35,32 +35,37 @@ namespace sol {
 			template <typename T, typename... Args>
 			static void construct(T&& obj, Args&&... args) {
 				typedef meta::unqualified_t<T> Tu;
-				std::allocator<Tu> alloc {};
-				std::allocator_traits<std::allocator<Tu>>::construct(alloc, std::forward<T>(obj), std::forward<Args>(args)...);
+				eastl::allocator alloc {};
+				alloc.allocate(sizeof(T));
+				obj = Tu(eastl::forward<Args>(args)...);
 			}
 
 			template <typename T, typename... Args>
-			void operator()(T&& obj, Args&&... args) const {
-				construct(std::forward<T>(obj), std::forward<Args>(args)...);
+			void operator()(T&& obj, Args&&... args) const
+			{
+				construct(eastl::forward<T>(obj), eastl::forward<Args>(args)...);
 			}
 		};
 
 		struct default_destroy {
 			template <typename T>
-			static void destroy(T&& obj) {
-				std::allocator<meta::unqualified_t<T>> alloc {};
-				alloc.destroy(obj);
+			static void destroy(T&& obj)
+			{
+				eastl::allocator alloc {};
+				alloc.deallocate(&obj);
 			}
 
 			template <typename T>
-			void operator()(T&& obj) const {
-				destroy(std::forward<T>(obj));
+			void operator()(T&& obj) const
+			{
+				destroy(eastl::forward<T>(obj));
 			}
 		};
 
 		struct deleter {
 			template <typename T>
-			void operator()(T* p) const {
+			void operator()(T* p) const
+			{
 				delete p;
 			}
 		};
@@ -72,8 +77,8 @@ namespace sol {
 		};
 
 		template <typename T, typename Dx, typename... Args>
-		inline std::unique_ptr<T, Dx> make_unique_deleter(Args&&... args) {
-			return std::unique_ptr<T, Dx>(new T(std::forward<Args>(args)...));
+		inline eastl::unique_ptr<T, Dx> make_unique_deleter(Args&&... args) {
+			return eastl::unique_ptr<T, Dx>(new T(eastl::forward<Args>(args)...));
 		}
 
 		template <typename Tag, typename T>
@@ -82,8 +87,8 @@ namespace sol {
 			T value_;
 
 		public:
-			template <typename Arg, typename... Args, meta::disable<std::is_same<meta::unqualified_t<Arg>, tagged>> = meta::enabler>
-			tagged(Arg&& arg, Args&&... args) : value_(std::forward<Arg>(arg), std::forward<Args>(args)...) {
+			template <typename Arg, typename... Args, meta::disable<eastl::is_same<meta::unqualified_t<Arg>, tagged>> = meta::enabler>
+			tagged(Arg&& arg, Args&&... args) : value_(eastl::forward<Arg>(arg), eastl::forward<Args>(args)...) {
 			}
 
 			T& value() & {
@@ -95,7 +100,7 @@ namespace sol {
 			}
 
 			T&& value() && {
-				return std::move(value_);
+				return eastl::move(value_);
 			}
 		};
 	} // namespace detail
@@ -116,34 +121,34 @@ namespace sol {
 
 	template <typename... Functions>
 	struct constructor_wrapper {
-		std::tuple<Functions...> functions;
-		template <typename Arg, typename... Args, meta::disable<std::is_same<meta::unqualified_t<Arg>, constructor_wrapper>> = meta::enabler>
-		constructor_wrapper(Arg&& arg, Args&&... args) : functions(std::forward<Arg>(arg), std::forward<Args>(args)...) {
+		eastl::tuple<Functions...> functions;
+		template <typename Arg, typename... Args, meta::disable<eastl::is_same<meta::unqualified_t<Arg>, constructor_wrapper>> = meta::enabler>
+		constructor_wrapper(Arg&& arg, Args&&... args) : functions(eastl::forward<Arg>(arg), eastl::forward<Args>(args)...) {
 		}
 	};
 
 	template <typename... Functions>
 	inline auto initializers(Functions&&... functions) {
-		return constructor_wrapper<std::decay_t<Functions>...>(std::forward<Functions>(functions)...);
+		return constructor_wrapper<eastl::decay_t<Functions>...>(eastl::forward<Functions>(functions)...);
 	}
 
 	template <typename... Functions>
 	struct factory_wrapper {
-		std::tuple<Functions...> functions;
-		template <typename Arg, typename... Args, meta::disable<std::is_same<meta::unqualified_t<Arg>, factory_wrapper>> = meta::enabler>
-		factory_wrapper(Arg&& arg, Args&&... args) : functions(std::forward<Arg>(arg), std::forward<Args>(args)...) {
+		eastl::tuple<Functions...> functions;
+		template <typename Arg, typename... Args, meta::disable<eastl::is_same<meta::unqualified_t<Arg>, factory_wrapper>> = meta::enabler>
+		factory_wrapper(Arg&& arg, Args&&... args) : functions(eastl::forward<Arg>(arg), eastl::forward<Args>(args)...) {
 		}
 	};
 
 	template <typename... Functions>
 	inline auto factories(Functions&&... functions) {
-		return factory_wrapper<std::decay_t<Functions>...>(std::forward<Functions>(functions)...);
+		return factory_wrapper<eastl::decay_t<Functions>...>(eastl::forward<Functions>(functions)...);
 	}
 
 	template <typename Function>
 	struct destructor_wrapper {
 		Function fx;
-		destructor_wrapper(Function f) : fx(std::move(f)) {
+		destructor_wrapper(Function f) : fx(eastl::move(f)) {
 		}
 	};
 
@@ -154,7 +159,7 @@ namespace sol {
 
 	template <typename Fx>
 	inline auto destructor(Fx&& fx) {
-		return destructor_wrapper<std::decay_t<Fx>>(std::forward<Fx>(fx));
+		return destructor_wrapper<eastl::decay_t<Fx>>(eastl::forward<Fx>(fx));
 	}
 
 } // namespace sol

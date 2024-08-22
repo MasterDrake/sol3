@@ -42,14 +42,14 @@ namespace sol { namespace detail {
 		const Target& target;
 		int stack_index;
 
-		protected_handler(std::false_type, lua_State* L_, const Target& target_) : m_L(L_), target(target_), stack_index(0) {
+		protected_handler(eastl::false_type, lua_State* L_, const Target& target_) : m_L(L_), target(target_), stack_index(0) {
 			if (ShouldPush) {
 				stack_index = lua_gettop(L_) + 1;
 				target.push(L_);
 			}
 		}
 
-		protected_handler(std::true_type, lua_State* L_, const Target& target_) : m_L(L_), target(target_), stack_index(0) {
+		protected_handler(eastl::true_type, lua_State* L_, const Target& target_) : m_L(L_), target(target_), stack_index(0) {
 			if (ShouldPush) {
 				stack_index = target.stack_index();
 			}

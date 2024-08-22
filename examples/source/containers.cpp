@@ -1,4 +1,7 @@
 #define SOL_ALL_SAFETIES_ON 1
+#define SOL_STD_VARIANT 0
+#define SOL_NO_EXCEPTIONS 1
+#define SOL_ALIGN_MEMORY 0
 #include <sol/sol.hpp>
 
 #include <EASTL/vector.h>
@@ -26,7 +29,16 @@ void* __cdecl operator new[](size_t size, size_t alignment, size_t offset, const
 	return new uint8_t[size];
 }
 
-int main(int, char**) {
+//namespace std
+//{
+//    std::ostream & operator<<(std::ostream &sout, eastl::string const & p)
+//    {
+//        return sout << p.c_str();
+//    }
+//}
+
+int main(int, char**)
+{
 	std::cout << "=== containers ===" << std::endl;
 
 	sol::state lua;

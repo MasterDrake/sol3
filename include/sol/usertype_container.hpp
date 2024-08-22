@@ -44,7 +44,7 @@ namespace sol {
 			static meta::sfinae_no_t test(...);
 
 		public:
-			static constexpr bool value = std::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
+			static constexpr bool value = eastl::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
 		};
 
 		template <typename T>
@@ -56,7 +56,7 @@ namespace sol {
 			static meta::sfinae_no_t test(...);
 
 		public:
-			static constexpr bool value = std::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
+			static constexpr bool value = eastl::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
 		};
 
 		template <typename T>
@@ -64,60 +64,60 @@ namespace sol {
 		private:
 			template <typename C>
 			static meta::sfinae_yes_t test(
-			     decltype(std::declval<C>().erase_after(std::declval<std::add_rvalue_reference_t<typename C::const_iterator>>()))*);
+			     decltype(eastl::declval<C>().erase_after(eastl::declval<eastl::add_rvalue_reference_t<typename C::const_iterator>>()))*);
 			template <typename C>
 			static meta::sfinae_no_t test(...);
 
 		public:
-			static constexpr bool value = std::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
+			static constexpr bool value = eastl::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
 		};
 
 		template <typename T, typename = void>
 		struct has_find_test {
 		private:
 			template <typename C>
-			static meta::sfinae_yes_t test(decltype(std::declval<C>().find(std::declval<std::add_rvalue_reference_t<typename C::value_type>>()))*);
+			static meta::sfinae_yes_t test(decltype(eastl::declval<C>().find(eastl::declval<eastl::add_rvalue_reference_t<typename C::value_type>>()))*);
 			template <typename C>
 			static meta::sfinae_no_t test(...);
 
 		public:
-			static constexpr bool value = std::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
+			static constexpr bool value = eastl::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
 		};
 
 		template <typename T>
-		struct has_find_test<T, std::enable_if_t<meta::is_lookup<T>::value>> {
+		struct has_find_test<T, eastl::enable_if_t<meta::is_lookup<T>::value>> {
 		private:
 			template <typename C>
-			static meta::sfinae_yes_t test(decltype(std::declval<C>().find(std::declval<std::add_rvalue_reference_t<typename C::key_type>>()))*);
+			static meta::sfinae_yes_t test(decltype(eastl::declval<C>().find(eastl::declval<eastl::add_rvalue_reference_t<typename C::key_type>>()))*);
 			template <typename C>
 			static meta::sfinae_no_t test(...);
 
 		public:
-			static constexpr bool value = std::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
+			static constexpr bool value = eastl::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
 		};
 
 		template <typename T>
 		struct has_erase_test {
 		private:
 			template <typename C>
-			static meta::sfinae_yes_t test(decltype(std::declval<C>().erase(std::declval<typename C::iterator>()))*);
+			static meta::sfinae_yes_t test(decltype(eastl::declval<C>().erase(eastl::declval<typename C::iterator>()))*);
 			template <typename C>
 			static meta::sfinae_no_t test(...);
 
 		public:
-			static constexpr bool value = std::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
+			static constexpr bool value = eastl::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
 		};
 
 		template <typename T>
 		struct has_erase_key_test {
 		private:
 			template <typename C>
-			static meta::sfinae_yes_t test(decltype(std::declval<C>().erase(std::declval<typename C::key_type>()))*);
+			static meta::sfinae_yes_t test(decltype(eastl::declval<C>().erase(eastl::declval<typename C::key_type>()))*);
 			template <typename C>
 			static meta::sfinae_no_t test(...);
 
 		public:
-			static constexpr bool value = std::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
+			static constexpr bool value = eastl::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
 		};
 
 		template <typename T>
@@ -129,7 +129,7 @@ namespace sol {
 			static meta::sfinae_no_t test(...);
 
 		public:
-			static constexpr bool value = std::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
+			static constexpr bool value = eastl::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
 		};
 
 		template <typename T>
@@ -141,7 +141,7 @@ namespace sol {
 			static meta::sfinae_no_t test(...);
 
 		public:
-			static constexpr bool value = std::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
+			static constexpr bool value = eastl::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
 		};
 
 		template <typename T>
@@ -153,7 +153,7 @@ namespace sol {
 			static meta::sfinae_no_t test(...);
 
 		public:
-			static constexpr bool value = std::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
+			static constexpr bool value = eastl::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
 		};
 
 		template <typename T>
@@ -165,7 +165,7 @@ namespace sol {
 			static meta::sfinae_no_t test(...);
 
 		public:
-			static constexpr bool value = std::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
+			static constexpr bool value = eastl::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
 		};
 
 		template <typename T>
@@ -177,7 +177,7 @@ namespace sol {
 			static meta::sfinae_no_t test(...);
 
 		public:
-			static constexpr bool value = std::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
+			static constexpr bool value = eastl::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
 		};
 
 		template <typename T>
@@ -189,7 +189,7 @@ namespace sol {
 			static meta::sfinae_no_t test(...);
 
 		public:
-			static constexpr bool value = std::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
+			static constexpr bool value = eastl::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
 		};
 
 		template <typename T>
@@ -201,7 +201,7 @@ namespace sol {
 			static meta::sfinae_no_t test(...);
 
 		public:
-			static constexpr bool value = std::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
+			static constexpr bool value = eastl::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
 		};
 
 		template <typename T>
@@ -213,7 +213,7 @@ namespace sol {
 			static meta::sfinae_no_t test(...);
 
 		public:
-			static constexpr bool value = std::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
+			static constexpr bool value = eastl::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
 		};
 
 		template <typename T>
@@ -225,7 +225,7 @@ namespace sol {
 			static meta::sfinae_no_t test(...);
 
 		public:
-			static constexpr bool value = std::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
+			static constexpr bool value = eastl::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
 		};
 
 		template <typename T>
@@ -237,7 +237,7 @@ namespace sol {
 			static meta::sfinae_no_t test(...);
 
 		public:
-			static constexpr bool value = std::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
+			static constexpr bool value = eastl::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
 		};
 
 		template <typename T>
@@ -249,7 +249,7 @@ namespace sol {
 			static meta::sfinae_no_t test(...);
 
 		public:
-			static constexpr bool value = std::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
+			static constexpr bool value = eastl::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
 		};
 
 		template <typename T>
@@ -261,7 +261,7 @@ namespace sol {
 			static meta::sfinae_no_t test(...);
 
 		public:
-			static constexpr bool value = std::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
+			static constexpr bool value = eastl::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
 		};
 
 		template <typename T>
@@ -273,7 +273,7 @@ namespace sol {
 			static meta::sfinae_no_t test(...);
 
 		public:
-			static constexpr bool value = std::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
+			static constexpr bool value = eastl::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
 		};
 
 		template <typename T>
@@ -285,7 +285,7 @@ namespace sol {
 			static meta::sfinae_no_t test(...);
 
 		public:
-			static constexpr bool value = std::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
+			static constexpr bool value = eastl::is_same_v<decltype(test<T>(0)), meta::sfinae_yes_t>;
 		};
 
 		template <typename T>
@@ -358,7 +358,7 @@ namespace sol {
 		struct is_forced_container : is_container<T> { };
 
 		template <typename T>
-		struct is_forced_container<as_container_t<T>> : std::true_type { };
+		struct is_forced_container<as_container_t<T>> : eastl::true_type { };
 
 		template <typename T>
 		struct container_decay {
@@ -374,29 +374,29 @@ namespace sol {
 		using container_decay_t = typename container_decay<meta::unqualified_t<T>>::type;
 
 		template <typename T>
-		decltype(auto) get_key(std::false_type, T&& t) {
-			return std::forward<T>(t);
+		decltype(auto) get_key(eastl::false_type, T&& t) {
+			return eastl::forward<T>(t);
 		}
 
 		template <typename T>
-		decltype(auto) get_key(std::true_type, T&& t) {
+		decltype(auto) get_key(eastl::true_type, T&& t) {
 			return t.first;
 		}
 
 		template <typename T>
-		decltype(auto) get_value(std::false_type, T&& t) {
-			return std::forward<T>(t);
+		decltype(auto) get_value(eastl::false_type, T&& t) {
+			return eastl::forward<T>(t);
 		}
 
 		template <typename T>
-		decltype(auto) get_value(std::true_type, T&& t) {
+		decltype(auto) get_value(eastl::true_type, T&& t) {
 			return t.second;
 		}
 
 		template <typename X, typename = void>
 		struct usertype_container_default {
 		private:
-			typedef std::remove_pointer_t<meta::unwrap_unqualified_t<X>> T;
+			typedef eastl::remove_pointer_t<meta::unwrap_unqualified_t<X>> T;
 
 		public:
 			typedef lua_nil_t iterator;
@@ -481,10 +481,10 @@ namespace sol {
 
 		template <typename X>
 		struct usertype_container_default<X,
-		     std::enable_if_t<meta::all<is_forced_container<meta::unqualified_t<X>>, meta::has_value_type<meta::unqualified_t<container_decay_t<X>>>,
+		     eastl::enable_if_t<meta::all<is_forced_container<meta::unqualified_t<X>>, meta::has_value_type<meta::unqualified_t<container_decay_t<X>>>,
 		          meta::has_iterator<meta::unqualified_t<container_decay_t<X>>>>::value>> {
 		private:
-			using T = std::remove_pointer_t<meta::unwrap_unqualified_t<container_decay_t<X>>>;
+			using T = eastl::remove_pointer_t<meta::unwrap_unqualified_t<container_decay_t<X>>>;
 
 		private:
 			using deferred_uc = usertype_container<X>;
@@ -495,32 +495,32 @@ namespace sol {
 			using iterator = typename T::iterator;
 			using sentinel = meta::sentinel_or_t<T, iterator>;
 			using value_type = typename T::value_type;
-			typedef meta::conditional_t<is_matched_lookup::value, std::pair<value_type, value_type>,
-			     meta::conditional_t<is_associative::value || is_lookup::value, value_type, std::pair<std::ptrdiff_t, value_type>>>
+			typedef meta::conditional_t<is_matched_lookup::value, eastl::pair<value_type, value_type>,
+			     meta::conditional_t<is_associative::value || is_lookup::value, value_type, eastl::pair<std::ptrdiff_t, value_type>>>
 			     KV;
 			typedef typename KV::first_type K;
 			typedef typename KV::second_type V;
 			typedef meta::conditional_t<is_matched_lookup::value, std::ptrdiff_t, K> next_K;
-			typedef decltype(*std::declval<iterator&>()) iterator_return;
-			typedef meta::conditional_t<is_associative::value || is_matched_lookup::value, std::add_lvalue_reference_t<V>,
+			typedef decltype(*eastl::declval<iterator&>()) iterator_return;
+			typedef meta::conditional_t<is_associative::value || is_matched_lookup::value, eastl::add_lvalue_reference_t<V>,
 			     meta::conditional_t<is_lookup::value, V, iterator_return>>
 			     captured_type;
 			typedef typename meta::iterator_tag<iterator>::type iterator_category;
-			typedef std::is_same<iterator_category, std::input_iterator_tag> is_input_iterator;
-			typedef meta::conditional_t<is_input_iterator::value, V, decltype(detail::deref_move_only(std::declval<captured_type>()))> push_type;
-			typedef std::is_copy_assignable<V> is_copyable;
-			typedef meta::neg<meta::any<std::is_const<V>, std::is_const<std::remove_reference_t<iterator_return>>, meta::neg<is_copyable>>> is_writable;
-			typedef meta::unqualified_t<decltype(get_key(is_associative(), std::declval<std::add_lvalue_reference_t<value_type>>()))> key_type;
-			typedef meta::all<std::is_integral<K>, meta::neg<meta::any<is_associative, is_lookup>>> is_linear_integral;
+			typedef eastl::is_same<iterator_category, eastl::input_iterator_tag> is_input_iterator;
+			typedef meta::conditional_t<is_input_iterator::value, V, decltype(detail::deref_move_only(eastl::declval<captured_type>()))> push_type;
+			typedef eastl::is_copy_assignable<V> is_copyable;
+			typedef meta::neg<meta::any<eastl::is_const<V>, eastl::is_const<eastl::remove_reference_t<iterator_return>>, meta::neg<is_copyable>>> is_writable;
+			typedef meta::unqualified_t<decltype(get_key(is_associative(), eastl::declval<eastl::add_lvalue_reference_t<value_type>>()))> key_type;
+			typedef meta::all<eastl::is_integral<K>, meta::neg<meta::any<is_associative, is_lookup>>> is_linear_integral;
 
 			struct iter : detail::ebco<iterator, 0>, detail::ebco<sentinel, 1> {
 				using it_base = detail::ebco<iterator, 0>;
 				using sen_base = detail::ebco<sentinel, 1>;
 				main_reference keep_alive;
-				std::size_t index;
+				eastl::size_t index;
 
 				iter(lua_State* L_, int stack_index_, iterator it_, sentinel sen_) noexcept
-				: it_base(std::move(it_)), sen_base(std::move(sen_)), keep_alive(L_, stack_index_), index(0) {
+				: it_base(eastl::move(it_)), sen_base(eastl::move(sen_)), keep_alive(L_, stack_index_), index(0) {
 				}
 
 				iterator& it() noexcept {
@@ -558,7 +558,7 @@ namespace sol {
 #endif // Safe getting with error
 			}
 
-			static detail::error_result at_category(std::input_iterator_tag, lua_State* L_, T& self, std::ptrdiff_t pos) {
+			static detail::error_result at_category(eastl::input_iterator_tag, lua_State* L_, T& self, std::ptrdiff_t pos) {
 				pos += deferred_uc::index_adjustment(L_, self);
 				if (pos < 0) {
 					return stack::push(L_, lua_nil);
@@ -578,13 +578,13 @@ namespace sol {
 				return get_associative(is_associative(), L_, it);
 			}
 
-			static detail::error_result at_category(std::random_access_iterator_tag, lua_State* L_, T& self, std::ptrdiff_t pos) {
+			static detail::error_result at_category(eastl::random_access_iterator_tag, lua_State* L_, T& self, std::ptrdiff_t pos) {
 				std::ptrdiff_t len = static_cast<std::ptrdiff_t>(size_start(L_, self));
 				pos += deferred_uc::index_adjustment(L_, self);
 				if (pos < 0 || pos >= len) {
 					return stack::push(L_, lua_nil);
 				}
-				auto it = std::next(deferred_uc::begin(L_, self), pos);
+				auto it = eastl::next(deferred_uc::begin(L_, self), pos);
 				return get_associative(is_associative(), L_, it);
 			}
 
@@ -593,17 +593,17 @@ namespace sol {
 			}
 
 			template <typename Iter>
-			static detail::error_result get_associative(std::true_type, lua_State* L_, Iter& it) {
+			static detail::error_result get_associative(eastl::true_type, lua_State* L_, Iter& it) {
 				decltype(auto) v = *it;
 				return stack::stack_detail::push_reference<push_type>(L_, detail::deref_move_only(v.second));
 			}
 
 			template <typename Iter>
-			static detail::error_result get_associative(std::false_type, lua_State* L_, Iter& it) {
+			static detail::error_result get_associative(eastl::false_type, lua_State* L_, Iter& it) {
 				return stack::stack_detail::push_reference<push_type>(L_, detail::deref_move_only(*it));
 			}
 
-			static detail::error_result get_category(std::input_iterator_tag, lua_State* L_, T& self, K& key) {
+			static detail::error_result get_category(eastl::input_iterator_tag, lua_State* L_, T& self, K& key) {
 				key = static_cast<K>(key + deferred_uc::index_adjustment(L_, self));
 				if (key < 0) {
 					return stack::push(L_, lua_nil);
@@ -623,62 +623,62 @@ namespace sol {
 				return get_associative(is_associative(), L_, it);
 			}
 
-			static detail::error_result get_category(std::random_access_iterator_tag, lua_State* L_, T& self, K& key) {
+			static detail::error_result get_category(eastl::random_access_iterator_tag, lua_State* L_, T& self, K& key) {
 				std::ptrdiff_t len = static_cast<std::ptrdiff_t>(size_start(L_, self));
 				key = static_cast<K>(static_cast<std::ptrdiff_t>(key) + deferred_uc::index_adjustment(L_, self));
 				if (key < 0 || key >= len) {
 					return stack::push(L_, lua_nil);
 				}
-				auto it = std::next(deferred_uc::begin(L_, self), key);
+				auto it = eastl::next(deferred_uc::begin(L_, self), key);
 				return get_associative(is_associative(), L_, it);
 			}
 
-			static detail::error_result get_it(std::true_type, lua_State* L_, T& self, K& key) {
+			static detail::error_result get_it(eastl::true_type, lua_State* L_, T& self, K& key) {
 				return get_category(iterator_category(), L_, self, key);
 			}
 
-			static detail::error_result get_comparative(std::true_type, lua_State* L_, T& self, K& key) {
+			static detail::error_result get_comparative(eastl::true_type, lua_State* L_, T& self, K& key) {
 				auto fx = [&](const value_type& r) -> bool { return key == get_key(is_associative(), r); };
 				auto e = deferred_uc::end(L_, self);
-				auto it = std::find_if(deferred_uc::begin(L_, self), e, std::ref(fx));
+				auto it = eastl::find_if(deferred_uc::begin(L_, self), e, eastl::ref(fx));
 				if (it == e) {
 					return stack::push(L_, lua_nil);
 				}
 				return get_associative(is_associative(), L_, it);
 			}
 
-			static detail::error_result get_comparative(std::false_type, lua_State*, T&, K&) {
+			static detail::error_result get_comparative(eastl::false_type, lua_State*, T&, K&) {
 				return detail::error_result("cannot get this key on '%s': no suitable way to increment iterator and compare to key value '%s'",
 				     detail::demangle<T>().data(),
 				     detail::demangle<K>().data());
 			}
 
-			static detail::error_result get_it(std::false_type, lua_State* L_, T& self, K& key) {
+			static detail::error_result get_it(eastl::false_type, lua_State* L_, T& self, K& key) {
 				return get_comparative(meta::supports_op_equal<K, key_type>(), L_, self, key);
 			}
 
-			static detail::error_result set_associative(std::true_type, iterator& it, stack_object value) {
+			static detail::error_result set_associative(eastl::true_type, iterator& it, stack_object value) {
 				decltype(auto) v = *it;
 				v.second = value.as<V>();
 				return {};
 			}
 
-			static detail::error_result set_associative(std::false_type, iterator& it, stack_object value) {
+			static detail::error_result set_associative(eastl::false_type, iterator& it, stack_object value) {
 				decltype(auto) v = *it;
 				v = value.as<V>();
 				return {};
 			}
 
-			static detail::error_result set_writable(std::true_type, lua_State*, T&, iterator& it, stack_object value) {
-				return set_associative(is_associative(), it, std::move(value));
+			static detail::error_result set_writable(eastl::true_type, lua_State*, T&, iterator& it, stack_object value) {
+				return set_associative(is_associative(), it, eastl::move(value));
 			}
 
-			static detail::error_result set_writable(std::false_type, lua_State*, T&, iterator&, stack_object) {
+			static detail::error_result set_writable(eastl::false_type, lua_State*, T&, iterator&, stack_object) {
 				return detail::error_result(
 				     "cannot perform a 'set': '%s's iterator reference is not writable (non-copy-assignable or const)", detail::demangle<T>().data());
 			}
 
-			static detail::error_result set_category(std::input_iterator_tag, lua_State* L_, T& self, stack_object okey, stack_object value) {
+			static detail::error_result set_category(eastl::input_iterator_tag, lua_State* L_, T& self, stack_object okey, stack_object value) {
 				decltype(auto) key = okey.as<K>();
 				key = static_cast<K>(static_cast<std::ptrdiff_t>(key) + deferred_uc::index_adjustment(L_, self));
 				auto e = deferred_uc::end(L_, self);
@@ -689,14 +689,14 @@ namespace sol {
 				}
 				if (it == e) {
 					if (key == 0) {
-						return add_copyable(is_copyable(), L_, self, std::move(value), meta::has_insert_after<T>::value ? backit : it);
+						return add_copyable(is_copyable(), L_, self, eastl::move(value), meta::has_insert_after<T>::value ? backit : it);
 					}
 					return detail::error_result("out of bounds (too big) for set on '%s'", detail::demangle<T>().c_str());
 				}
-				return set_writable(is_writable(), L_, self, it, std::move(value));
+				return set_writable(is_writable(), L_, self, it, eastl::move(value));
 			}
 
-			static detail::error_result set_category(std::random_access_iterator_tag, lua_State* L_, T& self, stack_object okey, stack_object value) {
+			static detail::error_result set_category(eastl::random_access_iterator_tag, lua_State* L_, T& self, stack_object okey, stack_object value) {
 				decltype(auto) key = okey.as<K>();
 				key = static_cast<K>(static_cast<std::ptrdiff_t>(key) + deferred_uc::index_adjustment(L_, self));
 				if (key < 0) {
@@ -704,16 +704,16 @@ namespace sol {
 				}
 				std::ptrdiff_t len = static_cast<std::ptrdiff_t>(size_start(L_, self));
 				if (key == len) {
-					return add_copyable(is_copyable(), L_, self, std::move(value));
+					return add_copyable(is_copyable(), L_, self, eastl::move(value));
 				}
 				else if (key >= len) {
 					return detail::error_result("sol: out of bounds (too big) for set on '%s'", detail::demangle<T>().c_str());
 				}
-				auto it = std::next(deferred_uc::begin(L_, self), key);
-				return set_writable(is_writable(), L_, self, it, std::move(value));
+				auto it = eastl::next(deferred_uc::begin(L_, self), key);
+				return set_writable(is_writable(), L_, self, it, eastl::move(value));
 			}
 
-			static detail::error_result set_comparative(std::true_type, lua_State* L_, T& self, stack_object okey, stack_object value) {
+			static detail::error_result set_comparative(eastl::true_type, lua_State* L_, T& self, stack_object okey, stack_object value) {
 				decltype(auto) key = okey.as<K>();
 				if (!is_writable::value) {
 					return detail::error_result(
@@ -721,21 +721,21 @@ namespace sol {
 				}
 				auto fx = [&](const value_type& r) -> bool { return key == get_key(is_associative(), r); };
 				auto e = deferred_uc::end(L_, self);
-				auto it = std::find_if(deferred_uc::begin(L_, self), e, std::ref(fx));
+				auto it = eastl::find_if(deferred_uc::begin(L_, self), e, eastl::ref(fx));
 				if (it == e) {
 					return {};
 				}
-				return set_writable(is_writable(), L_, self, it, std::move(value));
+				return set_writable(is_writable(), L_, self, it, eastl::move(value));
 			}
 
-			static detail::error_result set_comparative(std::false_type, lua_State*, T&, stack_object, stack_object) {
+			static detail::error_result set_comparative(eastl::false_type, lua_State*, T&, stack_object, stack_object) {
 				return detail::error_result("cannot set this value on '%s': no suitable way to increment iterator or compare to '%s' key",
 				     detail::demangle<T>().data(),
 				     detail::demangle<K>().data());
 			}
 
 			template <typename Iter>
-			static detail::error_result set_associative_insert(std::true_type, lua_State*, T& self, Iter& it, K& key, stack_object value) {
+			static detail::error_result set_associative_insert(eastl::true_type, lua_State*, T& self, Iter& it, K& key, stack_object value) {
 				if constexpr (meta::has_insert_with_iterator<T>::value) {
 					self.insert(it, value_type(key, value.as<V>()));
 					return {};
@@ -754,7 +754,7 @@ namespace sol {
 			}
 
 			template <typename Iter>
-			static detail::error_result set_associative_insert(std::false_type, lua_State*, T& self, Iter& it, K& key, stack_object) {
+			static detail::error_result set_associative_insert(eastl::false_type, lua_State*, T& self, Iter& it, K& key, stack_object) {
 				if constexpr (meta::has_insert_with_iterator<T>::value) {
 					self.insert(it, key);
 					return {};
@@ -772,29 +772,29 @@ namespace sol {
 				}
 			}
 
-			static detail::error_result set_associative_find(std::true_type, lua_State* L_, T& self, stack_object okey, stack_object value) {
+			static detail::error_result set_associative_find(eastl::true_type, lua_State* L_, T& self, stack_object okey, stack_object value) {
 				decltype(auto) key = okey.as<K>();
 				auto it = self.find(key);
 				if (it == deferred_uc::end(L_, self)) {
-					return set_associative_insert(is_associative(), L_, self, it, key, std::move(value));
+					return set_associative_insert(is_associative(), L_, self, it, key, eastl::move(value));
 				}
-				return set_writable(is_writable(), L_, self, it, std::move(value));
+				return set_writable(is_writable(), L_, self, it, eastl::move(value));
 			}
 
-			static detail::error_result set_associative_find(std::false_type, lua_State* L_, T& self, stack_object key, stack_object value) {
-				return set_comparative(meta::supports_op_equal<K, key_type>(), L_, self, std::move(key), std::move(value));
+			static detail::error_result set_associative_find(eastl::false_type, lua_State* L_, T& self, stack_object key, stack_object value) {
+				return set_comparative(meta::supports_op_equal<K, key_type>(), L_, self, eastl::move(key), eastl::move(value));
 			}
 
-			static detail::error_result set_it(std::true_type, lua_State* L_, T& self, stack_object key, stack_object value) {
-				return set_category(iterator_category(), L_, self, std::move(key), std::move(value));
+			static detail::error_result set_it(eastl::true_type, lua_State* L_, T& self, stack_object key, stack_object value) {
+				return set_category(iterator_category(), L_, self, eastl::move(key), eastl::move(value));
 			}
 
-			static detail::error_result set_it(std::false_type, lua_State* L_, T& self, stack_object key, stack_object value) {
-				return set_associative_find(meta::all<has_find<T>, meta::any<is_associative, is_lookup>>(), L_, self, std::move(key), std::move(value));
+			static detail::error_result set_it(eastl::false_type, lua_State* L_, T& self, stack_object key, stack_object value) {
+				return set_associative_find(meta::all<has_find<T>, meta::any<is_associative, is_lookup>>(), L_, self, eastl::move(key), eastl::move(value));
 			}
 
 			template <bool idx_of = false>
-			static detail::error_result find_has_associative_lookup(std::true_type, lua_State* L_, T& self) {
+			static detail::error_result find_has_associative_lookup(eastl::true_type, lua_State* L_, T& self) {
 				if constexpr (!is_ordered::value && idx_of) {
 					(void)L_;
 					(void)self;
@@ -807,7 +807,7 @@ namespace sol {
 						return stack::push(L_, lua_nil);
 					}
 					if constexpr (idx_of) {
-						auto dist = std::distance(deferred_uc::begin(L_, self), it);
+						auto dist = eastl::distance(deferred_uc::begin(L_, self), it);
 						dist -= deferred_uc::index_adjustment(L_, self);
 						return stack::push(L_, dist);
 					}
@@ -818,7 +818,7 @@ namespace sol {
 			}
 
 			template <bool idx_of = false>
-			static detail::error_result find_has_associative_lookup(std::false_type, lua_State* L_, T& self) {
+			static detail::error_result find_has_associative_lookup(eastl::false_type, lua_State* L_, T& self) {
 				if constexpr (!is_ordered::value && idx_of) {
 					(void)L_;
 					(void)self;
@@ -831,7 +831,7 @@ namespace sol {
 						return stack::push(L_, lua_nil);
 					}
 					if constexpr (idx_of) {
-						auto dist = std::distance(deferred_uc::begin(L_, self), it);
+						auto dist = eastl::distance(deferred_uc::begin(L_, self), it);
 						dist -= deferred_uc::index_adjustment(L_, self);
 						return stack::push(L_, dist);
 					}
@@ -842,33 +842,33 @@ namespace sol {
 			}
 
 			template <bool idx_of = false>
-			static detail::error_result find_has(std::true_type, lua_State* L_, T& self) {
+			static detail::error_result find_has(eastl::true_type, lua_State* L_, T& self) {
 				return find_has_associative_lookup<idx_of>(meta::any<is_lookup, is_associative>(), L_, self);
 			}
 
 			template <typename Iter>
-			static detail::error_result find_associative_lookup(std::true_type, lua_State* L_, T&, Iter& it, std::size_t) {
+			static detail::error_result find_associative_lookup(eastl::true_type, lua_State* L_, T&, Iter& it, eastl::size_t) {
 				return get_associative(is_associative(), L_, it);
 			}
 
 			template <typename Iter>
-			static detail::error_result find_associative_lookup(std::false_type, lua_State* L_, T& self, Iter&, std::size_t idx) {
-				idx = static_cast<std::size_t>(static_cast<std::ptrdiff_t>(idx) - deferred_uc::index_adjustment(L_, self));
+			static detail::error_result find_associative_lookup(eastl::false_type, lua_State* L_, T& self, Iter&, eastl::size_t idx) {
+				idx = static_cast<eastl::size_t>(static_cast<std::ptrdiff_t>(idx) - deferred_uc::index_adjustment(L_, self));
 				return stack::push(L_, idx);
 			}
 
 			template <bool = false>
-			static detail::error_result find_comparative(std::false_type, lua_State*, T&) {
+			static detail::error_result find_comparative(eastl::false_type, lua_State*, T&) {
 				return detail::error_result("cannot call 'find' on '%s': there is no 'find' function and the value_type is not equality comparable",
 				     detail::demangle<T>().c_str());
 			}
 
 			template <bool idx_of = false>
-			static detail::error_result find_comparative(std::true_type, lua_State* L_, T& self) {
+			static detail::error_result find_comparative(eastl::true_type, lua_State* L_, T& self) {
 				decltype(auto) value = stack::unqualified_get<V>(L_, 2);
 				auto it = deferred_uc::begin(L_, self);
 				auto e = deferred_uc::end(L_, self);
-				std::size_t idx = 0;
+				eastl::size_t idx = 0;
 				for (;; ++it, ++idx) {
 					if (it == e) {
 						return stack::push(L_, lua_nil);
@@ -881,78 +881,78 @@ namespace sol {
 			}
 
 			template <bool idx_of = false>
-			static detail::error_result find_has(std::false_type, lua_State* L_, T& self) {
+			static detail::error_result find_has(eastl::false_type, lua_State* L_, T& self) {
 				return find_comparative<idx_of>(meta::supports_op_equal<V>(), L_, self);
 			}
 
 			template <typename Iter>
-			static detail::error_result add_insert_after(std::false_type, lua_State* L_, T& self, stack_object value, Iter&) {
-				return add_insert_after(std::false_type(), L_, self, value);
+			static detail::error_result add_insert_after(eastl::false_type, lua_State* L_, T& self, stack_object value, Iter&) {
+				return add_insert_after(eastl::false_type(), L_, self, value);
 			}
 
-			static detail::error_result add_insert_after(std::false_type, lua_State*, T&, stack_object) {
+			static detail::error_result add_insert_after(eastl::false_type, lua_State*, T&, stack_object) {
 				return detail::error_result("cannot call 'add' on type '%s': no suitable insert/push_back C++ functions", detail::demangle<T>().data());
 			}
 
 			template <typename Iter>
-			static detail::error_result add_insert_after(std::true_type, lua_State*, T& self, stack_object value, Iter& pos) {
+			static detail::error_result add_insert_after(eastl::true_type, lua_State*, T& self, stack_object value, Iter& pos) {
 				self.insert_after(pos, value.as<V>());
 				return {};
 			}
 
-			static detail::error_result add_insert_after(std::true_type, lua_State* L_, T& self, stack_object value) {
+			static detail::error_result add_insert_after(eastl::true_type, lua_State* L_, T& self, stack_object value) {
 				auto backit = self.before_begin();
 				{
 					auto e = deferred_uc::end(L_, self);
 					for (auto it = deferred_uc::begin(L_, self); it != e; ++backit, ++it) { }
 				}
-				return add_insert_after(std::true_type(), L_, self, value, backit);
+				return add_insert_after(eastl::true_type(), L_, self, value, backit);
 			}
 
 			template <typename Iter>
-			static detail::error_result add_insert(std::true_type, lua_State*, T& self, stack_object value, Iter& pos) {
+			static detail::error_result add_insert(eastl::true_type, lua_State*, T& self, stack_object value, Iter& pos) {
 				self.insert(pos, value.as<V>());
 				return {};
 			}
 
-			static detail::error_result add_insert(std::true_type, lua_State* L_, T& self, stack_object value) {
+			static detail::error_result add_insert(eastl::true_type, lua_State* L_, T& self, stack_object value) {
 				auto pos = deferred_uc::end(L_, self);
-				return add_insert(std::true_type(), L_, self, value, pos);
+				return add_insert(eastl::true_type(), L_, self, value, pos);
 			}
 
 			template <typename Iter>
-			static detail::error_result add_insert(std::false_type, lua_State* L_, T& self, stack_object value, Iter& pos) {
-				return add_insert_after(meta::has_insert_after<T>(), L_, self, std::move(value), pos);
+			static detail::error_result add_insert(eastl::false_type, lua_State* L_, T& self, stack_object value, Iter& pos) {
+				return add_insert_after(meta::has_insert_after<T>(), L_, self, eastl::move(value), pos);
 			}
 
-			static detail::error_result add_insert(std::false_type, lua_State* L_, T& self, stack_object value) {
-				return add_insert_after(meta::has_insert_after<T>(), L_, self, std::move(value));
+			static detail::error_result add_insert(eastl::false_type, lua_State* L_, T& self, stack_object value) {
+				return add_insert_after(meta::has_insert_after<T>(), L_, self, eastl::move(value));
 			}
 
 			template <typename Iter>
-			static detail::error_result add_push_back(std::true_type, lua_State*, T& self, stack_object value, Iter&) {
+			static detail::error_result add_push_back(eastl::true_type, lua_State*, T& self, stack_object value, Iter&) {
 				self.push_back(value.as<V>());
 				return {};
 			}
 
-			static detail::error_result add_push_back(std::true_type, lua_State*, T& self, stack_object value) {
+			static detail::error_result add_push_back(eastl::true_type, lua_State*, T& self, stack_object value) {
 				self.push_back(value.as<V>());
 				return {};
 			}
 
 			template <typename Iter>
-			static detail::error_result add_push_back(std::false_type, lua_State* L_, T& self, stack_object value, Iter& pos) {
+			static detail::error_result add_push_back(eastl::false_type, lua_State* L_, T& self, stack_object value, Iter& pos) {
 				return add_insert(
-				     std::integral_constant < bool, meta::has_insert<T>::value || meta::has_insert_with_iterator<T>::value > (), L_, self, value, pos);
+				     eastl::integral_constant < bool, meta::has_insert<T>::value || meta::has_insert_with_iterator<T>::value > (), L_, self, value, pos);
 			}
 
-			static detail::error_result add_push_back(std::false_type, lua_State* L_, T& self, stack_object value) {
+			static detail::error_result add_push_back(eastl::false_type, lua_State* L_, T& self, stack_object value) {
 				return add_insert(
-				     std::integral_constant < bool, meta::has_insert<T>::value || meta::has_insert_with_iterator<T>::value > (), L_, self, value);
+				     eastl::integral_constant < bool, meta::has_insert<T>::value || meta::has_insert_with_iterator<T>::value > (), L_, self, value);
 			}
 
 			template <typename Iter>
-			static detail::error_result add_associative(std::true_type, lua_State* L_, T& self, stack_object key, Iter& pos) {
+			static detail::error_result add_associative(eastl::true_type, lua_State* L_, T& self, stack_object key, Iter& pos) {
 				if constexpr (meta::has_insert_with_iterator<T>::value) {
 					self.insert(pos, value_type(key.as<K>(), stack::unqualified_get<V>(L_, 3)));
 					return {};
@@ -971,53 +971,53 @@ namespace sol {
 				}
 			}
 
-			static detail::error_result add_associative(std::true_type, lua_State* L_, T& self, stack_object key) {
+			static detail::error_result add_associative(eastl::true_type, lua_State* L_, T& self, stack_object key) {
 				auto pos = deferred_uc::end(L_, self);
-				return add_associative(std::true_type(), L_, self, std::move(key), pos);
+				return add_associative(eastl::true_type(), L_, self, eastl::move(key), pos);
 			}
 
 			template <typename Iter>
-			static detail::error_result add_associative(std::false_type, lua_State* L_, T& self, stack_object value, Iter& pos) {
+			static detail::error_result add_associative(eastl::false_type, lua_State* L_, T& self, stack_object value, Iter& pos) {
 				return add_push_back(meta::has_push_back<T>(), L_, self, value, pos);
 			}
 
-			static detail::error_result add_associative(std::false_type, lua_State* L_, T& self, stack_object value) {
+			static detail::error_result add_associative(eastl::false_type, lua_State* L_, T& self, stack_object value) {
 				return add_push_back(meta::has_push_back<T>(), L_, self, value);
 			}
 
 			template <typename Iter>
-			static detail::error_result add_copyable(std::true_type, lua_State* L_, T& self, stack_object value, Iter& pos) {
-				return add_associative(is_associative(), L_, self, std::move(value), pos);
+			static detail::error_result add_copyable(eastl::true_type, lua_State* L_, T& self, stack_object value, Iter& pos) {
+				return add_associative(is_associative(), L_, self, eastl::move(value), pos);
 			}
 
-			static detail::error_result add_copyable(std::true_type, lua_State* L_, T& self, stack_object value) {
+			static detail::error_result add_copyable(eastl::true_type, lua_State* L_, T& self, stack_object value) {
 				return add_associative(is_associative(), L_, self, value);
 			}
 
 			template <typename Iter>
-			static detail::error_result add_copyable(std::false_type, lua_State* L_, T& self, stack_object value, Iter&) {
-				return add_copyable(std::false_type(), L_, self, std::move(value));
+			static detail::error_result add_copyable(eastl::false_type, lua_State* L_, T& self, stack_object value, Iter&) {
+				return add_copyable(eastl::false_type(), L_, self, eastl::move(value));
 			}
 
-			static detail::error_result add_copyable(std::false_type, lua_State*, T&, stack_object) {
+			static detail::error_result add_copyable(eastl::false_type, lua_State*, T&, stack_object) {
 				return detail::error_result("cannot call 'add' on '%s': value_type is non-copyable", detail::demangle<T>().data());
 			}
 
-			static detail::error_result insert_lookup(std::true_type, lua_State* L_, T& self, stack_object, stack_object value) {
+			static detail::error_result insert_lookup(eastl::true_type, lua_State* L_, T& self, stack_object, stack_object value) {
 				// TODO: should we warn or error about someone calling insert on an ordered / lookup container with no associativity?
-				return add_copyable(std::true_type(), L_, self, std::move(value));
+				return add_copyable(eastl::true_type(), L_, self, eastl::move(value));
 			}
 
-			static detail::error_result insert_lookup(std::false_type, lua_State* L_, T& self, stack_object where, stack_object value) {
+			static detail::error_result insert_lookup(eastl::false_type, lua_State* L_, T& self, stack_object where, stack_object value) {
 				auto it = deferred_uc::begin(L_, self);
 				auto key = where.as<K>();
 				key = static_cast<K>(static_cast<std::ptrdiff_t>(key) + deferred_uc::index_adjustment(L_, self));
-				std::advance(it, key);
+				eastl::advance(it, key);
 				self.insert(it, value.as<V>());
 				return {};
 			}
 
-			static detail::error_result insert_after_has(std::true_type, lua_State* L_, T& self, stack_object where, stack_object value) {
+			static detail::error_result insert_after_has(eastl::true_type, lua_State* L_, T& self, stack_object where, stack_object value) {
 				auto key = where.as<K>();
 				auto backit = self.before_begin();
 				{
@@ -1033,45 +1033,45 @@ namespace sol {
 				return {};
 			}
 
-			static detail::error_result insert_after_has(std::false_type, lua_State*, T&, stack_object, stack_object) {
+			static detail::error_result insert_after_has(eastl::false_type, lua_State*, T&, stack_object, stack_object) {
 				return detail::error_result(
 				     "cannot call 'insert' on '%s': no suitable or similar functionality detected on this container", detail::demangle<T>().data());
 			}
 
-			static detail::error_result insert_has(std::true_type, lua_State* L_, T& self, stack_object key, stack_object value) {
-				return insert_lookup(meta::any<is_associative, is_lookup>(), L_, self, std::move(key), std::move(value));
+			static detail::error_result insert_has(eastl::true_type, lua_State* L_, T& self, stack_object key, stack_object value) {
+				return insert_lookup(meta::any<is_associative, is_lookup>(), L_, self, eastl::move(key), eastl::move(value));
 			}
 
-			static detail::error_result insert_has(std::false_type, lua_State* L_, T& self, stack_object where, stack_object value) {
+			static detail::error_result insert_has(eastl::false_type, lua_State* L_, T& self, stack_object where, stack_object value) {
 				return insert_after_has(meta::has_insert_after<T>(), L_, self, where, value);
 			}
 
-			static detail::error_result insert_copyable(std::true_type, lua_State* L_, T& self, stack_object key, stack_object value) {
-				return insert_has(std::integral_constant < bool,
+			static detail::error_result insert_copyable(eastl::true_type, lua_State* L_, T& self, stack_object key, stack_object value) {
+				return insert_has(eastl::integral_constant < bool,
 				     meta::has_insert<T>::value || meta::has_insert_with_iterator<T>::value > (),
 				     L_,
 				     self,
-				     std::move(key),
-				     std::move(value));
+				     eastl::move(key),
+				     eastl::move(value));
 			}
 
-			static detail::error_result insert_copyable(std::false_type, lua_State*, T&, stack_object, stack_object) {
+			static detail::error_result insert_copyable(eastl::false_type, lua_State*, T&, stack_object, stack_object) {
 				return detail::error_result("cannot call 'insert' on '%s': value_type is non-copyable", detail::demangle<T>().data());
 			}
 
-			static detail::error_result erase_integral(std::true_type, lua_State* L_, T& self, K& key) {
+			static detail::error_result erase_integral(eastl::true_type, lua_State* L_, T& self, K& key) {
 				auto it = deferred_uc::begin(L_, self);
 				key = (static_cast<std::ptrdiff_t>(key) + deferred_uc::index_adjustment(L_, self));
-				std::advance(it, key);
+				eastl::advance(it, key);
 				self.erase(it);
 
 				return {};
 			}
 
-			static detail::error_result erase_integral(std::false_type, lua_State* L_, T& self, const K& key) {
+			static detail::error_result erase_integral(eastl::false_type, lua_State* L_, T& self, const K& key) {
 				auto fx = [&](const value_type& r) -> bool { return key == r; };
 				auto e = deferred_uc::end(L_, self);
-				auto it = std::find_if(deferred_uc::begin(L_, self), e, std::ref(fx));
+				auto it = eastl::find_if(deferred_uc::begin(L_, self), e, eastl::ref(fx));
 				if (it == e) {
 					return {};
 				}
@@ -1080,16 +1080,16 @@ namespace sol {
 				return {};
 			}
 
-			static detail::error_result erase_associative_lookup(std::true_type, lua_State*, T& self, const K& key) {
+			static detail::error_result erase_associative_lookup(eastl::true_type, lua_State*, T& self, const K& key) {
 				self.erase(key);
 				return {};
 			}
 
-			static detail::error_result erase_associative_lookup(std::false_type, lua_State* L_, T& self, K& key) {
-				return erase_integral(std::is_integral<K>(), L_, self, key);
+			static detail::error_result erase_associative_lookup(eastl::false_type, lua_State* L_, T& self, K& key) {
+				return erase_integral(eastl::is_integral<K>(), L_, self, key);
 			}
 
-			static detail::error_result erase_after_has(std::true_type, lua_State* L_, T& self, K& key) {
+			static detail::error_result erase_after_has(eastl::true_type, lua_State* L_, T& self, K& key) {
 				auto backit = self.before_begin();
 				{
 					key = static_cast<K>(static_cast<std::ptrdiff_t>(key) + deferred_uc::index_adjustment(L_, self));
@@ -1104,73 +1104,73 @@ namespace sol {
 				return {};
 			}
 
-			static detail::error_result erase_after_has(std::false_type, lua_State*, T&, const K&) {
+			static detail::error_result erase_after_has(eastl::false_type, lua_State*, T&, const K&) {
 				return detail::error_result("sol: cannot call erase on '%s'", detail::demangle<T>().c_str());
 			}
 
-			static detail::error_result erase_key_has(std::true_type, lua_State* L_, T& self, K& key) {
+			static detail::error_result erase_key_has(eastl::true_type, lua_State* L_, T& self, K& key) {
 				return erase_associative_lookup(meta::any<is_associative, is_lookup>(), L_, self, key);
 			}
 
-			static detail::error_result erase_key_has(std::false_type, lua_State* L_, T& self, K& key) {
+			static detail::error_result erase_key_has(eastl::false_type, lua_State* L_, T& self, K& key) {
 				return erase_after_has(has_erase_after<T>(), L_, self, key);
 			}
 
-			static detail::error_result erase_has(std::true_type, lua_State* L_, T& self, K& key) {
+			static detail::error_result erase_has(eastl::true_type, lua_State* L_, T& self, K& key) {
 				return erase_associative_lookup(meta::any<is_associative, is_lookup>(), L_, self, key);
 			}
 
-			static detail::error_result erase_has(std::false_type, lua_State* L_, T& self, K& key) {
+			static detail::error_result erase_has(eastl::false_type, lua_State* L_, T& self, K& key) {
 				return erase_key_has(has_erase_key<T>(), L_, self, key);
 			}
 
-			static auto size_has(std::false_type, lua_State* L_, T& self) {
-				return std::distance(deferred_uc::begin(L_, self), deferred_uc::end(L_, self));
+			static auto size_has(eastl::false_type, lua_State* L_, T& self) {
+				return eastl::distance(deferred_uc::begin(L_, self), deferred_uc::end(L_, self));
 			}
 
-			static auto size_has(std::true_type, lua_State*, T& self) {
+			static auto size_has(eastl::true_type, lua_State*, T& self) {
 				return self.size();
 			}
 
-			static void clear_has(std::true_type, lua_State*, T& self) {
+			static void clear_has(eastl::true_type, lua_State*, T& self) {
 				self.clear();
 			}
 
-			static void clear_has(std::false_type, lua_State* L_, T&) {
+			static void clear_has(eastl::false_type, lua_State* L_, T&) {
 				luaL_error(L_, "sol: cannot call clear on '%s'", detail::demangle<T>().c_str());
 			}
 
-			static bool empty_has(std::true_type, lua_State*, T& self) {
+			static bool empty_has(eastl::true_type, lua_State*, T& self) {
 				return self.empty();
 			}
 
-			static bool empty_has(std::false_type, lua_State* L_, T& self) {
+			static bool empty_has(eastl::false_type, lua_State* L_, T& self) {
 				return deferred_uc::begin(L_, self) == deferred_uc::end(L_, self);
 			}
 
-			static detail::error_result get_associative_find(std::true_type, lua_State* L_, T& self, K& key) {
+			static detail::error_result get_associative_find(eastl::true_type, lua_State* L_, T& self, K& key) {
 				auto it = self.find(key);
 				if (it == deferred_uc::end(L_, self)) {
 					stack::push(L_, lua_nil);
 					return {};
 				}
-				return get_associative(std::true_type(), L_, it);
+				return get_associative(eastl::true_type(), L_, it);
 			}
 
-			static detail::error_result get_associative_find(std::false_type, lua_State* L_, T& self, K& key) {
+			static detail::error_result get_associative_find(eastl::false_type, lua_State* L_, T& self, K& key) {
 				return get_it(is_linear_integral(), L_, self, key);
 			}
 
 			static detail::error_result get_start(lua_State* L_, T& self, K& key) {
-				return get_associative_find(std::integral_constant < bool, is_associative::value&& has_find<T>::value > (), L_, self, key);
+				return get_associative_find(eastl::integral_constant < bool, is_associative::value&& has_find<T>::value > (), L_, self, key);
 			}
 
 			static detail::error_result set_start(lua_State* L_, T& self, stack_object key, stack_object value) {
-				return set_it(is_linear_integral(), L_, self, std::move(key), std::move(value));
+				return set_it(is_linear_integral(), L_, self, eastl::move(key), eastl::move(value));
 			}
 
-			static std::size_t size_start(lua_State* L_, T& self) {
-				return static_cast<std::size_t>(size_has(meta::has_size<T>(), L_, self));
+			static eastl::size_t size_start(lua_State* L_, T& self) {
+				return static_cast<eastl::size_t>(size_has(meta::has_size<T>(), L_, self));
 			}
 
 			static void clear_start(lua_State* L_, T& self) {
@@ -1186,7 +1186,7 @@ namespace sol {
 			}
 
 			template <bool ip>
-			static int next_associative(std::true_type, lua_State* L_) {
+			static int next_associative(eastl::true_type, lua_State* L_) {
 				iter& i = stack::unqualified_get<user<iter>>(L_, 1);
 				auto& it = i.it;
 				auto& end = i.end;
@@ -1202,12 +1202,12 @@ namespace sol {
 					p = stack::push_reference(L_, it->first);
 				}
 				p += stack::stack_detail::push_reference<push_type>(L_, detail::deref_move_only(it->second));
-				std::advance(it, 1);
+				eastl::advance(it, 1);
 				return p;
 			}
 
 			template <bool>
-			static int next_associative(std::false_type, lua_State* L_) {
+			static int next_associative(eastl::false_type, lua_State* L_) {
 				iter& i = stack::unqualified_get<user<iter>>(L_, 1);
 				auto& it = i.it();
 				auto& end = i.sen();
@@ -1216,14 +1216,14 @@ namespace sol {
 					return stack::push(L_, lua_nil);
 				}
 				int p;
-				if constexpr (std::is_integral_v<next_K>) {
+				if constexpr (eastl::is_integral_v<next_K>) {
 					p = stack::push_reference(L_, k + 1);
 				}
 				else {
 					p = stack::stack_detail::push_reference(L_, k + 1);
 				}
 				p += stack::stack_detail::push_reference<push_type>(L_, detail::deref_move_only(*it));
-				std::advance(it, 1);
+				eastl::advance(it, 1);
 				return p;
 			}
 
@@ -1234,7 +1234,7 @@ namespace sol {
 			}
 
 			template <bool ip>
-			static int pairs_associative(std::true_type, lua_State* L_) {
+			static int pairs_associative(eastl::true_type, lua_State* L_) {
 				auto& src = get_src(L_);
 				stack::push(L_, next_iter<ip>);
 				stack::push<user<iter>>(L_, L_, 1, deferred_uc::begin(L_, src), deferred_uc::begin(L_, src));
@@ -1243,7 +1243,7 @@ namespace sol {
 			}
 
 			template <bool ip>
-			static int pairs_associative(std::false_type, lua_State* L_) {
+			static int pairs_associative(eastl::false_type, lua_State* L_) {
 				auto& src = get_src(L_);
 				stack::push(L_, next_iter<ip>);
 				stack::push<user<iter>>(L_, L_, 1, deferred_uc::begin(L_, src), deferred_uc::end(L_, src));
@@ -1296,7 +1296,7 @@ namespace sol {
 					}
 				}
 				auto& self = get_src(L_);
-				detail::error_result er = set_start(L_, self, stack_object(L_, raw_index(2)), std::move(value));
+				detail::error_result er = set_start(L_, self, stack_object(L_, raw_index(2)), eastl::move(value));
 				return handle_errors(L_, er);
 			}
 
@@ -1333,7 +1333,7 @@ namespace sol {
 					return self.begin();
 				}
 				else {
-					using std::begin;
+					using eastl::begin;
 					return begin(self);
 				}
 			}
@@ -1343,14 +1343,14 @@ namespace sol {
 					return self.end();
 				}
 				else {
-					using std::end;
+					using eastl::end;
 					return end(self);
 				}
 			}
 
 			static int size(lua_State* L_) {
 				auto& self = get_src(L_);
-				std::size_t r = size_start(L_, self);
+				eastl::size_t r = size_start(L_, self);
 				return stack::push(L_, r);
 			}
 
@@ -1395,13 +1395,13 @@ namespace sol {
 		};
 
 		template <typename X>
-		struct usertype_container_default<X, std::enable_if_t<std::is_array<std::remove_pointer_t<meta::unwrap_unqualified_t<X>>>::value>> {
+		struct usertype_container_default<X, eastl::enable_if_t<eastl::is_array<eastl::remove_pointer_t<meta::unwrap_unqualified_t<X>>>::value>> {
 		private:
-			typedef std::remove_pointer_t<meta::unwrap_unqualified_t<X>> T;
+			typedef eastl::remove_pointer_t<meta::unwrap_unqualified_t<X>> T;
 			typedef usertype_container<X> deferred_uc;
 
 		public:
-			typedef std::remove_extent_t<T> value_type;
+			typedef eastl::remove_extent_t<T> value_type;
 			typedef value_type* iterator;
 			typedef iterator sentinel;
 
@@ -1412,7 +1412,7 @@ namespace sol {
 				reference keep_alive;
 				
 				iter(lua_State* L_, int stack_index_, iterator it_, sentinel sen_) noexcept
-				: it_base(std::move(it_)), sen_base(std::move(sen_)), keep_alive(sol::main_thread(L_, L_), stack_index_) {
+				: it_base(eastl::move(it_)), sen_base(eastl::move(sen_)), keep_alive(sol::main_thread(L_, L_), stack_index_) {
 				}
 
 				iterator& it() noexcept {
@@ -1448,22 +1448,22 @@ namespace sol {
 				return *p.value();
 			}
 
-			static int find(std::true_type, lua_State* L_) {
+			static int find(eastl::true_type, lua_State* L_) {
 				T& self = get_src(L_);
 				decltype(auto) value = stack::unqualified_get<value_type>(L_, 2);
-				std::size_t N = std::extent<T>::value;
-				for (std::size_t idx = 0; idx < N; ++idx) {
-					using v_t = std::add_const_t<decltype(self[idx])>;
+				eastl::size_t N = eastl::extent<T>::value;
+				for (eastl::size_t idx = 0; idx < N; ++idx) {
+					using v_t = eastl::add_const_t<decltype(self[idx])>;
 					v_t v = self[idx];
 					if (v == value) {
-						idx = static_cast<std::size_t>(static_cast<std::ptrdiff_t>(idx) - deferred_uc::index_adjustment(L_, self));
+						idx = static_cast<eastl::size_t>(static_cast<std::ptrdiff_t>(idx) - deferred_uc::index_adjustment(L_, self));
 						return stack::push(L_, idx);
 					}
 				}
 				return stack::push(L_, lua_nil);
 			}
 
-			static int find(std::false_type, lua_State* L_) {
+			static int find(eastl::false_type, lua_State* L_) {
 				return luaL_error(L_, "sol: cannot call 'find' on '%s': no supported comparison operator for the value type", detail::demangle<T>().c_str());
 			}
 
@@ -1471,14 +1471,14 @@ namespace sol {
 				iter& i = stack::unqualified_get<user<iter>>(L_, 1);
 				auto& it = i.it();
 				auto& end = i.sen();
-				std::size_t k = stack::unqualified_get<std::size_t>(L_, 2);
+				eastl::size_t k = stack::unqualified_get<eastl::size_t>(L_, 2);
 				if (it == end) {
 					return 0;
 				}
 				int p;
 				p = stack::push(L_, k + 1);
 				p += stack::push_reference(L_, detail::deref_move_only(*it));
-				std::advance(it, 1);
+				eastl::advance(it, 1);
 				return p;
 			}
 
@@ -1507,7 +1507,7 @@ namespace sol {
 				T& self = get_src(L_);
 				std::ptrdiff_t idx = stack::unqualified_get<std::ptrdiff_t>(L_, 2);
 				idx += deferred_uc::index_adjustment(L_, self);
-				if (idx >= static_cast<std::ptrdiff_t>(std::extent<T>::value) || idx < 0) {
+				if (idx >= static_cast<std::ptrdiff_t>(eastl::extent<T>::value) || idx < 0) {
 					return stack::push(L_, lua_nil);
 				}
 				return stack::push_reference(L_, detail::deref_move_only(self[idx]));
@@ -1521,7 +1521,7 @@ namespace sol {
 				T& self = get_src(L_);
 				std::ptrdiff_t idx = stack::unqualified_get<std::ptrdiff_t>(L_, 2);
 				idx += deferred_uc::index_adjustment(L_, self);
-				if (idx >= static_cast<std::ptrdiff_t>(std::extent<T>::value)) {
+				if (idx >= static_cast<std::ptrdiff_t>(eastl::extent<T>::value)) {
 					return luaL_error(L_, "sol: index out of bounds (too big) for set on '%s'", detail::demangle<T>().c_str());
 				}
 				if (idx < 0) {
@@ -1544,11 +1544,11 @@ namespace sol {
 			}
 
 			static int size(lua_State* L_) {
-				return stack::push(L_, std::extent<T>::value);
+				return stack::push(L_, eastl::extent<T>::value);
 			}
 
 			static int empty(lua_State* L_) {
-				return stack::push(L_, std::extent<T>::value > 0);
+				return stack::push(L_, eastl::extent<T>::value > 0);
 			}
 
 			static int pairs(lua_State* L_) {
@@ -1572,11 +1572,11 @@ namespace sol {
 			}
 
 			static iterator begin(lua_State*, T& self) {
-				return std::addressof(self[0]);
+				return eastl::addressof(self[0]);
 			}
 
 			static sentinel end(lua_State*, T& self) {
-				return std::addressof(self[0]) + std::extent<T>::value;
+				return eastl::addressof(self[0]) + eastl::extent<T>::value;
 			}
 		};
 

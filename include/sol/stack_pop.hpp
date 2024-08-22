@@ -26,8 +26,8 @@
 
 #include <sol/stack_core.hpp>
 #include <sol/stack_get.hpp>
-#include <utility>
-#include <tuple>
+#include <EASTL/utility.h>
+#include <EASTL/tuple.h>
 
 namespace sol { namespace stack {
 	template <typename T, typename>

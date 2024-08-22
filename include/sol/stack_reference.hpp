@@ -237,7 +237,7 @@ namespace sol {
 	}
 
 	struct stateless_stack_reference_equals {
-		using is_transparent = std::true_type;
+		using is_transparent = eastl::true_type;
 
 		stateless_stack_reference_equals(lua_State* L_) noexcept : m_L(L_) {
 		}
@@ -263,7 +263,7 @@ namespace sol {
 	};
 
 	struct stack_reference_equals {
-		using is_transparent = std::true_type;
+		using is_transparent = eastl::true_type;
 
 		bool operator()(const lua_nil_t& lhs, const stack_reference& rhs) const {
 			return lhs == rhs;
@@ -280,8 +280,8 @@ namespace sol {
 
 	struct stateless_stack_reference_hash {
 		using argument_type = stateless_stack_reference;
-		using result_type = std::size_t;
-		using is_transparent = std::true_type;
+		using result_type = eastl::size_t;
+		using is_transparent = eastl::true_type;
 
 		stateless_stack_reference_hash(lua_State* L_) noexcept : m_L(L_) {
 		}
@@ -291,7 +291,7 @@ namespace sol {
 		}
 
 		result_type operator()(const argument_type& lhs) const noexcept {
-			std::hash<const void*> h;
+			eastl::hash<const void*> h;
 			return h(lhs.pointer(lua_state()));
 		}
 
@@ -301,11 +301,11 @@ namespace sol {
 
 	struct stack_reference_hash {
 		using argument_type = stack_reference;
-		using result_type = std::size_t;
-		using is_transparent = std::true_type;
+		using result_type = eastl::size_t;
+		using is_transparent = eastl::true_type;
 
 		result_type operator()(const argument_type& lhs) const noexcept {
-			std::hash<const void*> h;
+			eastl::hash<const void*> h;
 			return h(lhs.pointer());
 		}
 	};

@@ -34,7 +34,7 @@ namespace sol {
 
 	template <typename Source>
 	auto as_args(Source&& source) {
-		return as_args_t<Source> { std::forward<Source>(source) };
+		return as_args_t<Source> { eastl::forward<Source>(source) };
 	}
 
 	namespace stack {

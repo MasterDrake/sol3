@@ -44,31 +44,31 @@ namespace sol {
 		template <bool, typename>
 		friend class basic_table_core;
 
-		template <std::size_t... I, typename... Args>
-		void tuple_set(std::index_sequence<I...>, std::tuple<Args...>&& args) {
+		template <eastl::size_t... I, typename... Args>
+		void tuple_set(eastl::index_sequence<I...>, eastl::tuple<Args...>&& args) {
 			(void)args;
-			(void)detail::swallow { 0, (this->set(std::get<I * 2>(std::move(args)), std::get<I * 2 + 1>(std::move(args))), 0)... };
+			(void)detail::swallow { 0, (this->set(eastl::get<I * 2>(eastl::move(args)), eastl::get<I * 2 + 1>(eastl::move(args))), 0)... };
 		}
 
-		template <typename R, typename... Args, typename Fx, typename Key, typename = std::invoke_result_t<Fx, Args...>>
+		template <typename R, typename... Args, typename Fx, typename Key, typename = eastl::invoke_result_t<Fx, Args...>>
 		void set_fx(types<R(Args...)>, Key&& key, Fx&& fx) {
-			set_resolved_function<R(Args...)>(std::forward<Key>(key), std::forward<Fx>(fx));
+			set_resolved_function<R(Args...)>(eastl::forward<Key>(key), eastl::forward<Fx>(fx));
 		}
 
 		template <typename Fx, typename Key, meta::enable<meta::is_specialization_of<meta::unqualified_t<Fx>, overload_set>> = meta::enabler>
 		void set_fx(types<>, Key&& key, Fx&& fx) {
-			set(std::forward<Key>(key), std::forward<Fx>(fx));
+			set(eastl::forward<Key>(key), eastl::forward<Fx>(fx));
 		}
 
 		template <typename Fx, typename Key, typename... Args,
 		     meta::disable<meta::is_specialization_of<meta::unqualified_t<Fx>, overload_set>> = meta::enabler>
 		void set_fx(types<>, Key&& key, Fx&& fx, Args&&... args) {
-			set(std::forward<Key>(key), as_function_reference(std::forward<Fx>(fx), std::forward<Args>(args)...));
+			set(eastl::forward<Key>(key), as_function_reference(eastl::forward<Fx>(fx), eastl::forward<Args>(args)...));
 		}
 
 		template <typename... Sig, typename... Args, typename Key>
 		void set_resolved_function(Key&& key, Args&&... args) {
-			set(std::forward<Key>(key), as_function_reference<function_sig<Sig...>>(std::forward<Args>(args)...));
+			set(eastl::forward<Key>(key), as_function_reference<function_sig<Sig...>>(eastl::forward<Args>(args)...));
 		}
 
 	public:
@@ -87,17 +87,17 @@ namespace sol {
 			optional<u_detail::usertype_storage<T>&> maybe_uts = u_detail::maybe_get_usertype_storage<T>(this->lua_state());
 			if (maybe_uts) {
 				u_detail::usertype_storage<T>& uts = *maybe_uts;
-				uts.set(this->lua_state(), std::forward<Key>(key), std::forward<Value>(value));
+				uts.set(this->lua_state(), eastl::forward<Key>(key), eastl::forward<Value>(value));
 			}
 			else {
 				using ValueU = meta::unqualified_t<Value>;
 				// cannot get metatable: try regular table set?
 				if constexpr (detail::is_non_factory_constructor_v<ValueU> || detail::is_policy_v<ValueU>) {
 					// tag constructors so we don't get destroyed by lack of info
-					table_base_t::set(std::forward<Key>(key), detail::tagged<T, Value>(std::forward<Value>(value)));
+					table_base_t::set(eastl::forward<Key>(key), detail::tagged<T, Value>(eastl::forward<Value>(value)));
 				}
 				else {
-					table_base_t::set(std::forward<Key>(key), std::forward<Value>(value));
+					table_base_t::set(eastl::forward<Key>(key), eastl::forward<Value>(value));
 				}
 			}
 			return *this;
@@ -105,24 +105,24 @@ namespace sol {
 
 		template <typename Sig, typename Key, typename... Args>
 		basic_usertype& set_function(Key&& key, Args&&... args) {
-			set_fx(types<Sig>(), std::forward<Key>(key), std::forward<Args>(args)...);
+			set_fx(types<Sig>(), eastl::forward<Key>(key), eastl::forward<Args>(args)...);
 			return *this;
 		}
 
 		template <typename Key, typename... Args>
 		basic_usertype& set_function(Key&& key, Args&&... args) {
-			set_fx(types<>(), std::forward<Key>(key), std::forward<Args>(args)...);
+			set_fx(types<>(), eastl::forward<Key>(key), eastl::forward<Args>(args)...);
 			return *this;
 		}
 
 		template <typename Key>
-		usertype_proxy<basic_usertype&, std::decay_t<Key>> operator[](Key&& key) {
-			return usertype_proxy<basic_usertype&, std::decay_t<Key>>(*this, std::forward<Key>(key));
+		usertype_proxy<basic_usertype&, eastl::decay_t<Key>> operator[](Key&& key) {
+			return usertype_proxy<basic_usertype&, eastl::decay_t<Key>>(*this, eastl::forward<Key>(key));
 		}
 
 		template <typename Key>
-		usertype_proxy<const basic_usertype&, std::decay_t<Key>> operator[](Key&& key) const {
-			return usertype_proxy<const basic_usertype&, std::decay_t<Key>>(*this, std::forward<Key>(key));
+		usertype_proxy<const basic_usertype&, eastl::decay_t<Key>> operator[](Key&& key) const {
+			return usertype_proxy<const basic_usertype&, eastl::decay_t<Key>>(*this, eastl::forward<Key>(key));
 		}
 	};
 

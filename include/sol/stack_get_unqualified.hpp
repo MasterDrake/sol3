@@ -34,22 +34,20 @@
 #include <sol/unicode.hpp>
 #include <sol/abort.hpp>
 
-#include <memory>
-#include <functional>
-#include <utility>
+#include <EASTL/memory.h>
+#include <EASTL/functional.h>
+#include <EASTL/utility.h>
 #include <cstdlib>
 #include <cmath>
-#include <string_view>
-#if SOL_IS_ON(SOL_STD_VARIANT)
-#include <variant>
-#endif // Apple clang screwed up
+#include <EASTL/string_view.h>
+#include <EASTL/variant.h>
 
 namespace sol { namespace stack {
 
 	namespace stack_detail {
 		template <typename Ch>
 		struct count_code_units_utf {
-			std::size_t needed_size;
+			eastl::size_t needed_size;
 
 			count_code_units_utf() : needed_size(0) {
 			}
@@ -85,7 +83,7 @@ namespace sol { namespace stack {
 					cp = dr.codepoint;
 					strtarget = dr.next;
 				}
-				if constexpr (std::is_same_v<Ch, char32_t>) {
+				if constexpr (eastl::is_same_v<Ch, char32_t>) {
 					auto er = unicode::code_point_to_utf32(cp);
 					f(er);
 				}
@@ -120,15 +118,15 @@ namespace sol { namespace stack {
 	template <typename T, typename>
 	struct unqualified_getter {
 		static decltype(auto) get(lua_State* L, int index, record& tracking) {
-			if constexpr (std::is_same_v<T, bool>) {
+			if constexpr (eastl::is_same_v<T, bool>) {
 				tracking.use(1);
 				return lua_toboolean(L, index) != 0;
 			}
-			else if constexpr (std::is_enum_v<T>) {
+			else if constexpr (eastl::is_enum_v<T>) {
 				tracking.use(1);
 				return static_cast<T>(lua_tointegerx(L, index, nullptr));
 			}
-			else if constexpr (std::is_integral_v<T> || std::is_same_v<T, lua_Integer>) {
+			else if constexpr (eastl::is_integral_v<T> || eastl::is_same_v<T, lua_Integer>) {
 				tracking.use(1);
 #if SOL_LUA_VERSION_I_ >= 503
 				if (lua_isinteger(L, index) != 0) {
@@ -137,7 +135,7 @@ namespace sol { namespace stack {
 #endif
 				return static_cast<T>(llround(lua_tonumber(L, index)));
 			}
-			else if constexpr (std::is_floating_point_v<T> || std::is_same_v<T, lua_Number>) {
+			else if constexpr (eastl::is_floating_point_v<T> || eastl::is_same_v<T, lua_Number>) {
 				tracking.use(1);
 				return static_cast<T>(lua_tonumber(L, index));
 			}
@@ -164,17 +162,17 @@ namespace sol { namespace stack {
 				using ValueType = typename T::value_type;
 				return unqualified_check_getter<ValueType>::template get_using<T>(L, index, &no_panic, tracking);
 			}
-			else if constexpr (std::is_same_v<T, luaL_Stream*>) {
+			else if constexpr (eastl::is_same_v<T, luaL_Stream*>) {
 				luaL_Stream* pstream = static_cast<luaL_Stream*>(lua_touserdata(L, index));
 				return pstream;
 			}
-			else if constexpr (std::is_same_v<T, luaL_Stream>) {
+			else if constexpr (eastl::is_same_v<T, luaL_Stream>) {
 				luaL_Stream* pstream = static_cast<luaL_Stream*>(lua_touserdata(L, index));
 				return *pstream;
 			}
 #if SOL_IS_ON(SOL_GET_FUNCTION_POINTER_UNSAFE)
-			else if constexpr (std::is_function_v<T> || (std::is_pointer_v<T> && std::is_function_v<std::remove_pointer_t<T>>)) {
-				return stack_detail::get_function_pointer<std::remove_pointer_t<T>>(L, index, tracking);
+			else if constexpr (eastl::is_function_v<T> || (eastl::is_pointer_v<T> && eastl::is_function_v<eastl::remove_pointer_t<T>>)) {
+				return stack_detail::get_function_pointer<eastl::remove_pointer_t<T>>(L, index, tracking);
 			}
 #endif
 			else {
@@ -188,8 +186,8 @@ namespace sol { namespace stack {
 		static decltype(auto) get(lua_State* L, int index, record& tracking) {
 			using Tu = meta::unqualified_t<X>;
 			static constexpr bool is_maybe_userdata_of_some_kind
-				= !std::is_reference_v<
-				       X> && is_container_v<Tu> && std::is_default_constructible_v<Tu> && !is_lua_primitive_v<Tu> && !is_transparent_argument_v<Tu>;
+				= !eastl::is_reference_v<
+				       X> && is_container_v<Tu> && eastl::is_default_constructible_v<Tu> && !is_lua_primitive_v<Tu> && !is_transparent_argument_v<Tu>;
 			if constexpr (is_maybe_userdata_of_some_kind) {
 				if (type_of(L, index) == type::userdata) {
 					return static_cast<Tu>(stack_detail::unchecked_unqualified_get<Tu>(L, index, tracking));
@@ -198,7 +196,7 @@ namespace sol { namespace stack {
 					return stack_detail::unchecked_unqualified_get<sol::nested<Tu>>(L, index, tracking);
 				}
 			}
-			else if constexpr (!std::is_reference_v<X> && is_unique_usertype_v<Tu> && !is_actual_type_rebindable_for_v<Tu>) {
+			else if constexpr (!eastl::is_reference_v<X> && is_unique_usertype_v<Tu> && !is_actual_type_rebindable_for_v<Tu>) {
 				using element = unique_usertype_element_t<Tu>;
 				using actual = unique_usertype_actual_t<Tu>;
 				tracking.use(1);
@@ -216,7 +214,7 @@ namespace sol { namespace stack {
 					// In debug mode we would rather abort you for this grave failure rather
 					// than let you deref a null pointer and fuck everything over
 					SOL_DEBUG_ABORT();
-					return static_cast<actual>(std::move(r));
+					return static_cast<actual>(eastl::move(r));
 				}
 				else {
 					memory = detail::align_usertype_unique_tag<true, false>(memory);
@@ -243,7 +241,7 @@ namespace sol { namespace stack {
 					case 2:
 						// it's a base match, return the
 						// aliased creation
-						return static_cast<actual>(std::move(r));
+						return static_cast<actual>(eastl::move(r));
 					default:
 						// uh oh..
 						break;
@@ -263,31 +261,31 @@ namespace sol { namespace stack {
 		using Tu = meta::unqualified_t<T>;
 
 		template <typename V>
-		static void push_back_at_end(std::true_type, types<V>, lua_State* L, T& cont, std::size_t) {
+		static void push_back_at_end(eastl::true_type, types<V>, lua_State* L, T& cont, eastl::size_t) {
 			cont.push_back(stack::get<V>(L, -lua_size<V>::value));
 		}
 
 		template <typename V>
-		static void push_back_at_end(std::false_type, types<V> t, lua_State* L, T& cont, std::size_t idx) {
+		static void push_back_at_end(eastl::false_type, types<V> t, lua_State* L, T& cont, eastl::size_t idx) {
 			insert_at_end(meta::has_insert<Tu>(), t, L, cont, idx);
 		}
 
 		template <typename V>
-		static void insert_at_end(std::true_type, types<V>, lua_State* L, T& cont, std::size_t) {
-			using std::cend;
+		static void insert_at_end(eastl::true_type, types<V>, lua_State* L, T& cont, eastl::size_t) {
+			using eastl::cend;
 			cont.insert(cend(cont), stack::get<V>(L, -lua_size<V>::value));
 		}
 
 		template <typename V>
-		static void insert_at_end(std::false_type, types<V>, lua_State* L, T& cont, std::size_t idx) {
+		static void insert_at_end(eastl::false_type, types<V>, lua_State* L, T& cont, eastl::size_t idx) {
 			cont[idx] = stack::get<V>(L, -lua_size<V>::value);
 		}
 
-		static bool max_size_check(std::false_type, T&, std::size_t) {
+		static bool max_size_check(eastl::false_type, T&, eastl::size_t) {
 			return false;
 		}
 
-		static bool max_size_check(std::true_type, T& cont, std::size_t idx) {
+		static bool max_size_check(eastl::true_type, T& cont, eastl::size_t idx) {
 			return idx >= cont.max_size();
 		}
 
@@ -295,7 +293,7 @@ namespace sol { namespace stack {
 			return get(meta::is_associative<Tu>(), L, relindex, tracking);
 		}
 
-		static T get(std::false_type, lua_State* L, int relindex, record& tracking) {
+		static T get(eastl::false_type, lua_State* L, int relindex, record& tracking) {
 			typedef typename Tu::value_type V;
 			return get(types<V>(), L, relindex, tracking);
 		}
@@ -340,7 +338,7 @@ namespace sol { namespace stack {
 
 			int index = lua_absindex(L, relindex);
 			T cont;
-			std::size_t idx = 0;
+			eastl::size_t idx = 0;
 #if SOL_LUA_VERSION_I_ >= 503
 			// This method is HIGHLY performant over regular table iteration
 			// thanks to the Lua API changes in 5.3
@@ -429,7 +427,7 @@ namespace sol { namespace stack {
 			return cont;
 		}
 
-		static T get(std::true_type, lua_State* L, int index, record& tracking) {
+		static T get(eastl::true_type, lua_State* L, int index, record& tracking) {
 			typedef typename Tu::value_type P;
 			typedef typename P::first_type K;
 			typedef typename P::second_type V;
@@ -453,7 +451,7 @@ namespace sol { namespace stack {
 					lua_pop(L, 1);
 					continue;
 				}
-				associative.emplace(std::forward<decltype(*key)>(*key), stack::get<V>(L, -1));
+				associative.emplace(eastl::forward<decltype(*key)>(*key), stack::get<V>(L, -1));
 				lua_pop(L, 1);
 			}
 			return associative;
@@ -461,21 +459,21 @@ namespace sol { namespace stack {
 	};
 
 	template <typename T, typename Al>
-	struct unqualified_getter<as_table_t<std::forward_list<T, Al>>> {
-		typedef std::forward_list<T, Al> C;
+	struct unqualified_getter<as_table_t<eastl::slist<T, Al>>> {
+		typedef eastl::slist<T, Al> C;
 
 		static C get(lua_State* L, int relindex, record& tracking) {
 			return get(meta::has_key_value_pair<C>(), L, relindex, tracking);
 		}
 
-		static C get(std::true_type, lua_State* L, int index, record& tracking) {
+		static C get(eastl::true_type, lua_State* L, int index, record& tracking) {
 			typedef typename T::value_type P;
 			typedef typename P::first_type K;
 			typedef typename P::second_type V;
 			return get(types<K, V>(), L, index, tracking);
 		}
 
-		static C get(std::false_type, lua_State* L, int relindex, record& tracking) {
+		static C get(eastl::false_type, lua_State* L, int relindex, record& tracking) {
 			typedef typename C::value_type V;
 			return get(types<V>(), L, relindex, tracking);
 		}
@@ -490,7 +488,7 @@ namespace sol { namespace stack {
 			int index = lua_absindex(L, relindex);
 			C cont;
 			auto at = cont.cbefore_begin();
-			std::size_t idx = 0;
+			eastl::size_t idx = 0;
 #if SOL_LUA_VERSION_I_ >= 503
 			// This method is HIGHLY performant over regular table iteration thanks to the Lua API changes in 5.3
 			for (lua_Integer i = 0;; i += lua_size<V>::value, lua_pop(L, lua_size<V>::value)) {
@@ -562,7 +560,7 @@ namespace sol { namespace stack {
 					lua_pop(L, 1);
 					continue;
 				}
-				at = associative.emplace_after(at, std::forward<decltype(*key)>(*key), stack::get<V>(L, -1));
+				at = associative.emplace_after(at, eastl::forward<decltype(*key)>(*key), stack::get<V>(L, -1));
 				lua_pop(L, 1);
 			}
 			return associative;
@@ -649,11 +647,11 @@ namespace sol { namespace stack {
 
 	template <typename T>
 	struct unqualified_getter<user<T>> {
-		static std::add_lvalue_reference_t<T> get(lua_State* L, int index, record& tracking) {
+		static eastl::add_lvalue_reference_t<T> get(lua_State* L, int index, record& tracking) {
 			tracking.use(1);
 			void* memory = lua_touserdata(L, index);
 			memory = detail::align_user<T>(memory);
-			return *static_cast<std::remove_reference_t<T>*>(memory);
+			return *static_cast<eastl::remove_reference_t<T>*>(memory);
 		}
 	};
 
@@ -676,12 +674,12 @@ namespace sol { namespace stack {
 	};
 
 	template <>
-	struct unqualified_getter<std::string> {
-		static std::string get(lua_State* L, int index, record& tracking) {
+	struct unqualified_getter<eastl::string> {
+		static eastl::string get(lua_State* L, int index, record& tracking) {
 			tracking.use(1);
-			std::size_t len;
+			eastl::size_t len;
 			auto str = lua_tolstring(L, index, &len);
-			return std::string(str, len);
+			return eastl::string(str, len);
 		}
 	};
 
@@ -704,36 +702,36 @@ namespace sol { namespace stack {
 		}
 	};
 
-	template <typename Traits>
-	struct unqualified_getter<basic_string_view<char, Traits>> {
+	template <>
+	struct unqualified_getter<basic_string_view<char>> {
 		static string_view get(lua_State* L, int index, record& tracking) {
 			tracking.use(1);
 			size_t sz;
 			const char* str = lua_tolstring(L, index, &sz);
-			return basic_string_view<char, Traits>(str, sz);
+			return basic_string_view<char>(str, sz);
 		}
 	};
 
-	template <typename Traits, typename Al>
-	struct unqualified_getter<std::basic_string<wchar_t, Traits, Al>> {
-		using S = std::basic_string<wchar_t, Traits, Al>;
+	template <typename Al>
+	struct unqualified_getter<eastl::basic_string<wchar_t, Al>> {
+		using S = eastl::basic_string<wchar_t, Al>;
 		static S get(lua_State* L, int index, record& tracking) {
 			using Ch = meta::conditional_t<sizeof(wchar_t) == 2, char16_t, char32_t>;
 			return stack_detail::get_into<Ch, S>(L, index, tracking);
 		}
 	};
 
-	template <typename Traits, typename Al>
-	struct unqualified_getter<std::basic_string<char16_t, Traits, Al>> {
-		static std::basic_string<char16_t, Traits, Al> get(lua_State* L, int index, record& tracking) {
-			return stack_detail::get_into<char16_t, std::basic_string<char16_t, Traits, Al>>(L, index, tracking);
+	template <typename Al>
+	struct unqualified_getter<eastl::basic_string<char16_t, Al>> {
+		static eastl::basic_string<char16_t, Al> get(lua_State* L, int index, record& tracking) {
+			return stack_detail::get_into<char16_t, eastl::basic_string<char16_t, Al>>(L, index, tracking);
 		}
 	};
 
-	template <typename Traits, typename Al>
-	struct unqualified_getter<std::basic_string<char32_t, Traits, Al>> {
-		static std::basic_string<char32_t, Traits, Al> get(lua_State* L, int index, record& tracking) {
-			return stack_detail::get_into<char32_t, std::basic_string<char32_t, Traits, Al>>(L, index, tracking);
+	template <typename Al>
+	struct unqualified_getter<eastl::basic_string<char32_t, Al>> {
+		static eastl::basic_string<char32_t, Al> get(lua_State* L, int index, record& tracking) {
+			return stack_detail::get_into<char32_t, eastl::basic_string<char32_t, Al>>(L, index, tracking);
 		}
 	};
 
@@ -792,7 +790,7 @@ namespace sol { namespace stack {
 			tracking.use(1);
 			const char* name = unqualified_getter<const char*> {}.get(L, index, tracking);
 			const auto& mfnames = meta_function_names();
-			for (std::size_t i = 0; i < mfnames.size(); ++i)
+			for (eastl::size_t i = 0; i < mfnames.size(); ++i)
 				if (mfnames[i] == name)
 					return static_cast<meta_function>(i);
 			return meta_function::construct;
@@ -816,10 +814,10 @@ namespace sol { namespace stack {
 	};
 
 	template <>
-	struct unqualified_getter<nullopt_t> {
-		static nullopt_t get(lua_State*, int, record& tracking) {
+	struct unqualified_getter<eastl::nullopt_t> {
+		static eastl::nullopt_t get(lua_State*, int, record& tracking) {
 			tracking.use(1);
-			return nullopt;
+			return eastl::nullopt;
 		}
 	};
 
@@ -864,7 +862,7 @@ namespace sol { namespace stack {
 			if (err == nullptr) {
 				return error(detail::direct_error, "");
 			}
-			return error(detail::direct_error, std::string(err, sz));
+			return error(detail::direct_error, eastl::string(err, sz));
 		}
 	};
 
@@ -915,7 +913,7 @@ namespace sol { namespace stack {
 					lua_pop(L, 2);
 				}
 			}
-			if constexpr (std::is_function_v<T>) {
+			if constexpr (eastl::is_function_v<T>) {
 				T* func = reinterpret_cast<T*>(udata);
 				return func;
 			}
@@ -960,7 +958,7 @@ namespace sol { namespace stack {
 	};
 
 	template <typename T>
-	struct unqualified_getter<std::reference_wrapper<T>> {
+	struct unqualified_getter<eastl::reference_wrapper<T>> {
 		static T& get(lua_State* L, int index, record& tracking) {
 			unqualified_getter<T&> g{};
 			return g.get(L, index, tracking);
@@ -971,7 +969,7 @@ namespace sol { namespace stack {
 	struct unqualified_getter<T*> {
 		static T* get(lua_State* L, int index, record& tracking) {
 #if SOL_IS_ON(SOL_GET_FUNCTION_POINTER_UNSAFE)
-			if constexpr (std::is_function_v<T>) {
+			if constexpr (eastl::is_function_v<T>) {
 				return stack_detail::get_function_pointer<T>(L, index, tracking);
 			}
 			else {
@@ -986,71 +984,68 @@ namespace sol { namespace stack {
 	};
 
 	template <typename... Tn>
-	struct unqualified_getter<std::tuple<Tn...>> {
-		typedef std::tuple<decltype(stack::get<Tn>(nullptr, 0))...> R;
+	struct unqualified_getter<eastl::tuple<Tn...>> {
+		typedef eastl::tuple<decltype(stack::get<Tn>(nullptr, 0))...> R;
 
 		template <typename... Args>
-		static R apply(std::index_sequence<>, lua_State*, int, record&, Args&&... args) {
+		static R apply(eastl::index_sequence<>, lua_State*, int, record&, Args&&... args) {
 			// Fuck you too, VC++
-			return R { std::forward<Args>(args)... };
+			return R { eastl::forward<Args>(args)... };
 		}
 
-		template <std::size_t I, std::size_t... Ix, typename... Args>
-		static R apply(std::index_sequence<I, Ix...>, lua_State* L, int index, record& tracking, Args&&... args) {
+		template <eastl::size_t I, eastl::size_t... Ix, typename... Args>
+		static R apply(eastl::index_sequence<I, Ix...>, lua_State* L, int index, record& tracking, Args&&... args) {
 			// Fuck you too, VC++
-			typedef std::tuple_element_t<I, std::tuple<Tn...>> T;
-			return apply(std::index_sequence<Ix...>(), L, index, tracking, std::forward<Args>(args)..., stack::get<T>(L, index + tracking.used, tracking));
+			typedef eastl::tuple_element_t<I, eastl::tuple<Tn...>> T;
+			return apply(eastl::index_sequence<Ix...>(), L, index, tracking, eastl::forward<Args>(args)..., stack::get<T>(L, index + tracking.used, tracking));
 		}
 
 		static R get(lua_State* L, int index, record& tracking) {
-			return apply(std::make_index_sequence<sizeof...(Tn)>(), L, index, tracking);
+			return apply(eastl::make_index_sequence<sizeof...(Tn)>(), L, index, tracking);
 		}
 	};
 
 	template <typename A, typename B>
-	struct unqualified_getter<std::pair<A, B>> {
+	struct unqualified_getter<eastl::pair<A, B>> {
 		static decltype(auto) get(lua_State* L, int index, record& tracking) {
-			return std::pair<decltype(stack::get<A>(L, index)), decltype(stack::get<B>(L, index))> { stack::get<A>(L, index, tracking),
+			return eastl::pair<decltype(stack::get<A>(L, index)), decltype(stack::get<B>(L, index))> { stack::get<A>(L, index, tracking),
 				stack::get<B>(L, index + tracking.used, tracking) };
 		}
 	};
 
-#if SOL_IS_ON(SOL_STD_VARIANT)
-
 	template <typename... Tn>
-	struct unqualified_getter<std::variant<Tn...>> {
-		using V = std::variant<Tn...>;
+	struct unqualified_getter<eastl::variant<Tn...>> {
+		using V = eastl::variant<Tn...>;
 
-		static V get_one(std::integral_constant<std::size_t, std::variant_size_v<V>>, lua_State* L, int index, record& tracking) {
+		static V get_one(eastl::integral_constant<eastl::size_t, eastl::variant_size_v<V>>, lua_State* L, int index, record& tracking) {
 			(void)L;
 			(void)index;
 			(void)tracking;
-			if constexpr (std::variant_size_v<V> == 0) {
+			if constexpr (eastl::variant_size_v<V> == 0) {
 				return V();
 			}
 			else {
-				// using T = std::variant_alternative_t<0, V>;
+				// using T = eastl::variant_alternative_t<0, V>;
 				std::abort();
-				// return V(std::in_place_index<0>, stack::get<T>(L, index, tracking));
+				// return V(eastl::in_place_index<0>, stack::get<T>(L, index, tracking));
 			}
 		}
 
-		template <std::size_t I>
-		static V get_one(std::integral_constant<std::size_t, I>, lua_State* L, int index, record& tracking) {
-			typedef std::variant_alternative_t<I, V> T;
+		template <eastl::size_t I>
+		static V get_one(eastl::integral_constant<eastl::size_t, I>, lua_State* L, int index, record& tracking) {
+			typedef eastl::variant_alternative_t<I, V> T;
 			record temp_tracking = tracking;
 			if (stack::check<T>(L, index, &no_panic, temp_tracking)) {
 				tracking = temp_tracking;
-				return V(std::in_place_index<I>, stack::get<T>(L, index));
+				return V(eastl::in_place_index_t<I>, stack::get<T>(L, index));
 			}
-			return get_one(std::integral_constant<std::size_t, I + 1>(), L, index, tracking);
+			return get_one(eastl::integral_constant<eastl::size_t, I + 1>(), L, index, tracking);
 		}
 
 		static V get(lua_State* L, int index, record& tracking) {
-			return get_one(std::integral_constant<std::size_t, 0>(), L, index, tracking);
+			return get_one(eastl::integral_constant<eastl::size_t, 0>(), L, index, tracking);
 		}
 	};
-#endif // variant
 
 }} // namespace sol::stack
 

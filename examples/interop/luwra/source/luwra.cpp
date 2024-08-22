@@ -54,7 +54,7 @@ inline bool sol_lua_interop_check(sol::types<T>, lua_State* L,
 }
 
 template <typename T>
-inline std::pair<bool, T*> sol_lua_interop_get(sol::types<T> t,
+inline eastl::pair<bool, T*> sol_lua_interop_get(sol::types<T> t,
      lua_State* L, int relindex, void* unadjusted_pointer,
      sol::stack::record& tracking) {
 	// you may not need to specialize this method every time:

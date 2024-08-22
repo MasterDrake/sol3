@@ -26,24 +26,24 @@
 
 #include <sol/base_traits.hpp>
 
-#include <utility>
-#include <type_traits>
-#include <memory>
+#include <EASTL/utility.h>
+#include <EASTL/type_traits.h>
+#include <EASTL/memory.h>
 
 namespace sol {
 
 	namespace meta {
 		namespace meta_detail {
 			template <typename T>
-			using is_dereferenceable_test = decltype(*std::declval<T>());
+			using is_dereferenceable_test = decltype(*eastl::declval<T>());
 
 			template <typename T>
-			using is_explicitly_dereferenceable_test = decltype(std::declval<T>().operator*());
+			using is_explicitly_dereferenceable_test = decltype(eastl::declval<T>().operator*());
 		} // namespace meta_detail
 
 		template <typename T>
-		using is_pointer_like = std::integral_constant<bool,
-		     !std::is_array_v<T> && (std::is_pointer_v<T> || is_detected_v<meta_detail::is_explicitly_dereferenceable_test, T>)>;
+		using is_pointer_like = eastl::integral_constant<bool,
+		     !eastl::is_array_v<T> && (eastl::is_pointer_v<T> || is_detected_v<meta_detail::is_explicitly_dereferenceable_test, T>)>;
 
 		template <typename T>
 		constexpr inline bool is_pointer_like_v = is_pointer_like<T>::value;
@@ -52,12 +52,12 @@ namespace sol {
 	namespace detail {
 
 		template <typename T>
-		auto unwrap(T&& item) -> decltype(std::forward<T>(item)) {
-			return std::forward<T>(item);
+		auto unwrap(T&& item) -> decltype(eastl::forward<T>(item)) {
+			return eastl::forward<T>(item);
 		}
 
 		template <typename T>
-		T& unwrap(std::reference_wrapper<T> arg) {
+		T& unwrap(eastl::reference_wrapper<T> arg) {
 			return arg.get();
 		}
 
@@ -65,32 +65,32 @@ namespace sol {
 		inline decltype(auto) deref(T&& item) {
 			using Tu = meta::unqualified_t<T>;
 			if constexpr (meta::is_pointer_like_v<Tu>) {
-				return *std::forward<T>(item);
+				return *eastl::forward<T>(item);
 			}
 			else {
-				return std::forward<T>(item);
+				return eastl::forward<T>(item);
 			}
 		}
 
 		template <typename T>
 		inline decltype(auto) deref_move_only(T&& item) {
 			using Tu = meta::unqualified_t<T>;
-			if constexpr (meta::is_pointer_like_v<Tu> && !std::is_pointer_v<Tu> && !std::is_copy_constructible_v<Tu>) {
-				return *std::forward<T>(item);
+			if constexpr (meta::is_pointer_like_v<Tu> && !eastl::is_pointer_v<Tu> && !eastl::is_copy_constructible_v<Tu>) {
+				return *eastl::forward<T>(item);
 			}
 			else {
-				return std::forward<T>(item);
+				return eastl::forward<T>(item);
 			}
 		}
 
 		template <typename T>
 		inline T* ptr(T& val) {
-			return std::addressof(val);
+			return eastl::addressof(val);
 		}
 
 		template <typename T>
-		inline T* ptr(std::reference_wrapper<T> val) {
-			return std::addressof(val.get());
+		inline T* ptr(eastl::reference_wrapper<T> val) {
+			return eastl::addressof(val.get());
 		}
 
 		template <typename T>

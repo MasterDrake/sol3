@@ -33,8 +33,8 @@ namespace sol {
 
 	namespace detail {
 		template <typename T>
-		using proxy_key_t = meta::conditional_t<meta::is_specialization_of_v<meta::unqualified_t<T>, std::tuple>, T,
-		     std::tuple<meta::conditional_t<std::is_array_v<meta::unqualified_t<T>>, std::remove_reference_t<T>&, meta::unqualified_t<T>>>>;
+		using proxy_key_t = meta::conditional_t<meta::is_specialization_of_v<meta::unqualified_t<T>, eastl::tuple>, T,
+		     eastl::tuple<meta::conditional_t<eastl::is_array_v<meta::unqualified_t<T>>, eastl::remove_reference_t<T>&, meta::unqualified_t<T>>>>;
 	}
 
 	template <typename Super>
@@ -44,9 +44,9 @@ namespace sol {
 			return super.lua_state();
 		}
 
-		operator std::string() const {
+		operator eastl::string() const {
 			const Super& super = *static_cast<const Super*>(static_cast<const void*>(this));
-			return super.template get<std::string>();
+			return super.template get<eastl::string>();
 		}
 
 		template <typename T, meta::enable<meta::neg<meta::is_string_constructible<T>>, is_proxy_primitive<meta::unqualified_t<T>>> = meta::enabler>

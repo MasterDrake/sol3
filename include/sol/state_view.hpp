@@ -30,7 +30,8 @@
 #include <sol/load_result.hpp>
 #include <sol/state_handling.hpp>
 
-#include <memory>
+#include <EASTL/memory.h>
+#include <EASTL/optional.h>
 #include <cstddef>
 
 namespace sol {
@@ -41,7 +42,7 @@ namespace sol {
 		table reg;
 		global_table global;
 
-		optional<object> is_loaded_package(const std::string& key) {
+		optional<object> is_loaded_package(const eastl::string& key) {
 			auto loaded = reg.traverse_get<optional<object>>("_LOADED", key);
 			bool is53mod = loaded && !(loaded->is<bool>() && !loaded->as<bool>());
 			if (is53mod)
@@ -52,11 +53,11 @@ namespace sol {
 			if (is51mod)
 				return loaded51;
 #endif
-			return nullopt;
+			return eastl::nullopt;
 		}
 
 		template <typename T>
-		void ensure_package(const std::string& key, T&& sr) {
+		void ensure_package(const eastl::string& key, T&& sr) {
 #if SOL_LUA_VERSION_I_ <= 501
 			auto pkg = global["package"];
 			if (!pkg.valid()) {
@@ -72,20 +73,22 @@ namespace sol {
 				}
 			}
 #endif
-			auto loaded = reg["_LOADED"];
-			if (!loaded.valid()) {
+			auto loaded = reg[eastl::string("_LOADED")];
+			if (!loaded.valid())
+			{
 				loaded = create_table_with(key, sr);
 			}
-			else {
-				loaded[key] = sr;
+			else
+			{
+				//BUGUBUGBUG: loaded[key] = sr;
 			}
 		}
 
 		template <typename Fx>
-		object require_core(const std::string& key, Fx&& action, bool create_global = true) {
+		object require_core(const eastl::string& key, Fx&& action, bool create_global = true) {
 			optional<object> loaded = is_loaded_package(key);
 			if (loaded && loaded->valid())
-				return std::move(*loaded);
+				return eastl::move(*loaded);
 			int before = lua_gettop(L);
 			action();
 			int after = lua_gettop(L);
@@ -125,7 +128,7 @@ namespace sol {
 				return;
 			}
 			else {
-				lib libraries[1 + sizeof...(args)] = { lib::count, std::forward<Args>(args)... };
+				lib libraries[1 + sizeof...(args)] = { lib::count, eastl::forward<Args>(args)... };
 
 				for (auto&& library : libraries) {
 					switch (library) {
@@ -208,18 +211,18 @@ namespace sol {
 			}
 		}
 
-		object require(const std::string& key, lua_CFunction open_function, bool create_global = true) {
+		object require(const eastl::string& key, lua_CFunction open_function, bool create_global = true) {
 			luaL_requiref(L, key.c_str(), open_function, create_global ? 1 : 0);
 			return stack::pop<object>(L);
 		}
 
-		object require_script(const std::string& key, const string_view& code, bool create_global = true,
-		     const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+		object require_script(const eastl::string& key, const string_view& code, bool create_global = true,
+		     const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			auto action = [this, &code, &chunkname, &mode]() { stack::script(L, code, chunkname, mode); };
 			return require_core(key, action, create_global);
 		}
 
-		object require_file(const std::string& key, const std::string& filename, bool create_global = true, load_mode mode = load_mode::any) {
+		object require_file(const eastl::string& key, const eastl::string& filename, bool create_global = true, load_mode mode = load_mode::any) {
 			auto action = [this, &filename, &mode]() { stack::script_file(L, filename, mode); };
 			return require_core(key, action, create_global);
 		}
@@ -284,12 +287,12 @@ namespace sol {
 				return;
 			}
 			table loaders = loaders_proxy;
-			loaders.add(std::forward<Fx>(fx));
+			loaders.add(eastl::forward<Fx>(fx));
 		}
 
 		template <typename E>
 		protected_function_result do_reader(lua_Reader reader, void* data, const basic_environment<E>& env,
-		     const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+		     const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			detail::typical_chunk_name_t basechunkname = {};
 			const char* chunknametarget = detail::make_chunk_name("lua_Reader", chunkname, basechunkname);
 			load_status x = static_cast<load_status>(lua_load(L, reader, data, chunknametarget, to_string(mode).c_str()));
@@ -302,7 +305,7 @@ namespace sol {
 		}
 
 		protected_function_result do_reader(
-		     lua_Reader reader, void* data, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+		     lua_Reader reader, void* data, const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			detail::typical_chunk_name_t basechunkname = {};
 			const char* chunknametarget = detail::make_chunk_name("lua_Reader", chunkname, basechunkname);
 			load_status x = static_cast<load_status>(lua_load(L, reader, data, chunknametarget, to_string(mode).c_str()));
@@ -315,7 +318,7 @@ namespace sol {
 
 		template <typename E>
 		protected_function_result do_string(const string_view& code, const basic_environment<E>& env,
-		     const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+		     const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			detail::typical_chunk_name_t basechunkname = {};
 			const char* chunknametarget = detail::make_chunk_name(code, chunkname, basechunkname);
 			load_status x = static_cast<load_status>(luaL_loadbufferx(L, code.data(), code.size(), chunknametarget, to_string(mode).c_str()));
@@ -328,7 +331,7 @@ namespace sol {
 		}
 
 		protected_function_result do_string(
-		     const string_view& code, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+		     const string_view& code, const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			detail::typical_chunk_name_t basechunkname = {};
 			const char* chunknametarget = detail::make_chunk_name(code, chunkname, basechunkname);
 			load_status x = static_cast<load_status>(luaL_loadbufferx(L, code.data(), code.size(), chunknametarget, to_string(mode).c_str()));
@@ -340,7 +343,7 @@ namespace sol {
 		}
 
 		template <typename E>
-		protected_function_result do_file(const std::string& filename, const basic_environment<E>& env, load_mode mode = load_mode::any) {
+		protected_function_result do_file(const eastl::string& filename, const basic_environment<E>& env, load_mode mode = load_mode::any) {
 			load_status x = static_cast<load_status>(luaL_loadfilex(L, filename.c_str(), to_string(mode).c_str()));
 			if (x != load_status::ok) {
 				return protected_function_result(L, absolute_index(L, -1), 0, 1, static_cast<call_status>(x));
@@ -350,7 +353,7 @@ namespace sol {
 			return pf();
 		}
 
-		protected_function_result do_file(const std::string& filename, load_mode mode = load_mode::any) {
+		protected_function_result do_file(const eastl::string& filename, load_mode mode = load_mode::any) {
 			load_status x = static_cast<load_status>(luaL_loadfilex(L, filename.c_str(), to_string(mode).c_str()));
 			if (x != load_status::ok) {
 				return protected_function_result(L, absolute_index(L, -1), 0, 1, static_cast<call_status>(x));
@@ -363,16 +366,16 @@ namespace sol {
 		     meta::disable_any<meta::is_string_constructible<meta::unqualified_t<Fx>>,
 		          meta::is_specialization_of<meta::unqualified_t<Fx>, basic_environment>> = meta::enabler>
 		protected_function_result safe_script(
-		     lua_Reader reader, void* data, Fx&& on_error, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+		     lua_Reader reader, void* data, Fx&& on_error, const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			protected_function_result pfr = do_reader(reader, data, chunkname, mode);
 			if (!pfr.valid()) {
-				return on_error(L, std::move(pfr));
+				return on_error(L, eastl::move(pfr));
 			}
 			return pfr;
 		}
 
 		protected_function_result safe_script(
-		     lua_Reader reader, void* data, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+		     lua_Reader reader, void* data, const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			return safe_script(reader, data, script_default_on_error, chunkname, mode);
 		}
 
@@ -380,68 +383,68 @@ namespace sol {
 		     meta::disable_any<meta::is_string_constructible<meta::unqualified_t<Fx>>,
 		          meta::is_specialization_of<meta::unqualified_t<Fx>, basic_environment>> = meta::enabler>
 		protected_function_result safe_script(
-		     const string_view& code, Fx&& on_error, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+		     const string_view& code, Fx&& on_error, const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			protected_function_result pfr = do_string(code, chunkname, mode);
 			if (!pfr.valid()) {
-				return on_error(L, std::move(pfr));
+				return on_error(L, eastl::move(pfr));
 			}
 			return pfr;
 		}
 
 		template <typename Fx, typename E>
 		protected_function_result safe_script(const string_view& code, const basic_environment<E>& env, Fx&& on_error,
-		     const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+		     const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			protected_function_result pfr = do_string(code, env, chunkname, mode);
 			if (!pfr.valid()) {
-				return on_error(L, std::move(pfr));
+				return on_error(L, eastl::move(pfr));
 			}
 			return pfr;
 		}
 
 		template <typename E>
 		protected_function_result safe_script(const string_view& code, const basic_environment<E>& env,
-		     const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+		     const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			return safe_script(code, env, script_default_on_error, chunkname, mode);
 		}
 
 		protected_function_result safe_script(
-		     const string_view& code, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+		     const string_view& code, const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			return safe_script(code, script_default_on_error, chunkname, mode);
 		}
 
 		template <typename Fx,
 		     meta::disable_any<meta::is_string_constructible<meta::unqualified_t<Fx>>,
 		          meta::is_specialization_of<meta::unqualified_t<Fx>, basic_environment>> = meta::enabler>
-		protected_function_result safe_script_file(const std::string& filename, Fx&& on_error, load_mode mode = load_mode::any) {
+		protected_function_result safe_script_file(const eastl::string& filename, Fx&& on_error, load_mode mode = load_mode::any) {
 			protected_function_result pfr = do_file(filename, mode);
 			if (!pfr.valid()) {
-				return on_error(L, std::move(pfr));
+				return on_error(L, eastl::move(pfr));
 			}
 			return pfr;
 		}
 
 		template <typename Fx, typename E>
 		protected_function_result safe_script_file(
-		     const std::string& filename, const basic_environment<E>& env, Fx&& on_error, load_mode mode = load_mode::any) {
+		     const eastl::string& filename, const basic_environment<E>& env, Fx&& on_error, load_mode mode = load_mode::any) {
 			protected_function_result pfr = do_file(filename, env, mode);
 			if (!pfr.valid()) {
-				return on_error(L, std::move(pfr));
+				return on_error(L, eastl::move(pfr));
 			}
 			return pfr;
 		}
 
 		template <typename E>
-		protected_function_result safe_script_file(const std::string& filename, const basic_environment<E>& env, load_mode mode = load_mode::any) {
+		protected_function_result safe_script_file(const eastl::string& filename, const basic_environment<E>& env, load_mode mode = load_mode::any) {
 			return safe_script_file(filename, env, script_default_on_error, mode);
 		}
 
-		protected_function_result safe_script_file(const std::string& filename, load_mode mode = load_mode::any) {
+		protected_function_result safe_script_file(const eastl::string& filename, load_mode mode = load_mode::any) {
 			return safe_script_file(filename, script_default_on_error, mode);
 		}
 
 		template <typename E>
 		unsafe_function_result unsafe_script(lua_Reader reader, void* data, const basic_environment<E>& env,
-		     const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+		     const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			detail::typical_chunk_name_t basechunkname = {};
 			const char* chunknametarget = detail::make_chunk_name("lua_Reader", chunkname, basechunkname);
 			int index = lua_gettop(L);
@@ -454,21 +457,21 @@ namespace sol {
 			}
 			int postindex = lua_gettop(L);
 			int returns = postindex - index;
-			return unsafe_function_result(L, (std::max)(postindex - (returns - 1), 1), returns);
+			return unsafe_function_result(L, (eastl::max)(postindex - (returns - 1), 1), returns);
 		}
 
 		unsafe_function_result unsafe_script(
-		     lua_Reader reader, void* data, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+		     lua_Reader reader, void* data, const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			int index = lua_gettop(L);
 			stack::script(L, reader, data, chunkname, mode);
 			int postindex = lua_gettop(L);
 			int returns = postindex - index;
-			return unsafe_function_result(L, (std::max)(postindex - (returns - 1), 1), returns);
+			return unsafe_function_result(L, (eastl::max)(postindex - (returns - 1), 1), returns);
 		}
 
 		template <typename E>
 		unsafe_function_result unsafe_script(const string_view& code, const basic_environment<E>& env,
-		     const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+		     const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			detail::typical_chunk_name_t basechunkname = {};
 			const char* chunknametarget = detail::make_chunk_name(code, chunkname, basechunkname);
 			int index = lua_gettop(L);
@@ -481,20 +484,20 @@ namespace sol {
 			}
 			int postindex = lua_gettop(L);
 			int returns = postindex - index;
-			return unsafe_function_result(L, (std::max)(postindex - (returns - 1), 1), returns);
+			return unsafe_function_result(L, (eastl::max)(postindex - (returns - 1), 1), returns);
 		}
 
 		unsafe_function_result unsafe_script(
-		     const string_view& code, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+		     const string_view& code, const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			int index = lua_gettop(L);
 			stack::script(L, code, chunkname, mode);
 			int postindex = lua_gettop(L);
 			int returns = postindex - index;
-			return unsafe_function_result(L, (std::max)(postindex - (returns - 1), 1), returns);
+			return unsafe_function_result(L, (eastl::max)(postindex - (returns - 1), 1), returns);
 		}
 
 		template <typename E>
-		unsafe_function_result unsafe_script_file(const std::string& filename, const basic_environment<E>& env, load_mode mode = load_mode::any) {
+		unsafe_function_result unsafe_script_file(const eastl::string& filename, const basic_environment<E>& env, load_mode mode = load_mode::any) {
 			int index = lua_gettop(L);
 			if (luaL_loadfilex(L, filename.c_str(), to_string(mode).c_str())) {
 				lua_error(L);
@@ -505,97 +508,97 @@ namespace sol {
 			}
 			int postindex = lua_gettop(L);
 			int returns = postindex - index;
-			return unsafe_function_result(L, (std::max)(postindex - (returns - 1), 1), returns);
+			return unsafe_function_result(L, (eastl::max)(postindex - (returns - 1), 1), returns);
 		}
 
-		unsafe_function_result unsafe_script_file(const std::string& filename, load_mode mode = load_mode::any) {
+		unsafe_function_result unsafe_script_file(const eastl::string& filename, load_mode mode = load_mode::any) {
 			int index = lua_gettop(L);
 			stack::script_file(L, filename, mode);
 			int postindex = lua_gettop(L);
 			int returns = postindex - index;
-			return unsafe_function_result(L, (std::max)(postindex - (returns - 1), 1), returns);
+			return unsafe_function_result(L, (eastl::max)(postindex - (returns - 1), 1), returns);
 		}
 
 		template <typename Fx,
 		     meta::disable_any<meta::is_string_constructible<meta::unqualified_t<Fx>>,
 		          meta::is_specialization_of<meta::unqualified_t<Fx>, basic_environment>> = meta::enabler>
 		protected_function_result script(
-		     const string_view& code, Fx&& on_error, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
-			return safe_script(code, std::forward<Fx>(on_error), chunkname, mode);
+		     const string_view& code, Fx&& on_error, const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+			return safe_script(code, eastl::forward<Fx>(on_error), chunkname, mode);
 		}
 
 		template <typename Fx,
 		     meta::disable_any<meta::is_string_constructible<meta::unqualified_t<Fx>>,
 		          meta::is_specialization_of<meta::unqualified_t<Fx>, basic_environment>> = meta::enabler>
-		protected_function_result script_file(const std::string& filename, Fx&& on_error, load_mode mode = load_mode::any) {
-			return safe_script_file(filename, std::forward<Fx>(on_error), mode);
+		protected_function_result script_file(const eastl::string& filename, Fx&& on_error, load_mode mode = load_mode::any) {
+			return safe_script_file(filename, eastl::forward<Fx>(on_error), mode);
 		}
 
 		template <typename Fx, typename E>
 		protected_function_result script(const string_view& code, const basic_environment<E>& env, Fx&& on_error,
-		     const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
-			return safe_script(code, env, std::forward<Fx>(on_error), chunkname, mode);
+		     const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+			return safe_script(code, env, eastl::forward<Fx>(on_error), chunkname, mode);
 		}
 
 		template <typename Fx, typename E>
-		protected_function_result script_file(const std::string& filename, const basic_environment<E>& env, Fx&& on_error, load_mode mode = load_mode::any) {
-			return safe_script_file(filename, env, std::forward<Fx>(on_error), mode);
+		protected_function_result script_file(const eastl::string& filename, const basic_environment<E>& env, Fx&& on_error, load_mode mode = load_mode::any) {
+			return safe_script_file(filename, env, eastl::forward<Fx>(on_error), mode);
 		}
 
 		protected_function_result script(
-		     const string_view& code, const environment& env, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+		     const string_view& code, const environment& env, const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			return safe_script(code, env, script_default_on_error, chunkname, mode);
 		}
 
-		protected_function_result script_file(const std::string& filename, const environment& env, load_mode mode = load_mode::any) {
+		protected_function_result script_file(const eastl::string& filename, const environment& env, load_mode mode = load_mode::any) {
 			return safe_script_file(filename, env, script_default_on_error, mode);
 		}
 
 #if SOL_IS_ON(SOL_SAFE_FUNCTION_OBJECTS)
 		protected_function_result script(
-		     lua_Reader reader, void* data, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+		     lua_Reader reader, void* data, const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			return safe_script(reader, data, chunkname, mode);
 		}
 
 		protected_function_result script(
-		     const string_view& code, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+		     const string_view& code, const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			return safe_script(code, chunkname, mode);
 		}
 
-		protected_function_result script_file(const std::string& filename, load_mode mode = load_mode::any) {
+		protected_function_result script_file(const eastl::string& filename, load_mode mode = load_mode::any) {
 			return safe_script_file(filename, mode);
 		}
 #else
-		unsafe_function_result script(const string_view& code, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+		unsafe_function_result script(const string_view& code, const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			return unsafe_script(code, chunkname, mode);
 		}
 
-		unsafe_function_result script_file(const std::string& filename, load_mode mode = load_mode::any) {
+		unsafe_function_result script_file(const eastl::string& filename, load_mode mode = load_mode::any) {
 			return unsafe_script_file(filename, mode);
 		}
 #endif
-		load_result load(const string_view& code, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+		load_result load(const string_view& code, const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			detail::typical_chunk_name_t basechunkname = {};
 			const char* chunknametarget = detail::make_chunk_name(code, chunkname, basechunkname);
 			load_status x = static_cast<load_status>(luaL_loadbufferx(L, code.data(), code.size(), chunknametarget, to_string(mode).c_str()));
 			return load_result(L, absolute_index(L, -1), 1, 1, x);
 		}
 
-		load_result load_buffer(const char* buff, size_t size, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+		load_result load_buffer(const char* buff, size_t size, const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			return load(string_view(buff, size), chunkname, mode);
 		}
 
 		load_result load_buffer(
-		     const std::byte* buff, size_t size, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+		     const std::byte* buff, size_t size, const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			return load(string_view(reinterpret_cast<const char*>(buff), size), chunkname, mode);
 		}
 
-		load_result load_file(const std::string& filename, load_mode mode = load_mode::any) {
+		load_result load_file(const eastl::string& filename, load_mode mode = load_mode::any) {
 			load_status x = static_cast<load_status>(luaL_loadfilex(L, filename.c_str(), to_string(mode).c_str()));
 			return load_result(L, absolute_index(L, -1), 1, 1, x);
 		}
 
-		load_result load(lua_Reader reader, void* data, const std::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
+		load_result load(lua_Reader reader, void* data, const eastl::string& chunkname = detail::default_chunk_name(), load_mode mode = load_mode::any) {
 			detail::typical_chunk_name_t basechunkname = {};
 			const char* chunknametarget = detail::make_chunk_name("lua_Reader", chunkname, basechunkname);
 			load_status x = static_cast<load_status>(lua_load(L, reader, data, chunknametarget, to_string(mode).c_str()));
@@ -632,7 +635,7 @@ namespace sol {
 			return reg;
 		}
 
-		std::size_t memory_used() const {
+		eastl::size_t memory_used() const {
 			return total_memory_used(lua_state());
 		}
 
@@ -673,7 +676,7 @@ namespace sol {
 		}
 
 		bool step_gc(int step_size_kilobytes) {
-			// THOUGHT: std::chrono-alikes to map "kilobyte size" here...?
+			// THOUGHT: eastl::chrono-alikes to map "kilobyte size" here...?
 			// Make it harder to give MB or KB to a B parameter...?
 			// Probably overkill for now.
 #if SOL_LUA_VERSION_I_ >= 504
@@ -698,7 +701,7 @@ namespace sol {
 			// "What the fuck does any of this mean??"
 			// http://www.lua.org/manual/5.4/manual.html#2.5.1
 
-			// THOUGHT: std::chrono-alikes to map "byte size" here...?
+			// THOUGHT: eastl::chrono-alikes to map "byte size" here...?
 			// Make it harder to give MB or KB to a B parameter...?
 			// Probably overkill for now.
 #if SOL_LUA_VERSION_I_ >= 504
@@ -750,94 +753,94 @@ namespace sol {
 
 		template <typename... Args, typename... Keys>
 		decltype(auto) get(Keys&&... keys) const {
-			return global.get<Args...>(std::forward<Keys>(keys)...);
+			return global.get<Args...>(eastl::forward<Keys>(keys)...);
 		}
 
 		template <typename T, typename Key>
 		decltype(auto) get_or(Key&& key, T&& otherwise) const {
-			return global.get_or(std::forward<Key>(key), std::forward<T>(otherwise));
+			return global.get_or(eastl::forward<Key>(key), eastl::forward<T>(otherwise));
 		}
 
 		template <typename T, typename Key, typename D>
 		decltype(auto) get_or(Key&& key, D&& otherwise) const {
-			return global.get_or<T>(std::forward<Key>(key), std::forward<D>(otherwise));
+			return global.get_or<T>(eastl::forward<Key>(key), eastl::forward<D>(otherwise));
 		}
 
 		template <typename... Args>
 		state_view& set(Args&&... args) {
-			global.set(std::forward<Args>(args)...);
+			global.set(eastl::forward<Args>(args)...);
 			return *this;
 		}
 
 		template <typename T, typename... Keys>
 		decltype(auto) traverse_get(Keys&&... keys) const {
-			return global.traverse_get<T>(std::forward<Keys>(keys)...);
+			return global.traverse_get<T>(eastl::forward<Keys>(keys)...);
 		}
 
 		template <typename... Args>
 		state_view& traverse_set(Args&&... args) {
-			global.traverse_set(std::forward<Args>(args)...);
+			global.traverse_set(eastl::forward<Args>(args)...);
 			return *this;
 		}
 
 		template <typename Class, typename... Args>
 		usertype<Class> new_usertype(Args&&... args) {
-			return global.new_usertype<Class>(std::forward<Args>(args)...);
+			return global.new_usertype<Class>(eastl::forward<Args>(args)...);
 		}
 
 		template <bool read_only = true, typename... Args>
 		state_view& new_enum(const string_view& name, Args&&... args) {
-			global.new_enum<read_only>(name, std::forward<Args>(args)...);
+			global.new_enum<read_only>(name, eastl::forward<Args>(args)...);
 			return *this;
 		}
 
 		template <typename T, bool read_only = true>
-		state_view& new_enum(const string_view& name, std::initializer_list<std::pair<string_view, T>> items) {
-			global.new_enum<T, read_only>(name, std::move(items));
+		state_view& new_enum(const string_view& name, std::initializer_list<eastl::pair<string_view, T>> items) {
+			global.new_enum<T, read_only>(name, eastl::move(items));
 			return *this;
 		}
 
 		template <typename Fx>
 		void for_each(Fx&& fx) {
-			global.for_each(std::forward<Fx>(fx));
+			global.for_each(eastl::forward<Fx>(fx));
 		}
 
 		template <typename T>
 		table_proxy<global_table&, detail::proxy_key_t<T>> operator[](T&& key) {
-			return global[std::forward<T>(key)];
+			return global[eastl::forward<T>(key)];
 		}
 
 		template <typename T>
 		table_proxy<const global_table&, detail::proxy_key_t<T>> operator[](T&& key) const {
-			return global[std::forward<T>(key)];
+			return global[eastl::forward<T>(key)];
 		}
 
 		template <typename Sig, typename... Args, typename Key>
 		state_view& set_function(Key&& key, Args&&... args) {
-			global.set_function<Sig>(std::forward<Key>(key), std::forward<Args>(args)...);
+			global.set_function<Sig>(eastl::forward<Key>(key), eastl::forward<Args>(args)...);
 			return *this;
 		}
 
 		template <typename... Args, typename Key>
 		state_view& set_function(Key&& key, Args&&... args) {
-			global.set_function(std::forward<Key>(key), std::forward<Args>(args)...);
+			global.set_function(eastl::forward<Key>(key), eastl::forward<Args>(args)...);
 			return *this;
 		}
 
 		template <typename Name>
 		table create_table(Name&& name, int narr = 0, int nrec = 0) {
-			return global.create(std::forward<Name>(name), narr, nrec);
+			return global.create(eastl::forward<Name>(name), narr, nrec);
 		}
 
 		template <typename Name, typename Key, typename Value, typename... Args>
 		table create_table(Name&& name, int narr, int nrec, Key&& key, Value&& value, Args&&... args) {
-			return global.create(std::forward<Name>(name), narr, nrec, std::forward<Key>(key), std::forward<Value>(value), std::forward<Args>(args)...);
+			return global.create(eastl::forward<Name>(name), narr, nrec, eastl::forward<Key>(key), eastl::forward<Value>(value), eastl::forward<Args>(args)...);
 		}
 
 		template <typename Name, typename... Args>
 		table create_named_table(Name&& name, Args&&... args) {
-			table x = global.create_with(std::forward<Args>(args)...);
-			global.set(std::forward<Name>(name), x);
+			table x = global.create_with(eastl::forward<Args>(args)...);
+			global.set(eastl::forward<Name>(name), x);
 			return x;
 		}
 
@@ -847,12 +850,12 @@ namespace sol {
 
 		template <typename Key, typename Value, typename... Args>
 		table create_table(int narr, int nrec, Key&& key, Value&& value, Args&&... args) {
-			return create_table(lua_state(), narr, nrec, std::forward<Key>(key), std::forward<Value>(value), std::forward<Args>(args)...);
+			return create_table(lua_state(), narr, nrec, eastl::forward<Key>(key), eastl::forward<Value>(value), eastl::forward<Args>(args)...);
 		}
 
 		template <typename... Args>
 		table create_table_with(Args&&... args) {
-			return create_table_with(lua_state(), std::forward<Args>(args)...);
+			return create_table_with(lua_state(), eastl::forward<Args>(args)...);
 		}
 
 		static inline table create_table(lua_State* L, int narr = 0, int nrec = 0) {
@@ -861,12 +864,12 @@ namespace sol {
 
 		template <typename Key, typename Value, typename... Args>
 		static inline table create_table(lua_State* L, int narr, int nrec, Key&& key, Value&& value, Args&&... args) {
-			return global_table::create(L, narr, nrec, std::forward<Key>(key), std::forward<Value>(value), std::forward<Args>(args)...);
+			return global_table::create(L, narr, nrec, eastl::forward<Key>(key), eastl::forward<Value>(value), eastl::forward<Args>(args)...);
 		}
 
 		template <typename... Args>
 		static inline table create_table_with(lua_State* L, Args&&... args) {
-			return global_table::create_with(L, std::forward<Args>(args)...);
+			return global_table::create_with(L, eastl::forward<Args>(args)...);
 		}
 	};
 } // namespace sol

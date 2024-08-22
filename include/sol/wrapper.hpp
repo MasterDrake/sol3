@@ -30,7 +30,7 @@ namespace sol {
 
 	namespace detail {
 		template <typename T>
-		using array_return_type = meta::conditional_t<std::is_array<T>::value, std::add_lvalue_reference_t<T>, T>;
+		using array_return_type = meta::conditional_t<eastl::is_array<T>::value, eastl::add_lvalue_reference_t<T>, T>;
 	}
 
 	template <typename F, typename = void>
@@ -42,38 +42,38 @@ namespace sol {
 
 		template <typename... Args>
 		static decltype(auto) call(F& f, Args&&... args) {
-			return f(std::forward<Args>(args)...);
+			return f(eastl::forward<Args>(args)...);
 		}
 
 		struct caller {
 			template <typename... Args>
 			decltype(auto) operator()(F& fx, Args&&... args) const {
-				return call(fx, std::forward<Args>(args)...);
+				return call(fx, eastl::forward<Args>(args)...);
 			}
 		};
 	};
 
 	template <typename F>
-	struct wrapper<F, std::enable_if_t<std::is_function<std::remove_pointer_t<meta::unqualified_t<F>>>::value>> {
-		typedef lua_bind_traits<std::remove_pointer_t<meta::unqualified_t<F>>> traits_type;
+	struct wrapper<F, eastl::enable_if_t<eastl::is_function<eastl::remove_pointer_t<meta::unqualified_t<F>>>::value>> {
+		typedef lua_bind_traits<eastl::remove_pointer_t<meta::unqualified_t<F>>> traits_type;
 		typedef typename traits_type::args_list args_list;
 		typedef typename traits_type::args_list free_args_list;
 		typedef typename traits_type::returns_list returns_list;
 
 		template <F fx, typename... Args>
 		static decltype(auto) invoke(Args&&... args) {
-			return fx(std::forward<Args>(args)...);
+			return fx(eastl::forward<Args>(args)...);
 		}
 
 		template <typename... Args>
 		static decltype(auto) call(F& fx, Args&&... args) {
-			return fx(std::forward<Args>(args)...);
+			return fx(eastl::forward<Args>(args)...);
 		}
 
 		struct caller {
 			template <typename... Args>
 			decltype(auto) operator()(F& fx, Args&&... args) const {
-				return call(fx, std::forward<Args>(args)...);
+				return call(fx, eastl::forward<Args>(args)...);
 			}
 		};
 
@@ -81,13 +81,13 @@ namespace sol {
 		struct invoker {
 			template <typename... Args>
 			decltype(auto) operator()(Args&&... args) const {
-				return invoke<fx>(std::forward<Args>(args)...);
+				return invoke<fx>(eastl::forward<Args>(args)...);
 			}
 		};
 	};
 
 	template <typename F>
-	struct wrapper<F, std::enable_if_t<std::is_member_object_pointer<meta::unqualified_t<F>>::value>> {
+	struct wrapper<F, eastl::enable_if_t<eastl::is_member_object_pointer<meta::unqualified_t<F>>::value>> {
 		typedef lua_bind_traits<meta::unqualified_t<F>> traits_type;
 		typedef typename traits_type::object_type object_type;
 		typedef typename traits_type::return_type return_type;
@@ -102,7 +102,7 @@ namespace sol {
 
 		template <F fx, typename Arg, typename... Args>
 		static decltype(auto) invoke(object_type& mem, Arg&& arg, Args&&...) {
-			return mem.*fx = std::forward<Arg>(arg);
+			return mem.*fx = eastl::forward<Arg>(arg);
 		}
 
 		template <typename Fx>
@@ -113,24 +113,24 @@ namespace sol {
 		template <typename Fx, typename Arg, typename... Args>
 		static void call(Fx&& fx, object_type& mem, Arg&& arg, Args&&...) {
 			using actual_type = meta::unqualified_t<detail::array_return_type<decltype(mem.*fx)>>;
-			if constexpr (std::is_array_v<actual_type>) {
-				using std::cbegin;
-				using std::cend;
+			if constexpr (eastl::is_array_v<actual_type>) {
+				using eastl::cbegin;
+				using eastl::cend;
 				auto first = cbegin(arg);
 				auto last = cend(arg);
-				for (std::size_t i = 0; first != last; ++i, ++first) {
+				for (eastl::size_t i = 0; first != last; ++i, ++first) {
 					(mem.*fx)[i] = *first;
 				}
 			}
 			else {
-				(mem.*fx) = std::forward<Arg>(arg);
+				(mem.*fx) = eastl::forward<Arg>(arg);
 			}
 		}
 
 		struct caller {
 			template <typename Fx, typename... Args>
 			decltype(auto) operator()(Fx&& fx, object_type& mem, Args&&... args) const {
-				return call(std::forward<Fx>(fx), mem, std::forward<Args>(args)...);
+				return call(eastl::forward<Fx>(fx), mem, eastl::forward<Args>(args)...);
 			}
 		};
 
@@ -138,7 +138,7 @@ namespace sol {
 		struct invoker {
 			template <typename... Args>
 			decltype(auto) operator()(Args&&... args) const {
-				return invoke<fx>(std::forward<Args>(args)...);
+				return invoke<fx>(eastl::forward<Args>(args)...);
 			}
 		};
 	};
@@ -153,18 +153,18 @@ namespace sol {
 
 		template <F fx, typename... Args>
 		static R invoke(O& mem, Args&&... args) {
-			return (mem.*fx)(std::forward<Args>(args)...);
+			return (mem.*fx)(eastl::forward<Args>(args)...);
 		}
 
 		template <typename Fx, typename... Args>
 		static R call(Fx&& fx, O& mem, Args&&... args) {
-			return (mem.*fx)(std::forward<Args>(args)...);
+			return (mem.*fx)(eastl::forward<Args>(args)...);
 		}
 
 		struct caller {
 			template <typename Fx, typename... Args>
 			decltype(auto) operator()(Fx&& fx, O& mem, Args&&... args) const {
-				return call(std::forward<Fx>(fx), mem, std::forward<Args>(args)...);
+				return call(eastl::forward<Fx>(fx), mem, eastl::forward<Args>(args)...);
 			}
 		};
 
@@ -172,7 +172,7 @@ namespace sol {
 		struct invoker {
 			template <typename... Args>
 			decltype(auto) operator()(O& mem, Args&&... args) const {
-				return invoke<fx>(mem, std::forward<Args>(args)...);
+				return invoke<fx>(mem, eastl::forward<Args>(args)...);
 			}
 		};
 	};

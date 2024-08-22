@@ -27,7 +27,7 @@
 #include <sol/types.hpp>
 #include <sol/stack_reference.hpp>
 
-#include <functional>
+#include <EASTL/functional.h>
 
 namespace sol {
 	namespace detail {
@@ -130,7 +130,7 @@ namespace sol {
 		};
 
 		template <typename T>
-		struct push_popper<false, T, std::enable_if_t<is_stack_based_v<meta::unqualified_t<T>>>> {
+		struct push_popper<false, T, eastl::enable_if_t<is_stack_based_v<meta::unqualified_t<T>>>> {
 			using Tu = meta::unqualified_t<T>;
 
 			push_popper(T) noexcept {
@@ -179,7 +179,7 @@ namespace sol {
 		};
 
 		template <typename T>
-		struct stateless_push_popper<false, T, std::enable_if_t<is_stack_based_v<meta::unqualified_t<T>>>> {
+		struct stateless_push_popper<false, T, eastl::enable_if_t<is_stack_based_v<meta::unqualified_t<T>>>> {
 			using Tu = meta::unqualified_t<T>;
 			lua_State* m_L;
 
@@ -196,12 +196,12 @@ namespace sol {
 
 		template <bool top_level = false, typename T>
 		push_popper<top_level, T> push_pop(T&& x) {
-			return push_popper<top_level, T>(std::forward<T>(x));
+			return push_popper<top_level, T>(eastl::forward<T>(x));
 		}
 
 		template <bool top_level = false, typename T>
 		stateless_push_popper<top_level, T> push_pop(lua_State* L_, T&& object_) {
-			return stateless_push_popper<top_level, T>(L_, std::forward<T>(object_));
+			return stateless_push_popper<top_level, T>(L_, eastl::forward<T>(object_));
 		}
 
 		template <typename T>
@@ -368,9 +368,9 @@ namespace sol {
 		}
 
 		~stateless_reference() noexcept = default;
-
-		stateless_reference(const stateless_reference& o) noexcept = delete;
-		stateless_reference& operator=(const stateless_reference& r) noexcept = delete;
+		//BUGBUGBUG: dovrebbe essere delete invece che default
+		stateless_reference(const stateless_reference& o) noexcept = default;
+		stateless_reference& operator=(const stateless_reference& r) noexcept = default;
 
 		stateless_reference(stateless_reference&& o) noexcept : ref(o.ref) {
 			o.ref = LUA_NOREF;
@@ -638,7 +638,7 @@ namespace sol {
 		basic_reference(const basic_reference& o) noexcept : stateless_reference(o.copy_ref()), luastate(o.lua_state()) {
 		}
 
-		basic_reference(basic_reference&& o) noexcept : stateless_reference(std::move(o)), luastate(o.lua_state()) {
+		basic_reference(basic_reference&& o) noexcept : stateless_reference(eastl::move(o)), luastate(o.lua_state()) {
 			o.luastate = nullptr;
 		}
 
@@ -647,13 +647,13 @@ namespace sol {
 		}
 
 		basic_reference(basic_reference<!main_only>&& o) noexcept
-		: stateless_reference(std::move(o)), luastate(detail::pick_main_thread<main_only>(o.lua_state(), o.lua_state())) {
+		: stateless_reference(eastl::move(o)), luastate(detail::pick_main_thread<main_only>(o.lua_state(), o.lua_state())) {
 			o.luastate = nullptr;
 			o.ref = LUA_NOREF;
 		}
 
 		basic_reference& operator=(basic_reference&& r) noexcept {
-			move_assign(std::move(r));
+			move_assign(eastl::move(r));
 			return *this;
 		}
 
@@ -663,7 +663,7 @@ namespace sol {
 		}
 
 		basic_reference& operator=(basic_reference<!main_only>&& r) noexcept {
-			move_assign(std::move(r));
+			move_assign(eastl::move(r));
 			return *this;
 		}
 
@@ -823,7 +823,7 @@ namespace sol {
 	}
 
 	struct stateless_reference_equals : public stateless_stack_reference_equals {
-		using is_transparent = std::true_type;
+		using is_transparent = eastl::true_type;
 
 		stateless_reference_equals(lua_State* L_) noexcept : stateless_stack_reference_equals(L_) {
 		}
@@ -842,7 +842,7 @@ namespace sol {
 	};
 
 	struct reference_equals : public stack_reference_equals {
-		using is_transparent = std::true_type;
+		using is_transparent = eastl::true_type;
 
 		template <bool rb>
 		bool operator()(const lua_nil_t& lhs, const basic_reference<rb>& rhs) const noexcept {
@@ -872,26 +872,26 @@ namespace sol {
 
 	struct stateless_reference_hash : public stateless_stack_reference_hash {
 		using argument_type = stateless_reference;
-		using result_type = std::size_t;
-		using is_transparent = std::true_type;
+		using result_type = eastl::size_t;
+		using is_transparent = eastl::true_type;
 
 		stateless_reference_hash(lua_State* L_) noexcept : stateless_stack_reference_hash(L_) {
 		}
 
 		result_type operator()(const stateless_reference& lhs) const noexcept {
-			std::hash<const void*> h;
+			eastl::hash<const void*> h;
 			return h(lhs.pointer(lua_state()));
 		}
 	};
 
 	struct reference_hash : public stack_reference_hash {
 		using argument_type = reference;
-		using result_type = std::size_t;
-		using is_transparent = std::true_type;
+		using result_type = eastl::size_t;
+		using is_transparent = eastl::true_type;
 
 		template <bool lb>
 		result_type operator()(const basic_reference<lb>& lhs) const noexcept {
-			std::hash<const void*> h;
+			eastl::hash<const void*> h;
 			return h(lhs.pointer());
 		}
 	};

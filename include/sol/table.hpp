@@ -35,26 +35,26 @@ namespace sol {
 	template <typename Class, typename Key>
 	usertype<Class> basic_table_core<is_global, base_type>::new_usertype(Key&& key) {
 		constant_automagic_enrollments<> enrollments {};
-		return this->new_usertype<Class>(std::forward<Key>(key), std::move(enrollments));
+		return this->new_usertype<Class>(eastl::forward<Key>(key), eastl::move(enrollments));
 	}
 
 	template <bool is_global, typename base_type>
 	template <typename Class, typename Key, automagic_flags enrollment_flags>
 	usertype<Class> basic_table_core<is_global, base_type>::new_usertype(Key&& key, constant_automagic_enrollments<enrollment_flags> enrollments) {
-		int mt_index = u_detail::register_usertype<Class, enrollment_flags>(this->lua_state(), std::move(enrollments));
+		int mt_index = u_detail::register_usertype<Class, enrollment_flags>(this->lua_state(), eastl::move(enrollments));
 		usertype<Class> mt(this->lua_state(), -mt_index);
 		lua_pop(this->lua_state(), 1);
-		set(std::forward<Key>(key), mt);
+		set(eastl::forward<Key>(key), mt);
 		return mt;
 	}
 
 	template <bool is_global, typename base_type>
 	template <typename Class, typename Key>
 	usertype<Class> basic_table_core<is_global, base_type>::new_usertype(Key&& key, automagic_enrollments enrollments) {
-		int mt_index = u_detail::register_usertype<Class, automagic_flags::all>(this->lua_state(), std::move(enrollments));
+		int mt_index = u_detail::register_usertype<Class, automagic_flags::all>(this->lua_state(), eastl::move(enrollments));
 		usertype<Class> mt(this->lua_state(), -mt_index);
 		lua_pop(this->lua_state(), 1);
-		set(std::forward<Key>(key), mt);
+		set(eastl::forward<Key>(key), mt);
 		return mt;
 	}
 
@@ -67,15 +67,15 @@ namespace sol {
 		constant_automagic_enrollments<enrollment_flags> enrollments;
 		enrollments.default_constructor = !detail::any_is_constructor_v<Arg, Args...>;
 		enrollments.destructor = !detail::any_is_destructor_v<Arg, Args...>;
-		usertype<Class> ut = this->new_usertype<Class>(std::forward<Key>(key), std::move(enrollments));
-		static_assert(sizeof...(Args) % 2 == static_cast<std::size_t>(!detail::any_is_constructor_v<Arg>),
+		usertype<Class> ut = this->new_usertype<Class>(eastl::forward<Key>(key), eastl::move(enrollments));
+		static_assert(sizeof...(Args) % 2 == static_cast<eastl::size_t>(!detail::any_is_constructor_v<Arg>),
 		     "you must pass an even number of arguments to new_usertype after first passing a constructor");
 		if constexpr (detail::any_is_constructor_v<Arg>) {
-			ut.set(meta_function::construct, std::forward<Arg>(arg));
-			ut.tuple_set(std::make_index_sequence<(sizeof...(Args)) / 2>(), std::forward_as_tuple(std::forward<Args>(args)...));
+			ut.set(meta_function::construct, eastl::forward<Arg>(arg));
+			ut.tuple_set(eastl::make_index_sequence<(sizeof...(Args)) / 2>(), eastl::forward_as_tuple(eastl::forward<Args>(args)...));
 		}
 		else {
-			ut.tuple_set(std::make_index_sequence<(sizeof...(Args) + 1) / 2>(), std::forward_as_tuple(std::forward<Arg>(arg), std::forward<Args>(args)...));
+			ut.tuple_set(eastl::make_index_sequence<(sizeof...(Args) + 1) / 2>(), eastl::forward_as_tuple(eastl::forward<Arg>(arg), eastl::forward<Args>(args)...));
 		}
 		return ut;
 	}
@@ -90,11 +90,11 @@ namespace sol {
 		maybe_uts = u_detail::maybe_get_usertype_storage_base(L, target);
 		if (maybe_uts) {
 			u_detail::usertype_storage_base& uts = *maybe_uts;
-			uts.set(L, std::forward<Key>(key), std::forward<Value>(value));
+			uts.set(L, eastl::forward<Key>(key), eastl::forward<Value>(value));
 			return *this;
 		}
 		else {
-			base_t::set(std::forward<Key>(key), std::forward<Value>(value));
+			base_t::set(eastl::forward<Key>(key), eastl::forward<Value>(value));
 		}
 		this->pop();
 		return *this;

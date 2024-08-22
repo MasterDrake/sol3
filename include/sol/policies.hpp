@@ -26,7 +26,7 @@
 
 #include <sol/traits.hpp>
 
-#include <array>
+#include <EASTL/array.h>
 
 namespace sol {
 	namespace detail {
@@ -42,37 +42,37 @@ namespace sol {
 
 	struct stack_dependencies : detail::policy_base_tag {
 		int target;
-		std::array<int, 64> stack_indices;
-		std::size_t len;
+		eastl::array<int, 64> stack_indices;
+		eastl::size_t len;
 
 		template <typename... Args>
 		stack_dependencies(int stack_target, Args&&... args) : target(stack_target), stack_indices(), len(sizeof...(Args)) {
-			std::size_t i = 0;
-			(void)detail::swallow { int(), (stack_indices[i++] = static_cast<int>(std::forward<Args>(args)), int())... };
+			eastl::size_t i = 0;
+			(void)detail::swallow { int(), (stack_indices[i++] = static_cast<int>(eastl::forward<Args>(args)), int())... };
 		}
 
-		int& operator[](std::size_t i) {
+		int& operator[](eastl::size_t i) {
 			return stack_indices[i];
 		}
 
-		const int& operator[](std::size_t i) const {
+		const int& operator[](eastl::size_t i) const {
 			return stack_indices[i];
 		}
 
-		std::size_t size() const {
+		eastl::size_t size() const {
 			return len;
 		}
 	};
 
 	template <typename F, typename... Policies>
 	struct policy_wrapper {
-		typedef std::index_sequence_for<Policies...> indices;
+		typedef eastl::index_sequence_for<Policies...> indices;
 
 		F value;
-		std::tuple<Policies...> policies;
+		eastl::tuple<Policies...> policies;
 
-		template <typename Fx, typename... Args, meta::enable<meta::neg<std::is_same<meta::unqualified_t<Fx>, policy_wrapper>>> = meta::enabler>
-		policy_wrapper(Fx&& fx, Args&&... args) : value(std::forward<Fx>(fx)), policies(std::forward<Args>(args)...) {
+		template <typename Fx, typename... Args, meta::enable<meta::neg<eastl::is_same<meta::unqualified_t<Fx>, policy_wrapper>>> = meta::enabler>
+		policy_wrapper(Fx&& fx, Args&&... args) : value(eastl::forward<Fx>(fx)), policies(eastl::forward<Args>(args)...) {
 		}
 
 		policy_wrapper(const policy_wrapper&) = default;
@@ -83,7 +83,7 @@ namespace sol {
 
 	template <typename F, typename... Args>
 	auto policies(F&& f, Args&&... args) {
-		return policy_wrapper<std::decay_t<F>, std::decay_t<Args>...>(std::forward<F>(f), std::forward<Args>(args)...);
+		return policy_wrapper<eastl::decay_t<F>, eastl::decay_t<Args>...>(eastl::forward<F>(f), eastl::forward<Args>(args)...);
 	}
 
 	namespace detail {

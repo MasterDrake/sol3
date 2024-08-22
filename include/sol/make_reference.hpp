@@ -31,7 +31,7 @@ namespace sol {
 
 	template <typename R = reference, bool should_pop = !is_stack_based_v<R>, typename T>
 	R make_reference(lua_State* L, T&& value) {
-		int backpedal = stack::push(L, std::forward<T>(value));
+		int backpedal = stack::push(L, eastl::forward<T>(value));
 		R r = stack::get<R>(L, -backpedal);
 		if (should_pop) {
 			lua_pop(L, backpedal);
@@ -41,7 +41,7 @@ namespace sol {
 
 	template <typename T, typename R = reference, bool should_pop = !is_stack_based_v<R>, typename... Args>
 	R make_reference(lua_State* L, Args&&... args) {
-		int backpedal = stack::push<T>(L, std::forward<Args>(args)...);
+		int backpedal = stack::push<T>(L, eastl::forward<Args>(args)...);
 		R r = stack::get<R>(L, -backpedal);
 		if (should_pop) {
 			lua_pop(L, backpedal);
@@ -51,7 +51,7 @@ namespace sol {
 
 	template <typename R = reference, bool should_pop = !is_stack_based_v<R>, typename T>
 	R make_reference_userdata(lua_State* L, T&& value) {
-		int backpedal = stack::push_userdata(L, std::forward<T>(value));
+		int backpedal = stack::push_userdata(L, eastl::forward<T>(value));
 		R r = stack::get<R>(L, -backpedal);
 		if (should_pop) {
 			lua_pop(L, backpedal);
@@ -61,7 +61,7 @@ namespace sol {
 
 	template <typename T, typename R = reference, bool should_pop = !is_stack_based_v<R>, typename... Args>
 	R make_reference_userdata(lua_State* L, Args&&... args) {
-		int backpedal = stack::push_userdata<T>(L, std::forward<Args>(args)...);
+		int backpedal = stack::push_userdata<T>(L, eastl::forward<Args>(args)...);
 		R r = stack::get<R>(L, -backpedal);
 		if (should_pop) {
 			lua_pop(L, backpedal);

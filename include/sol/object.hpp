@@ -37,7 +37,7 @@ namespace sol {
 		typedef basic_object_base<base_type> base_t;
 
 		template <bool invert_and_pop = false>
-		basic_object(std::integral_constant<bool, invert_and_pop>, lua_State* L_, int index_ = -1) noexcept : base_t(L_, index_) {
+		basic_object(eastl::integral_constant<bool, invert_and_pop>, lua_State* L_, int index_ = -1) noexcept : base_t(L_, index_) {
 			if (invert_and_pop) {
 				lua_pop(L_, -index_);
 			}
@@ -51,24 +51,24 @@ namespace sol {
 		basic_object(detail::no_safety_tag, lua_State* L_, ref_index index_) : base_t(L_, index_) {
 		}
 		template <typename T,
-		     meta::enable<meta::neg<meta::any_same<meta::unqualified_t<T>, basic_object>>, meta::neg<std::is_same<base_type, stack_reference>>,
-		          meta::neg<std::is_same<lua_nil_t, meta::unqualified_t<T>>>, is_lua_reference<meta::unqualified_t<T>>> = meta::enabler>
-		basic_object(detail::no_safety_tag, T&& r) noexcept : base_t(std::forward<T>(r)) {
+		     meta::enable<meta::neg<meta::any_same<meta::unqualified_t<T>, basic_object>>, meta::neg<eastl::is_same<base_type, stack_reference>>,
+		          meta::neg<eastl::is_same<lua_nil_t, meta::unqualified_t<T>>>, is_lua_reference<meta::unqualified_t<T>>> = meta::enabler>
+		basic_object(detail::no_safety_tag, T&& r) noexcept : base_t(eastl::forward<T>(r)) {
 		}
 
 		template <typename T, meta::enable<is_lua_reference<meta::unqualified_t<T>>> = meta::enabler>
-		basic_object(detail::no_safety_tag, lua_State* L_, T&& r) noexcept : base_t(L_, std::forward<T>(r)) {
+		basic_object(detail::no_safety_tag, lua_State* L_, T&& r) noexcept : base_t(L_, eastl::forward<T>(r)) {
 		}
 
 	public:
 		basic_object() noexcept = default;
 		template <typename T,
-		     meta::enable<meta::neg<std::is_same<meta::unqualified_t<T>, basic_object>>, meta::neg<std::is_same<base_type, stack_reference>>,
+		     meta::enable<meta::neg<eastl::is_same<meta::unqualified_t<T>, basic_object>>, meta::neg<eastl::is_same<base_type, stack_reference>>,
 		          is_lua_reference<meta::unqualified_t<T>>> = meta::enabler>
-		basic_object(T&& r) : base_t(std::forward<T>(r)) {
+		basic_object(T&& r) : base_t(eastl::forward<T>(r)) {
 		}
 		template <typename T, meta::enable<is_lua_reference<meta::unqualified_t<T>>> = meta::enabler>
-		basic_object(lua_State* L_, T&& r) : base_t(L_, std::forward<T>(r)) {
+		basic_object(lua_State* L_, T&& r) : base_t(L_, eastl::forward<T>(r)) {
 		}
 		basic_object(lua_State* L_, global_tag_t t) : base_t(L_, t) {
 		}
@@ -98,11 +98,11 @@ namespace sol {
 		}
 		template <typename T, typename... Args>
 		basic_object(lua_State* L_, in_place_type_t<T>, Args&&... args) noexcept
-		: basic_object(std::integral_constant<bool, !is_stack_based<base_t>::value>(), L_, -stack::push<T>(L_, std::forward<Args>(args)...)) {
+		: basic_object(eastl::integral_constant<bool, !is_stack_based<base_t>::value>(), L_, -stack::push<T>(L_, eastl::forward<Args>(args)...)) {
 		}
 		template <typename T, typename... Args>
 		basic_object(lua_State* L_, in_place_t, T&& arg, Args&&... args) noexcept
-		: basic_object(L_, in_place_type<T>, std::forward<T>(arg), std::forward<Args>(args)...) {
+		: basic_object(L_, in_place_type<T>, eastl::forward<T>(arg), eastl::forward<Args>(args)...) {
 		}
 		basic_object& operator=(const basic_object&) = default;
 		basic_object& operator=(basic_object&&) = default;
@@ -111,7 +111,7 @@ namespace sol {
 			return *this;
 		}
 		basic_object& operator=(base_type&& b) {
-			base_t::operator=(std::move(b));
+			base_t::operator=(eastl::move(b));
 			return *this;
 		}
 		template <typename Super>
@@ -128,22 +128,22 @@ namespace sol {
 
 	template <typename T>
 	object make_object(lua_State* L_, T&& value) {
-		return make_reference<object, true>(L_, std::forward<T>(value));
+		return make_reference<object, true>(L_, eastl::forward<T>(value));
 	}
 
 	template <typename T, typename... Args>
 	object make_object(lua_State* L_, Args&&... args) {
-		return make_reference<T, object, true>(L_, std::forward<Args>(args)...);
+		return make_reference<T, object, true>(L_, eastl::forward<Args>(args)...);
 	}
 
 	template <typename T>
 	object make_object_userdata(lua_State* L_, T&& value) {
-		return make_reference_userdata<object, true>(L_, std::forward<T>(value));
+		return make_reference_userdata<object, true>(L_, eastl::forward<T>(value));
 	}
 
 	template <typename T, typename... Args>
 	object make_object_userdata(lua_State* L_, Args&&... args) {
-		return make_reference_userdata<T, object, true>(L_, std::forward<Args>(args)...);
+		return make_reference_userdata<T, object, true>(L_, eastl::forward<Args>(args)...);
 	}
 } // namespace sol
 

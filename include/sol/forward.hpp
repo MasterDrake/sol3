@@ -26,9 +26,9 @@
 
 #include <sol/version.hpp>
 
-#include <utility>
-#include <type_traits>
-#include <string_view>
+#include <EASTL/utility.h>
+#include <EASTL/type_traits.h>
+#include <EASTL/string_view.h>
 
 #if SOL_IS_ON(SOL_USING_CXX_LUA) || SOL_IS_ON(SOL_USING_CXX_LUAJIT)
 struct lua_State;
@@ -206,19 +206,19 @@ namespace sol {
 
 	template <typename... Args>
 	struct types {
-		typedef std::make_index_sequence<sizeof...(Args)> indices;
-		static constexpr std::size_t size() {
+		typedef eastl::make_index_sequence<sizeof...(Args)> indices;
+		static constexpr eastl::size_t size() {
 			return sizeof...(Args);
 		}
 	};
 
 	template <typename T>
-	struct derive : std::false_type {
+	struct derive : eastl::false_type {
 		typedef types<> type;
 	};
 
 	template <typename T>
-	struct base : std::false_type {
+	struct base : eastl::false_type {
 		typedef types<> type;
 	};
 
@@ -249,7 +249,7 @@ namespace sol {
 #define SOL_BASE_CLASSES(T, ...)                       \
 	namespace sol {                                   \
 		template <>                                  \
-		struct base<T> : std::true_type {            \
+		struct base<T> : eastl::true_type {            \
 			typedef ::sol::types<__VA_ARGS__> type; \
 		};                                           \
 	}                                                 \
@@ -257,7 +257,7 @@ namespace sol {
 #define SOL_DERIVED_CLASSES(T, ...)                    \
 	namespace sol {                                   \
 		template <>                                  \
-		struct derive<T> : std::true_type {          \
+		struct derive<T> : eastl::true_type {          \
 			typedef ::sol::types<__VA_ARGS__> type; \
 		};                                           \
 	}                                                 \

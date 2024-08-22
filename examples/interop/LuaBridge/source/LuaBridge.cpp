@@ -42,7 +42,7 @@ inline bool sol_lua_interop_check(sol::types<T>, lua_State* L,
 }
 
 template <typename T>
-inline std::pair<bool, T*> sol_lua_interop_get(sol::types<T> t,
+inline eastl::pair<bool, T*> sol_lua_interop_get(sol::types<T> t,
      lua_State* L, int relindex, void* unadjusted_pointer,
      sol::stack::record& tracking) {
 	(void)unadjusted_pointer;
@@ -105,7 +105,7 @@ int main(int, char*[]) {
 		}
 	};
 
-	std::unique_ptr<lua_State, closer> state(luaL_newstate());
+	eastl::unique_ptr<lua_State, closer> state(luaL_newstate());
 	lua_State* L = state.get();
 	luaL_openlibs(L);
 

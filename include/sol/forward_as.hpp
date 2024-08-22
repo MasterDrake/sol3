@@ -26,17 +26,17 @@
 
 #include <sol/version.hpp>
 
-#include <utility>
-#include <type_traits>
+#include <EASTL/utility.h>
+#include <EASTL/type_traits.h>
 
 namespace sol {
 	template <typename T, typename U>
 	constexpr decltype(auto) forward_as(U&& value) noexcept {
-		if constexpr (::std::is_lvalue_reference_v<T>) {
+		if constexpr (::eastl::is_lvalue_reference_v<T>) {
 			return value;
 		}
 		else {
-			return ::std::move(value);
+			return ::eastl::move(value);
 		}
 	}
 }

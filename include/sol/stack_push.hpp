@@ -32,14 +32,14 @@
 #include <sol/unicode.hpp>
 #include <sol/assert.hpp>
 
-#include <memory>
-#include <type_traits>
+#include <EASTL/memory.h>
+#include <EASTL/type_traits.h>
 #include <cassert>
-#include <limits>
+#include <EASTL/numeric_limits.h>
 #include <cmath>
-#include <string_view>
+#include <EASTL/string_view.h>
 #if SOL_IS_ON(SOL_STD_VARIANT)
-#include <variant>
+#include <EASTL/variant.h>
 #endif // Can use variant
 
 #include <sol/debug.hpp>
@@ -53,10 +53,10 @@ namespace sol { namespace stack {
 			// If it lacks padding bits, we can jump back and forth between lua_Integer and whatever type without
 			// loss of information
 			constexpr bool is_same_signedness
-				= (std::is_signed_v<T> && std::is_signed_v<lua_Integer>) || (std::is_unsigned_v<T> && std::is_unsigned_v<lua_Integer>);
+				= (eastl::is_signed_v<T> && eastl::is_signed_v<lua_Integer>) || (eastl::is_unsigned_v<T> && eastl::is_unsigned_v<lua_Integer>);
 			constexpr bool probaby_fits_within_lua_Integer = sizeof(T) == sizeof(lua_Integer)
 #if SOL_IS_ON(SOL_ALL_INTEGER_VALUES_FIT)
-				&& ((std::has_unique_object_representations_v<T> && std::has_unique_object_representations_v<lua_Integer>) ? true : is_same_signedness)
+				&& ((eastl::has_unique_object_representations_v<T> && eastl::has_unique_object_representations_v<lua_Integer>) ? true : is_same_signedness)
 #else
 				&& is_same_signedness
 #endif
@@ -66,17 +66,17 @@ namespace sol { namespace stack {
 				return true;
 			}
 			else {
-				auto u_min = static_cast<std::intmax_t>((std::numeric_limits<lua_Integer>::min)());
-				auto u_max = static_cast<std::uintmax_t>((std::numeric_limits<lua_Integer>::max)());
-				auto t_min = static_cast<std::intmax_t>((std::numeric_limits<T>::min)());
-				auto t_max = static_cast<std::uintmax_t>((std::numeric_limits<T>::max)());
+				auto u_min = static_cast<std::intmax_t>((eastl::numeric_limits<lua_Integer>::min)());
+				auto u_max = static_cast<std::uintmax_t>((eastl::numeric_limits<lua_Integer>::max)());
+				auto t_min = static_cast<std::intmax_t>((eastl::numeric_limits<T>::min)());
+				auto t_max = static_cast<std::uintmax_t>((eastl::numeric_limits<T>::max)());
 				return (u_min <= t_min || value >= static_cast<T>(u_min)) && (u_max >= t_max || value <= static_cast<T>(u_max));
 			}
 		}
 
 		template <typename T>
-		int msvc_is_ass_with_if_constexpr_push_enum(std::true_type, lua_State* L, const T& value) {
-			if constexpr (meta::any_same_v<std::underlying_type_t<T>,
+		int msvc_is_ass_with_if_constexpr_push_enum(eastl::true_type, lua_State* L, const T& value) {
+			if constexpr (meta::any_same_v<eastl::underlying_type_t<T>,
 				              char
 #if SOL_IS_ON(SOL_CHAR8_T)
 				              ,
@@ -85,7 +85,7 @@ namespace sol { namespace stack {
 				              ,
 				              char16_t,
 				              char32_t>) {
-				if constexpr (std::is_signed_v<T>) {
+				if constexpr (eastl::is_signed_v<T>) {
 					return stack::push(L, static_cast<std::int_least32_t>(value));
 				}
 				else {
@@ -93,12 +93,12 @@ namespace sol { namespace stack {
 				}
 			}
 			else {
-				return stack::push(L, static_cast<std::underlying_type_t<T>>(value));
+				return stack::push(L, static_cast<eastl::underlying_type_t<T>>(value));
 			}
 		}
 
 		template <typename T>
-		int msvc_is_ass_with_if_constexpr_push_enum(std::false_type, lua_State*, const T&) {
+		int msvc_is_ass_with_if_constexpr_push_enum(eastl::false_type, lua_State*, const T&) {
 			return 0;
 		}
 	} // namespace stack_detail
@@ -159,31 +159,33 @@ namespace sol { namespace stack {
 			luaL_checkstack(L, 1, detail::not_enough_stack_space_userdata);
 #endif // make sure stack doesn't overflow
        // Basically, we store all user-data like this:
-       // If it's a movable/copyable value (no std::ref(x)), then we store the pointer to the new
+       // If it's a movable/copyable value (no eastl::ref(x)), then we store the pointer to the new
        // data in the first sizeof(T*) bytes, and then however many bytes it takes to
-       // do the actual object. Things that are std::ref or plain T* are stored as
+       // do the actual object. Things that are eastl::ref or plain T* are stored as
        // just the sizeof(T*), and nothing else.
 			T* obj = detail::usertype_allocate<T>(L);
 			f();
-			std::allocator<T> alloc {};
-			std::allocator_traits<std::allocator<T>>::construct(alloc, obj, std::forward<Args>(args)...);
+			//BUGBUGBUG: SHITSHOW
+			eastl::allocator alloc {};
+			alloc.allocate(sizeof(*obj));
+			*obj = T(eastl::forward<Args>(args)...);
 			return 1;
 		}
 
 		template <typename K, typename... Args>
 		static int push_keyed(lua_State* L, K&& k, Args&&... args) {
 			stack_detail::undefined_metatable fx(L, &k[0], &stack::stack_detail::set_undefined_methods_on<T>);
-			return push_fx(L, fx, std::forward<Args>(args)...);
+			return push_fx(L, fx, eastl::forward<Args>(args)...);
 		}
 
 		template <typename Arg, typename... Args>
 		static int push(lua_State* L, Arg&& arg, Args&&... args) {
-			if constexpr (std::is_same_v<meta::unqualified_t<Arg>, detail::with_function_tag>) {
+			if constexpr (eastl::is_same_v<meta::unqualified_t<Arg>, detail::with_function_tag>) {
 				(void)arg;
-				return push_fx(L, std::forward<Args>(args)...);
+				return push_fx(L, eastl::forward<Args>(args)...);
 			}
 			else {
-				return push_keyed(L, usertype_traits<T>::metatable(), std::forward<Arg>(arg), std::forward<Args>(args)...);
+				return push_keyed(L, usertype_traits<T>::metatable(), eastl::forward<Arg>(arg), eastl::forward<Args>(args)...);
 			}
 		}
 
@@ -217,12 +219,12 @@ namespace sol { namespace stack {
 
 		template <typename Arg, typename... Args>
 		static int push(lua_State* L, Arg&& arg, Args&&... args) {
-			if constexpr (std::is_same_v<meta::unqualified_t<Arg>, detail::with_function_tag>) {
+			if constexpr (eastl::is_same_v<meta::unqualified_t<Arg>, detail::with_function_tag>) {
 				(void)arg;
-				return push_fx(L, std::forward<Args>(args)...);
+				return push_fx(L, eastl::forward<Args>(args)...);
 			}
 			else {
-				return push_keyed(L, usertype_traits<U*>::metatable(), std::forward<Arg>(arg), std::forward<Args>(args)...);
+				return push_keyed(L, usertype_traits<U*>::metatable(), eastl::forward<Arg>(arg), eastl::forward<Args>(args)...);
 			}
 		}
 	};
@@ -243,14 +245,14 @@ namespace sol { namespace stack {
 
 			template <typename Arg, typename... Args>
 			static int push(lua_State* L, Arg&& arg, Args&&... args) {
-				if constexpr (std::is_base_of_v<actual, meta::unqualified_t<Arg>>) {
+				if constexpr (eastl::is_base_of_v<actual, meta::unqualified_t<Arg>>) {
 					if (detail::unique_is_null(L, arg)) {
 						return stack::push(L, lua_nil);
 					}
-					return push_deep(L, std::forward<Arg>(arg), std::forward<Args>(args)...);
+					return push_deep(L, eastl::forward<Arg>(arg), eastl::forward<Args>(args)...);
 				}
 				else {
-					return push_deep(L, std::forward<Arg>(arg), std::forward<Args>(args)...);
+					return push_deep(L, eastl::forward<Arg>(arg), eastl::forward<Args>(args)...);
 				}
 			}
 
@@ -263,7 +265,7 @@ namespace sol { namespace stack {
 				detail::unique_destructor* fx = nullptr;
 				detail::unique_tag* id = nullptr;
 				actual* typed_memory = detail::usertype_unique_allocate<element, actual>(L, pointer_to_memory, fx, id);
-				if (luaL_newmetatable(L, &usertype_traits<d::u<std::remove_cv_t<element>>>::metatable()[0]) == 1) {
+				if (luaL_newmetatable(L, &usertype_traits<d::u<eastl::remove_cv_t<element>>>::metatable()[0]) == 1) {
 					detail::lua_reg_table registration_table {};
 					int index = 0;
 					detail::indexed_insert insert_callable(registration_table, index);
@@ -274,7 +276,7 @@ namespace sol { namespace stack {
 				lua_setmetatable(L, -2);
 				*fx = detail::usertype_unique_alloc_destroy<element, actual>;
 				*id = &detail::inheritance<element>::template type_unique_cast<actual>;
-				detail::default_construct::construct(typed_memory, std::forward<Args>(args)...);
+				detail::default_construct::construct(typed_memory, eastl::forward<Args>(args)...);
 				*pointer_to_memory = detail::unique_get<T>(L, *typed_memory);
 				return 1;
 			}
@@ -287,7 +289,7 @@ namespace sol { namespace stack {
 		static int push(lua_State* L, Args&&... args) {
 			stack_detail::uu_pusher<T> p;
 			(void)p;
-			return p.push(L, std::forward<Args>(args)...);
+			return p.push(L, eastl::forward<Args>(args)...);
 		}
 	};
 
@@ -298,18 +300,18 @@ namespace sol { namespace stack {
 			using Tu = meta::unqualified_t<T>;
 			if constexpr (is_lua_reference_v<Tu>) {
 				using int_arr = int[];
-				int_arr p { (std::forward<Args>(args).push(L))... };
+				int_arr p { (eastl::forward<Args>(args).push(L))... };
 				return p[0];
 			}
-			else if constexpr (std::is_same_v<Tu, bool>) {
+			else if constexpr (eastl::is_same_v<Tu, bool>) {
 #if SOL_IS_ON(SOL_SAFE_STACK_CHECK)
 				luaL_checkstack(L, 1, detail::not_enough_stack_space_generic);
 #endif // make sure stack doesn't overflow
-				lua_pushboolean(L, std::forward<Args>(args)...);
+				lua_pushboolean(L, eastl::forward<Args>(args)...);
 				return 1;
 			}
-			else if constexpr (std::is_integral_v<Tu> || std::is_same_v<Tu, lua_Integer>) {
-				const Tu& value(std::forward<Args>(args)...);
+			else if constexpr (eastl::is_integral_v<Tu> || eastl::is_same_v<Tu, lua_Integer>) {
+				const Tu& value(eastl::forward<Args>(args)...);
 #if SOL_IS_ON(SOL_SAFE_STACK_CHECK)
 				luaL_checkstack(L, 1, detail::not_enough_stack_space_integral);
 #endif // make sure stack doesn't overflow
@@ -334,15 +336,15 @@ namespace sol { namespace stack {
 				lua_pushnumber(L, static_cast<lua_Number>(value));
 				return 1;
 			}
-			else if constexpr (std::is_floating_point_v<Tu> || std::is_same_v<Tu, lua_Number>) {
+			else if constexpr (eastl::is_floating_point_v<Tu> || eastl::is_same_v<Tu, lua_Number>) {
 #if SOL_IS_ON(SOL_SAFE_STACK_CHECK)
 				luaL_checkstack(L, 1, detail::not_enough_stack_space_floating);
 #endif // make sure stack doesn't overflow
-				lua_pushnumber(L, std::forward<Args>(args)...);
+				lua_pushnumber(L, eastl::forward<Args>(args)...);
 				return 1;
 			}
-			else if constexpr (std::is_same_v<Tu, luaL_Stream*>) {
-				luaL_Stream* source { std::forward<Args>(args)... };
+			else if constexpr (eastl::is_same_v<Tu, luaL_Stream*>) {
+				luaL_Stream* source { eastl::forward<Args>(args)... };
 				luaL_Stream* stream = static_cast<luaL_Stream*>(detail::alloc_newuserdata(L, sizeof(luaL_Stream)));
 				stream->f = source->f;
 #if SOL_IS_ON(SOL_LUAL_STREAM_USE_CLOSE_FUNCTION)
@@ -350,8 +352,8 @@ namespace sol { namespace stack {
 #endif // LuaJIT and Lua 5.1 and below do not have
 				return 1;
 			}
-			else if constexpr (std::is_same_v<Tu, luaL_Stream>) {
-				luaL_Stream& source(std::forward<Args>(args)...);
+			else if constexpr (eastl::is_same_v<Tu, luaL_Stream>) {
+				luaL_Stream& source(eastl::forward<Args>(args)...);
 				luaL_Stream* stream = static_cast<luaL_Stream*>(detail::alloc_newuserdata(L, sizeof(luaL_Stream)));
 				stream->f = source.f;
 #if SOL_IS_ON(SOL_LUAL_STREAM_USE_CLOSE_FUNCTION)
@@ -359,50 +361,50 @@ namespace sol { namespace stack {
 #endif // LuaJIT and Lua 5.1 and below do not have
 				return 1;
 			}
-			else if constexpr (std::is_enum_v<Tu>) {
-				return stack_detail::msvc_is_ass_with_if_constexpr_push_enum(std::true_type(), L, std::forward<Args>(args)...);
+			else if constexpr (eastl::is_enum_v<Tu>) {
+				return stack_detail::msvc_is_ass_with_if_constexpr_push_enum(eastl::true_type(), L, eastl::forward<Args>(args)...);
 			}
-			else if constexpr (std::is_pointer_v<Tu>) {
-				return stack::push<detail::as_pointer_tag<std::remove_pointer_t<T>>>(L, std::forward<Args>(args)...);
+			else if constexpr (eastl::is_pointer_v<Tu>) {
+				return stack::push<detail::as_pointer_tag<eastl::remove_pointer_t<T>>>(L, eastl::forward<Args>(args)...);
 			}
 			else if constexpr (is_unique_usertype_v<Tu>) {
-				return stack::push<detail::as_unique_tag<T>>(L, std::forward<Args>(args)...);
+				return stack::push<detail::as_unique_tag<T>>(L, eastl::forward<Args>(args)...);
 			}
 			else {
-				return stack::push<detail::as_value_tag<T>>(L, std::forward<Args>(args)...);
+				return stack::push<detail::as_value_tag<T>>(L, eastl::forward<Args>(args)...);
 			}
 		}
 	};
 
 	template <typename T>
-	struct unqualified_pusher<std::reference_wrapper<T>> {
-		static int push(lua_State* L, const std::reference_wrapper<T>& t) {
-			return stack::push(L, std::addressof(detail::deref(t.get())));
+	struct unqualified_pusher<eastl::reference_wrapper<T>> {
+		static int push(lua_State* L, const eastl::reference_wrapper<T>& t) {
+			return stack::push(L, eastl::addressof(detail::deref(t.get())));
 		}
 	};
 
 	template <typename T>
 	struct unqualified_pusher<detail::as_table_tag<T>> {
-		using has_kvp = meta::has_key_value_pair<meta::unqualified_t<std::remove_pointer_t<T>>>;
+		using has_kvp = meta::has_key_value_pair<meta::unqualified_t<eastl::remove_pointer_t<T>>>;
 
 		static int push(lua_State* L, const T& tablecont) {
-			return push(has_kvp(), std::false_type(), L, tablecont);
+			return push(has_kvp(), eastl::false_type(), L, tablecont);
 		}
 
 		static int push(lua_State* L, const T& tablecont, nested_tag_t) {
-			return push(has_kvp(), std::true_type(), L, tablecont);
+			return push(has_kvp(), eastl::true_type(), L, tablecont);
 		}
 
-		static int push(std::true_type, lua_State* L, const T& tablecont) {
-			return push(has_kvp(), std::true_type(), L, tablecont);
+		static int push(eastl::true_type, lua_State* L, const T& tablecont) {
+			return push(has_kvp(), eastl::true_type(), L, tablecont);
 		}
 
-		static int push(std::false_type, lua_State* L, const T& tablecont) {
-			return push(has_kvp(), std::false_type(), L, tablecont);
+		static int push(eastl::false_type, lua_State* L, const T& tablecont) {
+			return push(has_kvp(), eastl::false_type(), L, tablecont);
 		}
 
 		template <bool is_nested>
-		static int push(std::true_type, std::integral_constant<bool, is_nested>, lua_State* L, const T& tablecont) {
+		static int push(eastl::true_type, eastl::integral_constant<bool, is_nested>, lua_State* L, const T& tablecont) {
 			auto& cont = detail::deref(detail::unwrap(tablecont));
 			lua_createtable(L, static_cast<int>(cont.size()), 0);
 			int tableindex = lua_gettop(L);
@@ -418,11 +420,11 @@ namespace sol { namespace stack {
 		}
 
 		template <bool is_nested>
-		static int push(std::false_type, std::integral_constant<bool, is_nested>, lua_State* L, const T& tablecont) {
+		static int push(eastl::false_type, eastl::integral_constant<bool, is_nested>, lua_State* L, const T& tablecont) {
 			auto& cont = detail::deref(detail::unwrap(tablecont));
 			lua_createtable(L, stack_detail::get_size_hint(cont), 0);
 			int tableindex = lua_gettop(L);
-			std::size_t index = 1;
+			eastl::size_t index = 1;
 			for (const auto& i : cont) {
 #if SOL_LUA_VERSION_I_ >= 503
 				int p = is_nested ? stack::push(L, as_nested_ref(i)) : stack::push(L, i);
@@ -464,7 +466,7 @@ namespace sol { namespace stack {
 	template <typename T>
 	struct unqualified_pusher<as_table_t<T>> {
 		static int push(lua_State* L, const as_table_t<T>& value_) {
-			using inner_t = std::remove_pointer_t<meta::unwrap_unqualified_t<T>>;
+			using inner_t = eastl::remove_pointer_t<meta::unwrap_unqualified_t<T>>;
 			if constexpr (is_container_v<inner_t>) {
 				return stack::push<detail::as_table_tag<T>>(L, value_.value());
 			}
@@ -474,7 +476,7 @@ namespace sol { namespace stack {
 		}
 
 		static int push(lua_State* L, const T& value_) {
-			using inner_t = std::remove_pointer_t<meta::unwrap_unqualified_t<T>>;
+			using inner_t = eastl::remove_pointer_t<meta::unwrap_unqualified_t<T>>;
 			if constexpr (is_container_v<inner_t>) {
 				return stack::push<detail::as_table_tag<T>>(L, value_);
 			}
@@ -488,7 +490,7 @@ namespace sol { namespace stack {
 	struct unqualified_pusher<nested<T>> {
 		static int push(lua_State* L, const T& nested_value) noexcept {
 			using Tu = meta::unwrap_unqualified_t<T>;
-			using inner_t = std::remove_pointer_t<Tu>;
+			using inner_t = eastl::remove_pointer_t<Tu>;
 			if constexpr (is_container_v<inner_t>) {
 				return stack::push<detail::as_table_tag<T>>(L, nested_value, nested_tag);
 			}
@@ -499,7 +501,7 @@ namespace sol { namespace stack {
 
 		static int push(lua_State* L, const nested<T>& nested_wrapper_) noexcept {
 			using Tu = meta::unwrap_unqualified_t<T>;
-			using inner_t = std::remove_pointer_t<Tu>;
+			using inner_t = eastl::remove_pointer_t<Tu>;
 			if constexpr (is_container_v<inner_t>) {
 				return stack::push<detail::as_table_tag<T>>(L, nested_wrapper_.value(), nested_tag);
 			}
@@ -547,7 +549,7 @@ namespace sol { namespace stack {
 	};
 
 	template <>
-	struct unqualified_pusher<std::remove_pointer_t<lua_CFunction>> {
+	struct unqualified_pusher<eastl::remove_pointer_t<lua_CFunction>> {
 		static int push(lua_State* L, lua_CFunction func, int n = 0) noexcept {
 #if SOL_IS_ON(SOL_SAFE_STACK_CHECK)
 			luaL_checkstack(L, 1, detail::not_enough_stack_space_generic);
@@ -570,7 +572,7 @@ namespace sol { namespace stack {
 
 #if SOL_IS_ON(SOL_USE_NOEXCEPT_FUNCTION_TYPE)
 	template <>
-	struct unqualified_pusher<std::remove_pointer_t<detail::lua_CFunction_noexcept>> {
+	struct unqualified_pusher<eastl::remove_pointer_t<detail::lua_CFunction_noexcept>> {
 		static int push(lua_State* L, detail::lua_CFunction_noexcept func, int n = 0) {
 #if SOL_IS_ON(SOL_SAFE_STACK_CHECK)
 			luaL_checkstack(L, 1, detail::not_enough_stack_space_generic);
@@ -605,16 +607,16 @@ namespace sol { namespace stack {
 
 	template <typename Arg, typename... Args>
 	struct unqualified_pusher<closure<Arg, Args...>> {
-		template <std::size_t... I, typename T>
-		static int push(std::index_sequence<I...>, lua_State* L, T&& c) {
-			using f_tuple = decltype(std::forward<T>(c).upvalues);
-			int pushcount = multi_push(L, std::get<I>(std::forward<f_tuple>(std::forward<T>(c).upvalues))...);
+		template <eastl::size_t... I, typename T>
+		static int push(eastl::index_sequence<I...>, lua_State* L, T&& c) {
+			using f_tuple = decltype(eastl::forward<T>(c).upvalues);
+			int pushcount = multi_push(L, eastl::get<I>(eastl::forward<f_tuple>(eastl::forward<T>(c).upvalues))...);
 			return stack::push(L, c_closure(c.c_function, pushcount));
 		}
 
 		template <typename T>
 		static int push(lua_State* L, T&& c) {
-			return push(std::make_index_sequence<1 + sizeof...(Args)>(), L, std::forward<T>(c));
+			return push(eastl::make_index_sequence<1 + sizeof...(Args)>(), L, eastl::forward<T>(c));
 		}
 	};
 
@@ -683,25 +685,27 @@ namespace sol { namespace stack {
 				}
 				lua_setmetatable(L, -2);
 			}
-			std::allocator<T> alloc {};
-			std::allocator_traits<std::allocator<T>>::construct(alloc, data, std::forward<Args>(args)...);
+			//BUGBUGBUG: ...
+			eastl::allocator alloc {};
+			alloc.allocate(data);
+			*data = T(eastl::forward<Args>(args)...);
 			return 1;
 		}
 
 		template <typename Arg, typename... Args>
 		static int push(lua_State* L, Arg&& arg, Args&&... args) {
-			if constexpr (std::is_same_v<meta::unqualified_t<Arg>, metatable_key_t>) {
+			if constexpr (eastl::is_same_v<meta::unqualified_t<Arg>, metatable_key_t>) {
 				const auto name = &arg[0];
-				return push_with<true>(L, name, std::forward<Args>(args)...);
+				return push_with<true>(L, name, eastl::forward<Args>(args)...);
 			}
-			else if constexpr (std::is_same_v<meta::unqualified_t<Arg>, no_metatable_t>) {
+			else if constexpr (eastl::is_same_v<meta::unqualified_t<Arg>, no_metatable_t>) {
 				(void)arg;
 				const auto name = &usertype_traits<meta::unqualified_t<T>>::user_gc_metatable()[0];
-				return push_with<false>(L, name, std::forward<Args>(args)...);
+				return push_with<false>(L, name, eastl::forward<Args>(args)...);
 			}
 			else {
 				const auto name = &usertype_traits<meta::unqualified_t<T>>::user_gc_metatable()[0];
-				return push_with(L, name, std::forward<Arg>(arg), std::forward<Args>(args)...);
+				return push_with(L, name, eastl::forward<Arg>(arg), eastl::forward<Args>(args)...);
 			}
 		}
 
@@ -712,7 +716,7 @@ namespace sol { namespace stack {
 
 		static int push(lua_State* L, user<T>&& u) {
 			const auto name = &usertype_traits<meta::unqualified_t<T>>::user_gc_metatable()[0];
-			return push_with(L, name, std::move(u.value()));
+			return push_with(L, name, eastl::move(u.value()));
 		}
 
 		static int push(lua_State* L, no_metatable_t, const user<T>& u) {
@@ -722,7 +726,7 @@ namespace sol { namespace stack {
 
 		static int push(lua_State* L, no_metatable_t, user<T>&& u) {
 			const auto name = &usertype_traits<meta::unqualified_t<T>>::user_gc_metatable()[0];
-			return push_with<false>(L, name, std::move(u.value()));
+			return push_with<false>(L, name, eastl::move(u.value()));
 		}
 	};
 
@@ -740,7 +744,7 @@ namespace sol { namespace stack {
 
 	template <>
 	struct unqualified_pusher<const char*> {
-		static int push_sized(lua_State* L, const char* str, std::size_t len) {
+		static int push_sized(lua_State* L, const char* str, eastl::size_t len) {
 #if SOL_IS_ON(SOL_SAFE_STACK_CHECK)
 			luaL_checkstack(L, 1, detail::not_enough_stack_space_string);
 #endif // make sure stack doesn't overflow
@@ -751,21 +755,22 @@ namespace sol { namespace stack {
 		static int push(lua_State* L, const char* str) {
 			if (str == nullptr)
 				return stack::push(L, lua_nil);
-			return push_sized(L, str, std::char_traits<char>::length(str));
+			//TODO: it was std::char_traits<char>::length
+			return push_sized(L, str, eastl::CharStrlen(str));
 		}
 
 		static int push(lua_State* L, const char* strb, const char* stre) {
-			return push_sized(L, strb, static_cast<std::size_t>(stre - strb));
+			return push_sized(L, strb, static_cast<eastl::size_t>(stre - strb));
 		}
 
-		static int push(lua_State* L, const char* str, std::size_t len) {
+		static int push(lua_State* L, const char* str, eastl::size_t len) {
 			return push_sized(L, str, len);
 		}
 	};
 
 	template <>
 	struct unqualified_pusher<char*> {
-		static int push_sized(lua_State* L, const char* str, std::size_t len) {
+		static int push_sized(lua_State* L, const char* str, eastl::size_t len) {
 			unqualified_pusher<const char*> p {};
 			(void)p;
 			return p.push_sized(L, str, len);
@@ -783,7 +788,7 @@ namespace sol { namespace stack {
 			return p.push(L, strb, stre);
 		}
 
-		static int push(lua_State* L, const char* str, std::size_t len) {
+		static int push(lua_State* L, const char* str, eastl::size_t len) {
 			unqualified_pusher<const char*> p {};
 			(void)p;
 			return p.push(L, str, len);
@@ -796,11 +801,13 @@ namespace sol { namespace stack {
 #if SOL_IS_ON(SOL_SAFE_STACK_CHECK)
 			luaL_checkstack(L, 1, detail::not_enough_stack_space_string);
 #endif // make sure stack doesn't overflow
-			lua_pushlstring(L, str, std::char_traits<char>::length(str));
+
+			//TODO:lua_pushlstring(L, str, std::char_traits<char>::length(str));
+			lua_pushlstring(L, str, eastl::CharStrlen(str));
 			return 1;
 		}
 
-		static int push(lua_State* L, const char (&str)[N], std::size_t sz) {
+		static int push(lua_State* L, const char (&str)[N], eastl::size_t sz) {
 #if SOL_IS_ON(SOL_SAFE_STACK_CHECK)
 			luaL_checkstack(L, 1, detail::not_enough_stack_space_string);
 #endif // make sure stack doesn't overflow
@@ -820,7 +827,7 @@ namespace sol { namespace stack {
 #if SOL_IS_ON(SOL_CHAR8_T)
 	template <>
 	struct unqualified_pusher<const char8_t*> {
-		static int push_sized(lua_State* L, const char8_t* str, std::size_t len) {
+		static int push_sized(lua_State* L, const char8_t* str, eastl::size_t len) {
 #if SOL_IS_ON(SOL_SAFE_STACK_CHECK)
 			luaL_checkstack(L, 1, detail::not_enough_stack_space_string);
 #endif // make sure stack doesn't overflow
@@ -831,21 +838,22 @@ namespace sol { namespace stack {
 		static int push(lua_State* L, const char8_t* str) {
 			if (str == nullptr)
 				return stack::push(L, lua_nil);
-			return push_sized(L, str, std::char_traits<char>::length(reinterpret_cast<const char*>(str)));
+			//TODO:return push_sized(L, str, std::char_traits<char>::length(reinterpret_cast<const char*>(str)));
+			return push_sized(L, str, eastl::CharStrlen(reinterpret_cast<const char*>(str)));
 		}
 
 		static int push(lua_State* L, const char8_t* strb, const char8_t* stre) {
-			return push_sized(L, strb, static_cast<std::size_t>(stre - strb));
+			return push_sized(L, strb, static_cast<eastl::size_t>(stre - strb));
 		}
 
-		static int push(lua_State* L, const char8_t* str, std::size_t len) {
+		static int push(lua_State* L, const char8_t* str, eastl::size_t len) {
 			return push_sized(L, str, len);
 		}
 	};
 
 	template <>
 	struct unqualified_pusher<char8_t*> {
-		static int push_sized(lua_State* L, const char8_t* str, std::size_t len) {
+		static int push_sized(lua_State* L, const char8_t* str, eastl::size_t len) {
 			unqualified_pusher<const char8_t*> p {};
 			(void)p;
 			return p.push_sized(L, str, len);
@@ -863,7 +871,7 @@ namespace sol { namespace stack {
 			return p.push(L, strb, stre);
 		}
 
-		static int push(lua_State* L, const char8_t* str, std::size_t len) {
+		static int push(lua_State* L, const char8_t* str, eastl::size_t len) {
 			unqualified_pusher<const char8_t*> p {};
 			(void)p;
 			return p.push(L, str, len);
@@ -877,11 +885,12 @@ namespace sol { namespace stack {
 			luaL_checkstack(L, 1, detail::not_enough_stack_space_string);
 #endif // make sure stack doesn't overflow
 			const char* str_as_char = reinterpret_cast<const char*>(static_cast<const char8_t*>(str));
-			lua_pushlstring(L, str_as_char, std::char_traits<char>::length(str_as_char));
+			//lua_pushlstring(L, str_as_char, std::char_traits<char>::length(str_as_char));
+			lua_pushlstring(L, str_as_char, eastl::CharStrlen(str_as_char));
 			return 1;
 		}
 
-		static int push(lua_State* L, const char8_t (&str)[N], std::size_t sz) {
+		static int push(lua_State* L, const char8_t (&str)[N], eastl::size_t sz) {
 #if SOL_IS_ON(SOL_SAFE_STACK_CHECK)
 			luaL_checkstack(L, 1, detail::not_enough_stack_space_string);
 #endif // make sure stack doesn't overflow
@@ -900,10 +909,10 @@ namespace sol { namespace stack {
 #endif // char8_t
 
 
-	template <typename Ch, typename Traits, typename Al>
-	struct unqualified_pusher<std::basic_string<Ch, Traits, Al>> {
-		static int push(lua_State* L, const std::basic_string<Ch, Traits, Al>& str) {
-			if constexpr (!std::is_same_v<Ch, char>) {
+	template <typename Ch, typename Al>
+	struct unqualified_pusher<eastl::basic_string<Ch, Al>> {
+		static int push(lua_State* L, const eastl::basic_string<Ch, Al>& str) {
+			if constexpr (!eastl::is_same_v<Ch, char>) {
 				return stack::push(L, str.data(), str.size());
 			}
 			else {
@@ -915,8 +924,8 @@ namespace sol { namespace stack {
 			}
 		}
 
-		static int push(lua_State* L, const std::basic_string<Ch, Traits, Al>& str, std::size_t sz) {
-			if constexpr (!std::is_same_v<Ch, char>) {
+		static int push(lua_State* L, const eastl::basic_string<Ch, Al>& str, eastl::size_t sz) {
+			if constexpr (!eastl::is_same_v<Ch, char>) {
 				return stack::push(L, str.data(), sz);
 			}
 			else {
@@ -929,13 +938,13 @@ namespace sol { namespace stack {
 		}
 	};
 
-	template <typename Ch, typename Traits>
-	struct unqualified_pusher<basic_string_view<Ch, Traits>> {
-		static int push(lua_State* L, const basic_string_view<Ch, Traits>& sv) {
+	template <typename Ch>
+	struct unqualified_pusher<basic_string_view<Ch>> {
+		static int push(lua_State* L, const basic_string_view<Ch>& sv) {
 			return stack::push(L, sv.data(), sv.length());
 		}
 
-		static int push(lua_State* L, const basic_string_view<Ch, Traits>& sv, std::size_t n) {
+		static int push(lua_State* L, const basic_string_view<Ch>& sv, eastl::size_t n) {
 			return stack::push(L, sv.data(), n);
 		}
 	};
@@ -946,7 +955,7 @@ namespace sol { namespace stack {
 #if SOL_IS_ON(SOL_SAFE_STACK_CHECK)
 			luaL_checkstack(L, 1, detail::not_enough_stack_space_meta_function_name);
 #endif // make sure stack doesn't overflow
-			const std::string& str = to_string(m);
+			const eastl::string& str = to_string(m);
 			lua_pushlstring(L, str.c_str(), str.size());
 			return 1;
 		}
@@ -988,10 +997,11 @@ namespace sol { namespace stack {
 	template <>
 	struct unqualified_pusher<const wchar_t*> {
 		static int push(lua_State* L, const wchar_t* wstr) {
-			return push(L, wstr, std::char_traits<wchar_t>::length(wstr));
+			//TODO: WCSLEN NOT SURE PORTABLE return push(L, wstr, std::char_traits<wchar_t>::length(wstr));
+			return push(L, wstr, eastl::CharStrlen(wstr));
 		}
 
-		static int push(lua_State* L, const wchar_t* wstr, std::size_t sz) {
+		static int push(lua_State* L, const wchar_t* wstr, eastl::size_t sz) {
 			return push(L, wstr, wstr + sz);
 		}
 
@@ -1023,7 +1033,7 @@ namespace sol { namespace stack {
 			return p.push(L, strb, stre);
 		}
 
-		static int push(lua_State* L, const wchar_t* str, std::size_t len) {
+		static int push(lua_State* L, const wchar_t* str, eastl::size_t len) {
 			unqualified_pusher<const wchar_t*> p {};
 			(void)p;
 			return p.push(L, str, len);
@@ -1032,7 +1042,7 @@ namespace sol { namespace stack {
 
 	template <>
 	struct unqualified_pusher<const char16_t*> {
-		static int convert_into(lua_State* L, char* start, std::size_t, const char16_t* strb, const char16_t* stre) {
+		static int convert_into(lua_State* L, char* start, eastl::size_t, const char16_t* strb, const char16_t* stre) {
 			char* target = start;
 			char32_t cp = 0;
 			for (const char16_t* strtarget = strb; strtarget < stre;) {
@@ -1054,10 +1064,11 @@ namespace sol { namespace stack {
 		}
 
 		static int push(lua_State* L, const char16_t* u16str) {
-			return push(L, u16str, std::char_traits<char16_t>::length(u16str));
+			//return push(L, u16str, std::char_traits<char16_t>::length(u16str));
+			return push(L, u16str, eastl::CharStrlen(u16str));
 		}
 
-		static int push(lua_State* L, const char16_t* u16str, std::size_t sz) {
+		static int push(lua_State* L, const char16_t* u16str, eastl::size_t sz) {
 			return push(L, u16str, u16str + sz);
 		}
 
@@ -1065,12 +1076,12 @@ namespace sol { namespace stack {
 			char sbo[SOL_OPTIMIZATION_STRING_CONVERSION_STACK_SIZE_I_];
 			// if our max string space is small enough, use SBO
 			// right off the bat
-			std::size_t max_possible_code_units = static_cast<std::size_t>(static_cast<std::size_t>(stre - strb) * static_cast<std::size_t>(4));
+			eastl::size_t max_possible_code_units = static_cast<eastl::size_t>(static_cast<eastl::size_t>(stre - strb) * static_cast<eastl::size_t>(4));
 			if (max_possible_code_units <= SOL_OPTIMIZATION_STRING_CONVERSION_STACK_SIZE_I_) {
 				return convert_into(L, sbo, max_possible_code_units, strb, stre);
 			}
 			// otherwise, we must manually count/check size
-			std::size_t needed_size = 0;
+			eastl::size_t needed_size = 0;
 			for (const char16_t* strtarget = strb; strtarget < stre;) {
 				auto dr = unicode::utf16_to_code_point(strtarget, stre);
 				auto er = unicode::code_point_to_utf8(dr.codepoint);
@@ -1080,7 +1091,7 @@ namespace sol { namespace stack {
 			if (needed_size < SOL_OPTIMIZATION_STRING_CONVERSION_STACK_SIZE_I_) {
 				return convert_into(L, sbo, needed_size, strb, stre);
 			}
-			std::string u8str("", 0);
+			eastl::string u8str{};
 			u8str.resize(needed_size);
 			char* target = const_cast<char*>(u8str.data());
 			return convert_into(L, target, needed_size, strb, stre);
@@ -1101,7 +1112,7 @@ namespace sol { namespace stack {
 			return p.push(L, strb, stre);
 		}
 
-		static int push(lua_State* L, const char16_t* str, std::size_t len) {
+		static int push(lua_State* L, const char16_t* str, eastl::size_t len) {
 			unqualified_pusher<const char16_t*> p {};
 			(void)p;
 			return p.push(L, str, len);
@@ -1110,7 +1121,7 @@ namespace sol { namespace stack {
 
 	template <>
 	struct unqualified_pusher<const char32_t*> {
-		static int convert_into(lua_State* L, char* start, std::size_t, const char32_t* strb, const char32_t* stre) {
+		static int convert_into(lua_State* L, char* start, eastl::size_t, const char32_t* strb, const char32_t* stre) {
 			char* target = start;
 			char32_t cp = 0;
 			for (const char32_t* strtarget = strb; strtarget < stre;) {
@@ -1131,10 +1142,10 @@ namespace sol { namespace stack {
 		}
 
 		static int push(lua_State* L, const char32_t* u32str) {
-			return push(L, u32str, u32str + std::char_traits<char32_t>::length(u32str));
+			return push(L, u32str, u32str + eastl::CharStrlen(u32str));
 		}
 
-		static int push(lua_State* L, const char32_t* u32str, std::size_t sz) {
+		static int push(lua_State* L, const char32_t* u32str, eastl::size_t sz) {
 			return push(L, u32str, u32str + sz);
 		}
 
@@ -1142,12 +1153,12 @@ namespace sol { namespace stack {
 			char sbo[SOL_OPTIMIZATION_STRING_CONVERSION_STACK_SIZE_I_];
 			// if our max string space is small enough, use SBO
 			// right off the bat
-			std::size_t max_possible_code_units = static_cast<std::size_t>(static_cast<std::size_t>(stre - strb) * static_cast<std::size_t>(4));
+			eastl::size_t max_possible_code_units = static_cast<eastl::size_t>(static_cast<eastl::size_t>(stre - strb) * static_cast<eastl::size_t>(4));
 			if (max_possible_code_units <= SOL_OPTIMIZATION_STRING_CONVERSION_STACK_SIZE_I_) {
 				return convert_into(L, sbo, max_possible_code_units, strb, stre);
 			}
 			// otherwise, we must manually count/check size
-			std::size_t needed_size = 0;
+			eastl::size_t needed_size = 0;
 			for (const char32_t* strtarget = strb; strtarget < stre;) {
 				auto dr = unicode::utf32_to_code_point(strtarget, stre);
 				auto er = unicode::code_point_to_utf8(dr.codepoint);
@@ -1157,7 +1168,7 @@ namespace sol { namespace stack {
 			if (needed_size < SOL_OPTIMIZATION_STRING_CONVERSION_STACK_SIZE_I_) {
 				return convert_into(L, sbo, needed_size, strb, stre);
 			}
-			std::string u8str("", 0);
+			eastl::string u8str{};
 			u8str.resize(needed_size);
 			char* target = const_cast<char*>(u8str.data());
 			return convert_into(L, target, needed_size, strb, stre);
@@ -1178,7 +1189,7 @@ namespace sol { namespace stack {
 			return p.push(L, strb, stre);
 		}
 
-		static int push(lua_State* L, const char32_t* str, std::size_t len) {
+		static int push(lua_State* L, const char32_t* str, eastl::size_t len) {
 			unqualified_pusher<const char32_t*> p {};
 			(void)p;
 			return p.push(L, str, len);
@@ -1188,10 +1199,10 @@ namespace sol { namespace stack {
 	template <size_t N>
 	struct unqualified_pusher<wchar_t[N]> {
 		static int push(lua_State* L, const wchar_t (&str)[N]) {
-			return push(L, str, std::char_traits<wchar_t>::length(str));
+			return push(L, str, eastl::CharStrlen(str));
 		}
 
-		static int push(lua_State* L, const wchar_t (&str)[N], std::size_t sz) {
+		static int push(lua_State* L, const wchar_t (&str)[N], eastl::size_t sz) {
 			const wchar_t* str_ptr = static_cast<const wchar_t*>(str);
 			return stack::push<const wchar_t*>(L, str_ptr, str_ptr + sz);
 		}
@@ -1200,10 +1211,10 @@ namespace sol { namespace stack {
 	template <size_t N>
 	struct unqualified_pusher<char16_t[N]> {
 		static int push(lua_State* L, const char16_t (&str)[N]) {
-			return push(L, str, std::char_traits<char16_t>::length(str));
+			return push(L, str, eastl::CharStrlen(str));
 		}
 
-		static int push(lua_State* L, const char16_t (&str)[N], std::size_t sz) {
+		static int push(lua_State* L, const char16_t (&str)[N], eastl::size_t sz) {
 			const char16_t* str_ptr = static_cast<const char16_t*>(str);
 			return stack::push<const char16_t*>(L, str_ptr, str_ptr + sz);
 		}
@@ -1212,10 +1223,10 @@ namespace sol { namespace stack {
 	template <size_t N>
 	struct unqualified_pusher<char32_t[N]> {
 		static int push(lua_State* L, const char32_t (&str)[N]) {
-			return push(L, str, std::char_traits<char32_t>::length(str));
+			return push(L, str, eastl::CharStrlen(str));
 		}
 
-		static int push(lua_State* L, const char32_t (&str)[N], std::size_t sz) {
+		static int push(lua_State* L, const char32_t (&str)[N], eastl::size_t sz) {
 			const char32_t* str_ptr = static_cast<const char32_t*>(str);
 			return stack::push<const char32_t*>(L, str_ptr, str_ptr + sz);
 		}
@@ -1246,40 +1257,40 @@ namespace sol { namespace stack {
 	};
 
 	template <typename... Args>
-	struct unqualified_pusher<std::tuple<Args...>> {
-		template <std::size_t... I, typename T>
-		static int push(std::index_sequence<I...>, lua_State* L, T&& t) {
+	struct unqualified_pusher<eastl::tuple<Args...>> {
+		template <eastl::size_t... I, typename T>
+		static int push(eastl::index_sequence<I...>, lua_State* L, T&& t) {
 #if SOL_IS_ON(SOL_SAFE_STACK_CHECK)
 			luaL_checkstack(L, static_cast<int>(sizeof...(I)), detail::not_enough_stack_space_generic);
 #endif // make sure stack doesn't overflow
 			int pushcount = 0;
-			(void)detail::swallow { 0, (pushcount += stack::push(L, std::get<I>(std::forward<T>(t))), 0)... };
+			(void)detail::swallow { 0, (pushcount += stack::push(L, eastl::get<I>(eastl::forward<T>(t))), 0)... };
 			return pushcount;
 		}
 
 		template <typename T>
 		static int push(lua_State* L, T&& t) {
-			return push(std::index_sequence_for<Args...>(), L, std::forward<T>(t));
+			return push(eastl::index_sequence_for<Args...>(), L, eastl::forward<T>(t));
 		}
 	};
 
 	template <typename A, typename B>
-	struct unqualified_pusher<std::pair<A, B>> {
+	struct unqualified_pusher<eastl::pair<A, B>> {
 		template <typename T>
 		static int push(lua_State* L, T&& t) {
-			int pushcount = stack::push(L, std::get<0>(std::forward<T>(t)));
-			pushcount += stack::push(L, std::get<1>(std::forward<T>(t)));
+			int pushcount = stack::push(L, eastl::get<0>(eastl::forward<T>(t)));
+			pushcount += stack::push(L, eastl::get<1>(eastl::forward<T>(t)));
 			return pushcount;
 		}
 	};
 
 	template <typename T>
-	struct unqualified_pusher<T, std::enable_if_t<meta::is_optional_v<T>>> {
+	struct unqualified_pusher<T, eastl::enable_if_t<meta::is_optional_v<T>>> {
 		using ValueType = typename meta::unqualified_t<T>::value_type;
 
 		template <typename Optional>
 		static int push(lua_State* L, Optional&& op) {
-			using QualifiedValueType = meta::conditional_t<std::is_lvalue_reference_v<Optional>, ValueType&, ValueType&&>;
+			using QualifiedValueType = meta::conditional_t<eastl::is_lvalue_reference_v<Optional>, ValueType&, ValueType&&>;
 			if (!op) {
 				return stack::push(L, nullopt);
 			}
@@ -1294,13 +1305,13 @@ namespace sol { namespace stack {
 		}
 
 		static int push(lua_State* L, forward_as_value_t<T>&& value_) {
-			return stack::push<T>(L, std::move(value_).value());
+			return stack::push<T>(L, eastl::move(value_).value());
 		}
 	};
 
 	template <>
-	struct unqualified_pusher<nullopt_t> {
-		static int push(lua_State* L, nullopt_t) noexcept {
+	struct unqualified_pusher<eastl::nullopt_t> {
+		static int push(lua_State* L, eastl::nullopt_t) noexcept {
 			return stack::push(L, lua_nil);
 		}
 	};
@@ -1343,13 +1354,13 @@ namespace sol { namespace stack {
 			// pushes either the function, or an error
 			// if it errors, shit goes south, and people can test that upstream
 			(void)luaL_loadbuffer(
-				L, reinterpret_cast<const char*>(first), static_cast<std::size_t>(bcsize * (sizeof(*first) / sizeof(const char))), bytecode_name);
+				L, reinterpret_cast<const char*>(first), static_cast<eastl::size_t>(bcsize * (sizeof(*first) / sizeof(const char))), bytecode_name);
 			return 1;
 		}
 
 		template <typename T>
 		static int push(lua_State* L, T&& bc) {
-			return push(L, std::forward<bc>(bc), "bytecode");
+			return push(L, eastl::forward<bc>(bc), "bytecode");
 		}
 	};
 
@@ -1364,20 +1375,20 @@ namespace sol { namespace stack {
 
 			template <typename T>
 			int operator()(T&& value) const {
-				return stack::push<T>(L, std::forward<T>(value));
+				return stack::push<T>(L, eastl::forward<T>(value));
 			}
 		};
 
 	} // namespace stack_detail
 
 	template <typename... Tn>
-	struct unqualified_pusher<std::variant<Tn...>> {
-		static int push(lua_State* L, const std::variant<Tn...>& v) {
-			return std::visit(stack_detail::push_function(L), v);
+	struct unqualified_pusher<eastl::variant<Tn...>> {
+		static int push(lua_State* L, const eastl::variant<Tn...>& v) {
+			return eastl::visit(stack_detail::push_function(L), v);
 		}
 
-		static int push(lua_State* L, std::variant<Tn...>&& v) {
-			return std::visit(stack_detail::push_function(L), std::move(v));
+		static int push(lua_State* L, eastl::variant<Tn...>&& v) {
+			return eastl::visit(stack_detail::push_function(L), eastl::move(v));
 		}
 	};
 #endif // Variant because Clang is terrible

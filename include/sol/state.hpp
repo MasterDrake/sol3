@@ -26,12 +26,13 @@
 
 #include <sol/state_view.hpp>
 #include <sol/thread.hpp>
+#include <EASTL/unique_ptr.h>
 
 namespace sol {
 
-	class state : private std::unique_ptr<lua_State, detail::state_deleter>, public state_view {
+	class state : private eastl::unique_ptr<lua_State, detail::state_deleter>, public state_view {
 	private:
-		typedef std::unique_ptr<lua_State, detail::state_deleter> unique_base;
+		typedef eastl::unique_ptr<lua_State, detail::state_deleter> unique_base;
 
 	public:
 		state(lua_CFunction panic = default_at_panic) : unique_base(luaL_newstate()), state_view(unique_base::get()) {
@@ -47,8 +48,8 @@ namespace sol {
 		state(state&&) = default;
 		state& operator=(const state&) = delete;
 		state& operator=(state&& that) {
-			state_view::operator=(std::move(that));
-			unique_base::operator=(std::move(that));
+			state_view::operator=(eastl::move(that));
+			unique_base::operator=(eastl::move(that));
 			return *this;
 		}
 

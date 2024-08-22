@@ -33,7 +33,7 @@ namespace sol {
 	// constexpr is fine for not-clang
 
 	namespace detail {
-		template <typename R, typename... Args, typename F, typename = std::invoke_result_t<meta::unqualified_t<F>, Args...>>
+		template <typename R, typename... Args, typename F, typename = eastl::invoke_result_t<meta::unqualified_t<F>, Args...>>
 		inline constexpr auto resolve_i(types<R(Args...)>, F&&) -> R (meta::unqualified_t<F>::*)(Args...) {
 			using Sig = R(Args...);
 			typedef meta::unqualified_t<F> Fu;
@@ -41,33 +41,33 @@ namespace sol {
 		}
 
 		template <typename F, typename U = meta::unqualified_t<F>>
-		inline constexpr auto resolve_f(std::true_type, F&& f)
-		     -> decltype(resolve_i(types<meta::function_signature_t<decltype(&U::operator())>>(), std::forward<F>(f))) {
-			return resolve_i(types<meta::function_signature_t<decltype(&U::operator())>>(), std::forward<F>(f));
+		inline constexpr auto resolve_f(eastl::true_type, F&& f)
+		     -> decltype(resolve_i(types<meta::function_signature_t<decltype(&U::operator())>>(), eastl::forward<F>(f))) {
+			return resolve_i(types<meta::function_signature_t<decltype(&U::operator())>>(), eastl::forward<F>(f));
 		}
 
 		template <typename F>
-		inline constexpr void resolve_f(std::false_type, F&&) {
+		inline constexpr void resolve_f(eastl::false_type, F&&) {
 			static_assert(meta::call_operator_deducible_v<F>, "Cannot use no-template-parameter call with an overloaded functor: specify the signature");
 		}
 
 		template <typename F, typename U = meta::unqualified_t<F>>
-		inline constexpr auto resolve_i(types<>, F&& f) -> decltype(resolve_f(meta::call_operator_deducible<U>(), std::forward<F>(f))) {
-			return resolve_f(meta::call_operator_deducible<U> {}, std::forward<F>(f));
+		inline constexpr auto resolve_i(types<>, F&& f) -> decltype(resolve_f(meta::call_operator_deducible<U>(), eastl::forward<F>(f))) {
+			return resolve_f(meta::call_operator_deducible<U> {}, eastl::forward<F>(f));
 		}
 
-		template <typename... Args, typename F, typename R = std::invoke_result_t<F&, Args...>>
-		inline constexpr auto resolve_i(types<Args...>, F&& f) -> decltype(resolve_i(types<R(Args...)>(), std::forward<F>(f))) {
-			return resolve_i(types<R(Args...)>(), std::forward<F>(f));
+		template <typename... Args, typename F, typename R = eastl::invoke_result_t<F&, Args...>>
+		inline constexpr auto resolve_i(types<Args...>, F&& f) -> decltype(resolve_i(types<R(Args...)>(), eastl::forward<F>(f))) {
+			return resolve_i(types<R(Args...)>(), eastl::forward<F>(f));
 		}
 
 		template <typename Sig, typename C>
-		inline constexpr Sig C::*resolve_v(std::false_type, Sig C::*mem_func_ptr) {
+		inline constexpr Sig C::*resolve_v(eastl::false_type, Sig C::*mem_func_ptr) {
 			return mem_func_ptr;
 		}
 
 		template <typename Sig, typename C>
-		inline constexpr Sig C::*resolve_v(std::true_type, Sig C::*mem_variable_ptr) {
+		inline constexpr Sig C::*resolve_v(eastl::true_type, Sig C::*mem_variable_ptr) {
 			return mem_variable_ptr;
 		}
 	} // namespace detail
@@ -89,12 +89,12 @@ namespace sol {
 
 	template <typename Sig, typename C>
 	inline constexpr Sig C::*resolve(Sig C::*mem_ptr) {
-		return detail::resolve_v(std::is_member_object_pointer<Sig C::*>(), mem_ptr);
+		return detail::resolve_v(eastl::is_member_object_pointer<Sig C::*>(), mem_ptr);
 	}
 
-	template <typename... Sig, typename F, meta::disable<std::is_function<meta::unqualified_t<F>>> = meta::enabler>
-	inline constexpr auto resolve(F&& f) -> decltype(detail::resolve_i(types<Sig...>(), std::forward<F>(f))) {
-		return detail::resolve_i(types<Sig...>(), std::forward<F>(f));
+	template <typename... Sig, typename F, meta::disable<eastl::is_function<meta::unqualified_t<F>>> = meta::enabler>
+	inline constexpr auto resolve(F&& f) -> decltype(detail::resolve_i(types<Sig...>(), eastl::forward<F>(f))) {
+		return detail::resolve_i(types<Sig...>(), eastl::forward<F>(f));
 	}
 #else
 
@@ -102,7 +102,7 @@ namespace sol {
 	// so don't use the constexpr versions inside of clang.
 
 	namespace detail {
-		template <typename R, typename... Args, typename F, typename = std::invoke_result_t<meta::unqualified_t<F>, Args...>>
+		template <typename R, typename... Args, typename F, typename = eastl::invoke_result_t<meta::unqualified_t<F>, Args...>>
 		inline auto resolve_i(types<R(Args...)>, F&&) -> R (meta::unqualified_t<F>::*)(Args...) {
 			using Sig = R(Args...);
 			typedef meta::unqualified_t<F> Fu;
@@ -110,33 +110,33 @@ namespace sol {
 		}
 
 		template <typename F, typename U = meta::unqualified_t<F>>
-		inline auto resolve_f(std::true_type, F&& f)
-		     -> decltype(resolve_i(types<meta::function_signature_t<decltype(&U::operator())>>(), std::forward<F>(f))) {
-			return resolve_i(types<meta::function_signature_t<decltype(&U::operator())>>(), std::forward<F>(f));
+		inline auto resolve_f(eastl::true_type, F&& f)
+		     -> decltype(resolve_i(types<meta::function_signature_t<decltype(&U::operator())>>(), eastl::forward<F>(f))) {
+			return resolve_i(types<meta::function_signature_t<decltype(&U::operator())>>(), eastl::forward<F>(f));
 		}
 
 		template <typename F>
-		inline void resolve_f(std::false_type, F&&) {
+		inline void resolve_f(eastl::false_type, F&&) {
 			static_assert(meta::call_operator_deducible_v<F>, "Cannot use no-template-parameter call with an overloaded functor: specify the signature");
 		}
 
 		template <typename F, typename U = meta::unqualified_t<F>>
-		inline auto resolve_i(types<>, F&& f) -> decltype(resolve_f(meta::call_operator_deducible<U>(), std::forward<F>(f))) {
-			return resolve_f(meta::call_operator_deducible<U> {}, std::forward<F>(f));
+		inline auto resolve_i(types<>, F&& f) -> decltype(resolve_f(meta::call_operator_deducible<U>(), eastl::forward<F>(f))) {
+			return resolve_f(meta::call_operator_deducible<U> {}, eastl::forward<F>(f));
 		}
 
-		template <typename... Args, typename F, typename R = std::invoke_result_t<F&, Args...>>
-		inline auto resolve_i(types<Args...>, F&& f) -> decltype(resolve_i(types<R(Args...)>(), std::forward<F>(f))) {
-			return resolve_i(types<R(Args...)>(), std::forward<F>(f));
+		template <typename... Args, typename F, typename R = eastl::invoke_result_t<F&, Args...>>
+		inline auto resolve_i(types<Args...>, F&& f) -> decltype(resolve_i(types<R(Args...)>(), eastl::forward<F>(f))) {
+			return resolve_i(types<R(Args...)>(), eastl::forward<F>(f));
 		}
 
 		template <typename Sig, typename C>
-		inline Sig C::*resolve_v(std::false_type, Sig C::*mem_func_ptr) {
+		inline Sig C::*resolve_v(eastl::false_type, Sig C::*mem_func_ptr) {
 			return mem_func_ptr;
 		}
 
 		template <typename Sig, typename C>
-		inline Sig C::*resolve_v(std::true_type, Sig C::*mem_variable_ptr) {
+		inline Sig C::*resolve_v(eastl::true_type, Sig C::*mem_variable_ptr) {
 			return mem_variable_ptr;
 		}
 	} // namespace detail
@@ -158,12 +158,12 @@ namespace sol {
 
 	template <typename Sig, typename C>
 	inline Sig C::*resolve(Sig C::*mem_ptr) {
-		return detail::resolve_v(std::is_member_object_pointer<Sig C::*>(), mem_ptr);
+		return detail::resolve_v(eastl::is_member_object_pointer<Sig C::*>(), mem_ptr);
 	}
 
 	template <typename... Sig, typename F>
-	inline auto resolve(F&& f) -> decltype(detail::resolve_i(types<Sig...>(), std::forward<F>(f))) {
-		return detail::resolve_i(types<Sig...>(), std::forward<F>(f));
+	inline auto resolve(F&& f) -> decltype(detail::resolve_i(types<Sig...>(), eastl::forward<F>(f))) {
+		return detail::resolve_i(types<Sig...>(), eastl::forward<F>(f));
 	}
 
 #endif

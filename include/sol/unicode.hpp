@@ -1,7 +1,7 @@
 #pragma once
 
 #include <sol/string_view.hpp>
-#include <array>
+#include <EASTL/array.h>
 #include <cstring>
 
 namespace sol {
@@ -26,7 +26,7 @@ namespace sol {
 				"invalid trailing surrogate",
 				"sequence too short",
 				"overlong sequence" };
-			return storage[static_cast<std::size_t>(ec)];
+			return storage[static_cast<eastl::size_t>(ec)];
 		}
 
 		template <typename It>
@@ -39,8 +39,8 @@ namespace sol {
 		template <typename C>
 		struct encoded_result {
 			error_code error;
-			std::size_t code_units_size;
-			std::array<C, 4> code_units;
+			eastl::size_t code_units_size;
+			eastl::array<C, 4> code_units;
 		};
 
 		struct unicode_detail {
@@ -86,7 +86,7 @@ namespace sol {
 				return (b & unicode_detail::continuation_mask) == unicode_detail::continuation_signature;
 			}
 
-			static constexpr bool is_overlong(char32_t u, std::size_t bytes) {
+			static constexpr bool is_overlong(char32_t u, eastl::size_t bytes) {
 				return u <= unicode_detail::last_1byte_value || (u <= unicode_detail::last_2byte_value && bytes > 2)
 				     || (u <= unicode_detail::last_3byte_value && bytes > 3);
 			}
@@ -129,18 +129,18 @@ namespace sol {
 			er.error = error_code::ok;
 			if (codepoint <= unicode_detail::last_1byte_value) {
 				er.code_units_size = 1;
-				er.code_units = std::array<char, 4> { { static_cast<char>(codepoint) } };
+				er.code_units = eastl::array<char, 4> { { static_cast<char>(codepoint) } };
 			}
 			else if (codepoint <= unicode_detail::last_2byte_value) {
 				er.code_units_size = 2;
-				er.code_units = std::array<char, 4> { {
+				er.code_units = eastl::array<char, 4> { {
 					static_cast<char>(0xC0 | ((codepoint & 0x7C0) >> 6)),
 					static_cast<char>(0x80 | (codepoint & 0x3F)),
 				} };
 			}
 			else if (codepoint <= unicode_detail::last_3byte_value) {
 				er.code_units_size = 3;
-				er.code_units = std::array<char, 4> { {
+				er.code_units = eastl::array<char, 4> { {
 					static_cast<char>(0xE0 | ((codepoint & 0xF000) >> 12)),
 					static_cast<char>(0x80 | ((codepoint & 0xFC0) >> 6)),
 					static_cast<char>(0x80 | (codepoint & 0x3F)),
@@ -148,7 +148,7 @@ namespace sol {
 			}
 			else {
 				er.code_units_size = 4;
-				er.code_units = std::array<char, 4> { {
+				er.code_units = eastl::array<char, 4> { {
 					static_cast<char>(0xF0 | ((codepoint & 0x1C0000) >> 18)),
 					static_cast<char>(0x80 | ((codepoint & 0x3F000) >> 12)),
 					static_cast<char>(0x80 | ((codepoint & 0xFC0) >> 6)),
@@ -163,14 +163,14 @@ namespace sol {
 
 			if (codepoint <= unicode_detail::last_bmp_value) {
 				er.code_units_size = 1;
-				er.code_units = std::array<char16_t, 4> { { static_cast<char16_t>(codepoint) } };
+				er.code_units = eastl::array<char16_t, 4> { { static_cast<char16_t>(codepoint) } };
 				er.error = error_code::ok;
 			}
 			else {
 				auto normal = codepoint - unicode_detail::normalizing_value;
 				auto lead = unicode_detail::first_lead_surrogate + ((normal & unicode_detail::lead_surrogate_bitmask) >> unicode_detail::lead_shifted_bits);
 				auto trail = unicode_detail::first_trail_surrogate + (normal & unicode_detail::trail_surrogate_bitmask);
-				er.code_units = std::array<char16_t, 4> { { static_cast<char16_t>(lead), static_cast<char16_t>(trail) } };
+				er.code_units = eastl::array<char16_t, 4> { { static_cast<char16_t>(lead), static_cast<char16_t>(trail) } };
 				er.code_units_size = 2;
 				er.error = error_code::ok;
 			}
@@ -195,7 +195,7 @@ namespace sol {
 			}
 
 			unsigned char b0 = static_cast<unsigned char>(*it);
-			std::size_t length = static_cast<std::size_t>(unicode_detail::sequence_length(b0));
+			eastl::size_t length = static_cast<eastl::size_t>(unicode_detail::sequence_length(b0));
 
 			if (length == 1) {
 				dr.codepoint = static_cast<char32_t>(b0);
@@ -212,9 +212,9 @@ namespace sol {
 			}
 
 			++it;
-			std::array<unsigned char, 4> b;
+			eastl::array<unsigned char, 4> b;
 			b[0] = b0;
-			for (std::size_t i = 1; i < length; ++i) {
+			for (eastl::size_t i = 1; i < length; ++i) {
 				b[i] = static_cast<unsigned char>(*it);
 				if (!unicode_detail::is_continuation(b[i])) {
 					dr.error = error_code::invalid_code_unit;

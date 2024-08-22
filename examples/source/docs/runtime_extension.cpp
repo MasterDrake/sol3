@@ -19,8 +19,7 @@ int main(int, char*[]) {
 	// runtime additions: through the sol API
 	lua["object"]["func"] = [](object& o) { return o.value; };
 	// runtime additions: through a lua script
-	lua.script(
-	     "function object:print () print(self:func()) end");
+	lua.script("function object:print () print(self:func()) end");
 
 	// see it work
 	lua.script("local obj = object.new() \n obj:print()");

@@ -9,8 +9,7 @@ int main(int, char*[]) {
 	sol::state lua;
 	lua.open_libraries();
 	sol::function transferred_into;
-	lua["f"] = [&lua, &transferred_into](
-	                sol::object t, sol::this_state this_L) {
+	lua["f"] = [&lua, &transferred_into](sol::object t, sol::this_state this_L) {
 		std::cout << "state of main     : "
 		          << (void*)lua.lua_state() << std::endl;
 		std::cout << "state of function : "

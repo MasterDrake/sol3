@@ -38,7 +38,7 @@ namespace sol {
 	const auto base_classes = base_classes_tag();
 
 	template <typename... Args>
-	struct is_to_stringable<base_list<Args...>> : std::false_type { };
+	struct is_to_stringable<base_list<Args...>> : eastl::false_type { };
 
 	namespace detail {
 
@@ -132,7 +132,7 @@ namespace sol {
 			static int type_unique_cast(void* source_data, void* target_data, const string_view& ti, const string_view& rebind_ti) {
 				if constexpr (is_actual_type_rebindable_for_v<U>) {
 					using rebound_actual_type = unique_usertype_rebind_actual_t<U>;
-					using maybe_bases_or_empty = meta::conditional_t<std::is_void_v<rebound_actual_type>, types<>, bases_t>;
+					using maybe_bases_or_empty = meta::conditional_t<eastl::is_void_v<rebound_actual_type>, types<>, bases_t>;
 					string_view this_rebind_ti = usertype_traits<rebound_actual_type>::qualified_name();
 					if (rebind_ti != this_rebind_ti) {
 						// this is not even of the same unique type
@@ -161,7 +161,7 @@ namespace sol {
 				using uc_bases_t = types<Bases...>;
 				if constexpr (is_actual_type_rebindable_for_v<U>) {
 					using rebound_actual_type = unique_usertype_rebind_actual_t<U>;
-					using cond_bases_t = meta::conditional_t<std::is_void_v<rebound_actual_type>, types<>, uc_bases_t>;
+					using cond_bases_t = meta::conditional_t<eastl::is_void_v<rebound_actual_type>, types<>, uc_bases_t>;
 					string_view this_rebind_ti = usertype_traits<rebound_actual_type>::qualified_name();
 					if (rebind_ti != this_rebind_ti) {
 						// this is not even of the same unique type

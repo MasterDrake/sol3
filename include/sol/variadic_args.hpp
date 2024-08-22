@@ -27,8 +27,8 @@
 #include <sol/stack.hpp>
 #include <sol/stack_proxy.hpp>
 #include <sol/stack_iterator.hpp>
-#include <limits>
-#include <iterator>
+#include <EASTL/numeric_limits.h>
+#include <EASTL/iterator.h>
 
 namespace sol {
 	struct variadic_args {
@@ -42,11 +42,11 @@ namespace sol {
 		typedef stack_proxy value_type;
 		typedef stack_proxy* pointer;
 		typedef std::ptrdiff_t difference_type;
-		typedef std::size_t size_type;
+		typedef eastl::size_t size_type;
 		typedef stack_iterator<stack_proxy, false> iterator;
 		typedef stack_iterator<stack_proxy, true> const_iterator;
-		typedef std::reverse_iterator<iterator> reverse_iterator;
-		typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+		typedef eastl::reverse_iterator<iterator> reverse_iterator;
+		typedef eastl::reverse_iterator<const_iterator> const_reverse_iterator;
 
 		variadic_args() = default;
 		variadic_args(lua_State* luastate, int stackindex = -1) : L(luastate), index(lua_absindex(luastate, stackindex)), stacktop(lua_gettop(luastate)) {
@@ -96,22 +96,22 @@ namespace sol {
 		}
 
 		reverse_iterator rbegin() {
-			return std::reverse_iterator<iterator>(begin());
+			return eastl::reverse_iterator<iterator>(begin());
 		}
 		reverse_iterator rend() {
-			return std::reverse_iterator<iterator>(end());
+			return eastl::reverse_iterator<iterator>(end());
 		}
 		const_reverse_iterator rbegin() const {
-			return std::reverse_iterator<const_iterator>(begin());
+			return eastl::reverse_iterator<const_iterator>(begin());
 		}
 		const_reverse_iterator rend() const {
-			return std::reverse_iterator<const_iterator>(end());
+			return eastl::reverse_iterator<const_iterator>(end());
 		}
 		const_reverse_iterator crbegin() const {
-			return std::reverse_iterator<const_iterator>(cbegin());
+			return eastl::reverse_iterator<const_iterator>(cbegin());
 		}
 		const_reverse_iterator crend() const {
-			return std::reverse_iterator<const_iterator>(cend());
+			return eastl::reverse_iterator<const_iterator>(cend());
 		}
 
 		int push() const {
@@ -152,8 +152,8 @@ namespace sol {
 		int leftover_count() const {
 			return stacktop - (index - 1);
 		}
-		std::size_t size() const {
-			return static_cast<std::size_t>(leftover_count());
+		eastl::size_t size() const {
+			return static_cast<eastl::size_t>(leftover_count());
 		}
 		int top() const {
 			return stacktop;

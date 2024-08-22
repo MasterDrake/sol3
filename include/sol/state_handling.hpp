@@ -58,7 +58,7 @@ namespace sol {
 		size_t messagesize;
 		const char* message = lua_tolstring(L, -1, &messagesize);
 		if (message) {
-			std::string err(message, messagesize);
+			eastl::string err(message, messagesize);
 			lua_settop(L, 0);
 #if SOL_IS_ON(SOL_PRINT_ERRORS)
 			std::cerr << "[sol2] An error occurred and panic has been invoked: ";
@@ -68,12 +68,12 @@ namespace sol {
 			throw error(err);
 		}
 		lua_settop(L, 0);
-		throw error(std::string("An unexpected error occurred and panic has been invoked"));
+		throw error(eastl::string("An unexpected error occurred and panic has been invoked"));
 #endif // Printing Errors
 	}
 
 	inline int default_traceback_error_handler(lua_State* L) {
-		std::string msg = "An unknown error has triggered the default error handler";
+		eastl::string msg = "An unknown error has triggered the default error handler";
 		optional<string_view> maybetopmsg = stack::unqualified_check_get<string_view>(L, 1, &no_panic);
 		if (maybetopmsg) {
 			const string_view& topmsg = maybetopmsg.value();
@@ -97,17 +97,17 @@ namespace sol {
 	     lua_CFunction traceback_function = c_call<decltype(&default_traceback_error_handler), &default_traceback_error_handler>,
 	     exception_handler_function exf = detail::default_exception_handler) {
 		lua_atpanic(L, panic_function);
-		protected_function::set_default_handler(object(L, in_place, traceback_function));
+		protected_function::set_default_handler(object(L, sol::in_place, traceback_function));
 		set_default_exception_handler(L, exf);
 		register_main_thread(L);
 		stack::luajit_exception_handler(L);
 		lua_value::set_lua_state(L);
 	}
 
-	inline std::size_t total_memory_used(lua_State* L) {
-		std::size_t kb = static_cast<std::size_t>(lua_gc(L, LUA_GCCOUNT, 0));
+	inline eastl::size_t total_memory_used(lua_State* L) {
+		eastl::size_t kb = static_cast<eastl::size_t>(lua_gc(L, LUA_GCCOUNT, 0));
 		kb *= 1024;
-		kb += static_cast<std::size_t>(lua_gc(L, LUA_GCCOUNTB, 0));
+		kb += static_cast<eastl::size_t>(lua_gc(L, LUA_GCCOUNTB, 0));
 		return kb;
 	}
 
@@ -117,7 +117,7 @@ namespace sol {
 
 	inline protected_function_result script_throw_on_error(lua_State* L, protected_function_result result) {
 		type t = type_of(L, result.stack_index());
-		std::string err = "sol: ";
+		eastl::string err = "sol: ";
 		err += to_string(result.status());
 		err += " error";
 #if SOL_IS_ON(SOL_EXCEPTIONS)
@@ -131,7 +131,7 @@ namespace sol {
 				err += "std::exception -- ";
 				err.append(ex.what());
 			}
-			catch (const std::string& message) {
+			catch (const eastl::string& message) {
 				err += "thrown message -- ";
 				err.append(message);
 			}
@@ -175,9 +175,9 @@ namespace sol {
 
 	inline protected_function_result script_default_on_error(lua_State* L, protected_function_result pfr) {
 #if SOL_IS_ON(SOL_DEFAULT_PASS_ON_ERROR)
-		return script_pass_on_error(L, std::move(pfr));
+		return script_pass_on_error(L, eastl::move(pfr));
 #else
-		return script_throw_on_error(L, std::move(pfr));
+		return script_throw_on_error(L, eastl::move(pfr));
 #endif
 	}
 

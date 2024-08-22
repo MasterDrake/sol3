@@ -27,19 +27,20 @@
 #include <sol/version.hpp>
 
 #include <cstddef>
-#include <string>
-#include <string_view>
-#include <functional>
+#include <EASTL/string.h>
+#include <EASTL/string_view.h>
+#include <EASTL/functional.h>
 
-namespace sol {
-	template <typename C, typename T = std::char_traits<C>>
-	using basic_string_view = std::basic_string_view<C, T>;
+namespace sol
+{
+	template <typename C>
+	using basic_string_view = eastl::basic_string_view<C>;
 
-	typedef std::string_view string_view;
-	typedef std::wstring_view wstring_view;
-	typedef std::u16string_view u16string_view;
-	typedef std::u32string_view u32string_view;
-	typedef std::hash<std::string_view> string_view_hash;
+	typedef eastl::string_view string_view;
+	typedef eastl::wstring_view wstring_view;
+	typedef eastl::u16string_view u16string_view;
+	typedef eastl::u32string_view u32string_view;
+	typedef eastl::hash<eastl::string_view> string_view_hash;
 } // namespace sol
 
 #endif // SOL_STRING_VIEW_HPP

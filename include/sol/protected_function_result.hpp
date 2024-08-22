@@ -48,11 +48,11 @@ namespace sol {
 		typedef stack_proxy value_type;
 		typedef stack_proxy* pointer;
 		typedef std::ptrdiff_t difference_type;
-		typedef std::size_t size_type;
+		typedef eastl::size_t size_type;
 		typedef stack_iterator<stack_proxy, false> iterator;
 		typedef stack_iterator<stack_proxy, true> const_iterator;
-		typedef std::reverse_iterator<iterator> reverse_iterator;
-		typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+		typedef eastl::reverse_iterator<iterator> reverse_iterator;
+		typedef eastl::reverse_iterator<const_iterator> const_reverse_iterator;
 
 		protected_function_result() noexcept : protected_function_result(nullptr) {}
 		protected_function_result(lua_State* Ls, int idx = -1, int retnum = 0, int popped = 0, call_status pferr = call_status::ok) noexcept
@@ -112,11 +112,11 @@ namespace sol {
 			int target = index + index_offset;
 			if constexpr (meta::is_optional_v<UT>) {
 				using ValueType = typename UT::value_type;
-				if constexpr (std::is_same_v<ValueType, error>) {
+				if constexpr (eastl::is_same_v<ValueType, error>) {
 					if (valid()) {
 						return UT();
 					}
-					return UT(error(detail::direct_error, stack::get<std::string>(L, target)));
+					return UT(error(detail::direct_error, stack::get<eastl::string>(L, target)));
 				}
 				else {
 					if (!valid()) {
@@ -126,14 +126,14 @@ namespace sol {
 				}
 			}
 			else {
-				if constexpr (std::is_same_v<T, error>) {
+				if constexpr (eastl::is_same_v<T, error>) {
 #if SOL_IS_ON(SOL_SAFE_PROXIES)
 					if (valid()) {
 						type t = type_of(L, target);
 						type_panic_c_str(L, target, t, type::none, "bad get from protected_function_result (is an error)");
 					}
 #endif // Check Argument Safety
-					return error(detail::direct_error, stack::get<std::string>(L, target));
+					return error(detail::direct_error, stack::get<eastl::string>(L, target));
 				}
 				else {
 #if SOL_IS_ON(SOL_SAFE_PROXIES)
@@ -179,22 +179,22 @@ namespace sol {
 		}
 
 		reverse_iterator rbegin() {
-			return std::reverse_iterator<iterator>(begin());
+			return eastl::reverse_iterator<iterator>(begin());
 		}
 		reverse_iterator rend() {
-			return std::reverse_iterator<iterator>(end());
+			return eastl::reverse_iterator<iterator>(end());
 		}
 		const_reverse_iterator rbegin() const {
-			return std::reverse_iterator<const_iterator>(begin());
+			return eastl::reverse_iterator<const_iterator>(begin());
 		}
 		const_reverse_iterator rend() const {
-			return std::reverse_iterator<const_iterator>(end());
+			return eastl::reverse_iterator<const_iterator>(end());
 		}
 		const_reverse_iterator crbegin() const {
-			return std::reverse_iterator<const_iterator>(cbegin());
+			return eastl::reverse_iterator<const_iterator>(cbegin());
 		}
 		const_reverse_iterator crend() const {
-			return std::reverse_iterator<const_iterator>(cend());
+			return eastl::reverse_iterator<const_iterator>(cend());
 		}
 
 		lua_State* lua_state() const noexcept {

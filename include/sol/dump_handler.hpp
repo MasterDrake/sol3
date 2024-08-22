@@ -36,7 +36,7 @@ namespace sol {
 		int m_ec;
 
 	public:
-		dump_error(int error_code_) : error("dump returned non-zero error of " + std::to_string(error_code_)), m_ec(error_code_) {
+		dump_error(int error_code_) : error("dump returned non-zero error of " + eastl::to_string(error_code_)), m_ec(error_code_) {
 		}
 
 		int error_code() const {

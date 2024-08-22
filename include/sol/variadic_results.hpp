@@ -30,14 +30,14 @@
 #include <sol/function_result.hpp>
 #include <sol/protected_function_result.hpp>
 
-#include <vector>
+#include <EASTL/vector.h>
 
 namespace sol {
 
-	template <typename Al = typename std::allocator<object>>
-	struct basic_variadic_results : public std::vector<object, Al> {
+	template <typename Al = typename eastl::allocator>
+	struct basic_variadic_results : public eastl::vector<object, Al> {
 	private:
-		using base_t = std::vector<object, Al>;
+		using base_t = eastl::vector<object, Al>;
 
 	public:
 		basic_variadic_results() : base_t() {
@@ -54,9 +54,9 @@ namespace sol {
 		}
 
 		template <typename Arg0, typename... Args,
-		     meta::disable_any<std::is_same<meta::unqualified_t<Arg0>, basic_variadic_results>, std::is_same<meta::unqualified_t<Arg0>, function_result>,
-		          std::is_same<meta::unqualified_t<Arg0>, protected_function_result>> = meta::enabler>
-		basic_variadic_results(Arg0&& arg0, Args&&... args) : base_t(std::forward<Arg0>(arg0), std::forward<Args>(args)...) {
+		     meta::disable_any<eastl::is_same<meta::unqualified_t<Arg0>, basic_variadic_results>, eastl::is_same<meta::unqualified_t<Arg0>, function_result>,
+		          eastl::is_same<meta::unqualified_t<Arg0>, protected_function_result>> = meta::enabler>
+		basic_variadic_results(Arg0&& arg0, Args&&... args) : base_t(eastl::forward<Arg0>(arg0), eastl::forward<Args>(args)...) {
 		}
 
 		basic_variadic_results(const basic_variadic_results&) = default;
@@ -72,10 +72,10 @@ namespace sol {
 	};
 
 	template <typename Al>
-	struct is_container<basic_variadic_results<Al>> : std::false_type { };
+	struct is_container<basic_variadic_results<Al>> : eastl::false_type { };
 
 	template <>
-	struct is_container<variadic_results> : std::false_type { };
+	struct is_container<variadic_results> : eastl::false_type { };
 
 	namespace stack {
 		template <typename Al>
