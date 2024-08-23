@@ -25,7 +25,7 @@ int main() {
 	lua["say"](lua["obj"]);
 	// still accessible here and still alive in Lua
 	// even though the name was cleared
-	std::string message = keep_alive.as<std::string>();
+	eastl::string message = keep_alive.as<eastl::string>();
 	std::cout << message << std::endl;
 
 	// Can be pushed back into Lua as an argument

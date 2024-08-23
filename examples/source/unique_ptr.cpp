@@ -51,14 +51,14 @@ int main() {
 	lua.new_usertype<my_type>(
 	     "my_type", "value", &my_type::value);
 	{
-		std::unique_ptr<my_type> unique
-		     = std::make_unique<my_type>();
-		lua["unique"] = std::move(unique);
+		eastl::unique_ptr<my_type> unique
+		     = eastl::make_unique<my_type>();
+		lua["unique"] = eastl::move(unique);
 	}
 	{
 		std::cout << "getting reference to unique_ptr..."
 		          << std::endl;
-		std::unique_ptr<my_type>& ref_to_unique_ptr
+		eastl::unique_ptr<my_type>& ref_to_unique_ptr
 		     = lua["unique"];
 		my_type& ref_to_my_type = lua["unique"];
 		my_type* ptr_to_my_type = lua["unique"];

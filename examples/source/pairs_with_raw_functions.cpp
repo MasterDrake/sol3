@@ -1,11 +1,11 @@
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 
-#include <map>
+#include <EASTL/map.h>
 #include <iostream>
 
 struct my_thing {
-	std::map<std::string, int> m {
+	eastl::map<eastl::string, int> m {
 		{ "bark", 20 },
 		{ "woof", 60 },
 		{ "borf", 30 },
@@ -17,7 +17,7 @@ struct my_thing {
 };
 
 struct lua_iterator_state {
-	typedef std::map<std::string, int>::iterator it_t;
+	typedef eastl::map<eastl::string, int>::iterator it_t;
 	it_t it;
 	it_t last;
 
@@ -45,7 +45,7 @@ int my_next(lua_State* L) {
 	// the state is left alone
 	int pushed = sol::stack::push(L, itderef.first);
 	pushed += sol::stack::push_reference(L, itderef.second);
-	std::advance(it, 1);
+	eastl::advance(it, 1);
 	return pushed;
 }
 
@@ -60,7 +60,7 @@ int my_pairs(lua_State* L) {
 	// next function controls iteration
 	int pushed = sol::stack::push(L, my_next);
 	pushed += sol::stack::push<sol::user<lua_iterator_state>>(
-	     L, std::move(it_state));
+	     L, eastl::move(it_state));
 	pushed += sol::stack::push(L, sol::lua_nil);
 	return pushed;
 }

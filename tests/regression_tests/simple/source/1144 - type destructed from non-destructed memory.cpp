@@ -29,14 +29,14 @@
 inline namespace sol2_regression_test_1144 {
 	class MyClass {
 	private:
-		std::string m_name;
+		eastl::string m_name;
 
 	public:
-		MyClass(const std::string& name) : m_name(name) {};
+		MyClass(const eastl::string& name) : m_name(name) {};
 	};
 
 	void bind_class(sol::state_view state) {
-		sol::usertype<MyClass> bind_my_class = state.new_usertype<MyClass>("MyClass", sol::call_constructor, sol::constructors<MyClass(std::string)>());
+		sol::usertype<MyClass> bind_my_class = state.new_usertype<MyClass>("MyClass", sol::call_constructor, sol::constructors<MyClass(eastl::string)>());
 	}
 } // namespace sol2_regression_test_1144
 

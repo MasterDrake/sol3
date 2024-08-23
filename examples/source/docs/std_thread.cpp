@@ -4,26 +4,28 @@
 #include <mutex>
 #include <condition_variable>
 #include <thread>
-#include <variant>
 #include <cstddef>
 #include <iostream>
 
-struct worker_data {
+struct worker_data
+{
 	std::mutex until_ready_mutex;
 	std::condition_variable until_ready_condition;
 	bool is_ready = false;
 	bool is_processed = false;
 	sol::state worker_lua;
 	sol::bytecode payload;
-	std::variant<double, std::vector<double>> return_payload;
+	eastl::variant<double, eastl::vector<double>> return_payload;
 
 	worker_data() {
 		worker_lua.open_libraries(sol::lib::base);
 	}
 };
 
-void worker_thread(worker_data& data) {
-	for ([[maybe_unused]] std::uint64_t loops = 0; true; ++loops) {
+void worker_thread(worker_data& data)
+{
+	for ([[maybe_unused]] std::uint64_t loops = 0; true; ++loops)
+	{
 		// Wait until main() sends data
 		std::unique_lock<std::mutex> data_lock(
 		     data.until_ready_mutex);
@@ -39,17 +41,15 @@ void worker_thread(worker_data& data) {
 		sol::state& lua = data.worker_lua;
 
 		// we own the lock now, do the work
-		std::variant<double, std::vector<double>> result
-		     = lua.safe_script(data.payload.as_string_view());
+		eastl::variant<double, eastl::vector<double>> result = lua.safe_script(data.payload.as_string_view());
 
 		// store returning payload,
 		// clear current payload
-		data.return_payload = std::move(result);
+		data.return_payload = eastl::move(result);
 		data.payload.clear();
 
 		// Send result back to main
-		std::cout << "worker_thread data processing is "
-		             "completed: signaling & unlocking\n";
+		std::cout << "worker_thread data processing is completed: signaling & unlocking\n";
 		data.is_processed = true;
 		data.is_ready = false;
 		data_lock.unlock();
@@ -69,7 +69,7 @@ int main() {
 
 	// kick off worker
 	worker_data data;
-	std::thread worker(worker_thread, std::ref(data));
+	std::thread worker(worker_thread, eastl::ref(data));
 
 	// main Lua state
 	bool done_working = false;
@@ -116,23 +116,23 @@ int main() {
 		}
 		auto data_processor = [](auto& returned_data) {
 			using option_type
-			     = std::remove_cv_t<std::remove_reference_t<
+			     = eastl::remove_cv_t<eastl::remove_reference_t<
 			          decltype(returned_data)>>;
-			if constexpr (std::is_same_v<option_type,
+			if constexpr (eastl::is_same_v<option_type,
 			                   double>) {
 				std::cout << "received a double: "
 				          << returned_data << "\n";
 			}
-			else if constexpr (std::is_same_v<option_type,
-			                        std::vector<double>>) {
+			else if constexpr (eastl::is_same_v<option_type,
+			                        eastl::vector<double>>) {
 				std::cout
-				     << "received a std::vector<double>: { ";
-				for (std::size_t i = 0;
+				     << "received a eastl::vector<double>: { ";
+				for (eastl::size_t i = 0;
 				     i < returned_data.size();
 				     ++i) {
 					std::cout << returned_data[i];
 					if (i
-					     != static_cast<std::size_t>(
+					     != static_cast<eastl::size_t>(
 					          returned_data.size() - 1)) {
 						std::cout << ", ";
 					}
@@ -146,7 +146,7 @@ int main() {
 				std::abort();
 			}
 		};
-		std::visit(data_processor, data.return_payload);
+		eastl::visit(data_processor, data.return_payload);
 	}
 
 	// join and wait for workers to come back

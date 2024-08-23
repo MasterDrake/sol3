@@ -1,7 +1,6 @@
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 
-
 #include <iostream>
 
 struct something {
@@ -21,7 +20,7 @@ int main() {
 
 	lua.new_usertype<something>(
 	     "something", "arr", sol::property([](something& s) {
-		     return std::ref(s.arr);
+		     return eastl::ref(s.arr);
 	     }));
 	lua.script(R"(s = something.new() 
 		print(s.arr[3])
@@ -35,12 +34,12 @@ int main() {
 	SOL_ASSERT(s.arr[2] == 40);
 	SOL_ASSERT(s.arr[3] == 8);
 
-	std::string string_array[] = {
+	eastl::string string_array[] = {
 		"first string",
 		"second string",
 		"third string",
 	};
-	lua["str_arr"] = std::ref(string_array);
+	lua["str_arr"] = eastl::ref(string_array);
 	// or:
 	// lua["str_array"] = &string_array;
 	lua.script(R"(

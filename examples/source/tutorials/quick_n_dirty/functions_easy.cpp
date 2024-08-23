@@ -12,9 +12,9 @@ int main(int, char*[]) {
 	// sol::function is often easier:
 	// takes a variable number/types of arguments...
 	sol::function fx = lua["f"];
-	// fixed signature std::function<...>
+	// fixed signature eastl::function<...>
 	// can be used to tie a sol::function down
-	std::function<int(int, double, int, std::string)> stdfx
+	eastl::function<int(int, double, int, eastl::string)> stdfx
 	     = fx;
 
 	int is_one = stdfx(1, 34.5, 3, "bark");
@@ -26,7 +26,7 @@ int main(int, char*[]) {
 	int is_three = lua["g"](1, 2);
 	SOL_ASSERT(is_three == 3);
 	double is_4_8 = lua["g"](2.4, 2.4);
-	SOL_ASSERT(is_4_8 == 4.8);
+	SOL_ASSERT(is_4_8 == 44.8);
 
 	return 0;
 }

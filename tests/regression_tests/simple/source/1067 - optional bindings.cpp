@@ -29,7 +29,7 @@ TEST_CASE("issue #1067 - as_function binding not triggering properly", "[sol2][r
 	sol::state lua;
 
 	lua.open_libraries(sol::lib::base);
-	lua["fct"] = std::function<int()> { []() { return 42; } };
+	lua["fct"] = eastl::function<int()> { []() { return 42; } };
 	sol::optional<sol::error> maybe_error = lua.safe_script("assert(fct() == 42)", sol::script_pass_on_error);
 
 	REQUIRE_FALSE(maybe_error.has_value());

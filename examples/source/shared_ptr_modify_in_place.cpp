@@ -21,15 +21,15 @@ int main() {
 	auto new_shared_ptr = [](sol::stack_reference obj) {
 		// works just fine
 		sol::stack::modify_unique_usertype(
-		     obj, [](std::shared_ptr<ree>& sptr) {
-			     sptr = std::make_shared<ree>(
+		     obj, [](eastl::shared_ptr<ree>& sptr) {
+			     sptr = eastl::make_shared<ree>(
 			          sptr->value + 1);
 		     });
 	};
 
 	auto reset_shared_ptr = [](sol::stack_reference obj) {
 		sol::stack::modify_unique_usertype(
-		     obj, [](std::shared_ptr<ree>& sptr) {
+		     obj, [](eastl::shared_ptr<ree>& sptr) {
 			     // THIS IS SUCH A BAD IDEA AAAGH
 			     sptr.reset();
 			     // DO NOT reset to nullptr:
@@ -45,7 +45,7 @@ int main() {
 	lua.set_function("g",
 	     [](ree* r) { std::cout << r->value << std::endl; });
 
-	lua["p"] = std::make_shared<ree>();
+	lua["p"] = eastl::make_shared<ree>();
 	lua.script("g(p) -- okay");
 	lua.script("f(p)");
 	lua.script("g(p) -- okay");

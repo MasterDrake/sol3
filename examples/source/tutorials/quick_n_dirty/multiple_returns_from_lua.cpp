@@ -7,12 +7,12 @@ int main(int, char*[]) {
 
 	lua.script("function f (a, b, c) return a, b, c end");
 
-	std::tuple<int, int, int> result;
+	eastl::tuple<int, int, int> result;
 	result = lua["f"](100, 200, 300);
 	// result == { 100, 200, 300 }
 	int a;
 	int b;
-	std::string c;
+	eastl::string c;
 	sol::tie(a, b, c) = lua["f"](100, 200, "bark");
 	SOL_ASSERT(a == 100);
 	SOL_ASSERT(b == 200);

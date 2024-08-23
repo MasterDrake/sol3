@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-void test_environment(std::string key,
+void test_environment(eastl::string key,
      const sol::environment& env, const sol::state_view& lua) {
 	sol::optional<int> maybe_env_a = env[key];
 	sol::optional<int> maybe_global_a = lua[key];

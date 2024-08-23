@@ -85,14 +85,14 @@ int main() {
 	// You can also add members to the code, defined in Lua!
 	// This lets you have a high degree of flexibility in the
 	// code
-	std::string prelude_script = R"(
+	eastl::string prelude_script = R"(
 function player:brake ()
 	self.speed = 0
 	print("we hit the brakes!")
 end
 )";
 
-	std::string player_script = R"(
+	eastl::string player_script = R"(
 -- call single argument integer constructor
 p1 = player.new(2)
 

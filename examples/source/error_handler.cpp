@@ -44,7 +44,7 @@ int main() {
 	else {
 		// An error has occured
 		sol::error err = firstwoof;
-		std::string what = err.what();
+		eastl::string what = err.what();
 		std::cout << what << std::endl;
 	}
 
@@ -62,7 +62,7 @@ int main() {
 		// this will include the additional appended error
 		// message information of "got_problems handler: " ...
 		sol::error err = secondwoof;
-		std::string what = err.what();
+		eastl::string what = err.what();
 		std::cout << what << std::endl;
 	}
 

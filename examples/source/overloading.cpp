@@ -7,7 +7,7 @@ inline int my_add(int x, int y) {
 	return x + y;
 }
 
-inline std::string make_string(std::string input) {
+inline eastl::string make_string(eastl::string input) {
 	return "string: " + input;
 }
 

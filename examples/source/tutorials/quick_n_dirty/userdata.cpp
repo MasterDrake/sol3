@@ -32,19 +32,19 @@ int main(int, char*[]) {
 	lua["dog_copy"] = dog;
 	// OR: move semantics - will call move constructor if
 	// present instead Again, owned by Lua
-	lua["dog_move"] = std::move(dog);
-	lua["dog_unique_ptr"] = std::make_unique<Doge>(25);
-	lua["dog_shared_ptr"] = std::make_shared<Doge>(31);
+	lua["dog_move"] = eastl::move(dog);
+	lua["dog_unique_ptr"] = eastl::make_unique<Doge>(25);
+	lua["dog_shared_ptr"] = eastl::make_shared<Doge>(31);
 
 	// Identical to above
 	Doge dog2 { 30 };
 	lua.set("dog2", Doge {});
 	lua.set("dog2_copy", dog2);
-	lua.set("dog2_move", std::move(dog2));
+	lua.set("dog2_move", eastl::move(dog2));
 	lua.set("dog2_unique_ptr",
-	     std::unique_ptr<Doge>(new Doge(25)));
+	     eastl::unique_ptr<Doge>(new Doge(25)));
 	lua.set("dog2_shared_ptr",
-	     std::shared_ptr<Doge>(new Doge(31)));
+	     eastl::shared_ptr<Doge>(new Doge(31)));
 
 	// Note all of them can be retrieved the same way:
 	Doge& lua_dog = lua["dog"];

@@ -24,9 +24,6 @@
 #include <catch2/catch_all.hpp>
 
 #include <sol/sol.hpp>
-#include <vector>
-#include <memory>
-#include <iterator>
 
 inline namespace sol2_regression_test_coroutines_array_proxy_lifetime {
 	struct A {
@@ -38,18 +35,18 @@ inline namespace sol2_regression_test_coroutines_array_proxy_lifetime {
 		int getValue() {
 			return value;
 		}
-		std::vector<std::shared_ptr<A>> children;
+		eastl::vector<eastl::shared_ptr<A>> children;
 	};
 
 	struct ArrayProxy {
-		using value_type = std::weak_ptr<A>;
+		using value_type = eastl::weak_ptr<A>;
 
 		struct iterator {
-			using iterator_category = std::random_access_iterator_tag;
+			using iterator_category = eastl::random_access_iterator_tag;
 			using difference_type = std::ptrdiff_t;
-			using value_type = std::weak_ptr<A>;
-			using pointer = std::weak_ptr<A>*;   // or also value_type*
-			using reference = std::weak_ptr<A>&; // or also value_type&
+			using value_type = eastl::weak_ptr<A>;
+			using pointer = eastl::weak_ptr<A>*;   // or also value_type*
+			using reference = eastl::weak_ptr<A>&; // or also value_type&
 
 			const ArrayProxy& a;
 			size_t index;
@@ -62,7 +59,7 @@ inline namespace sol2_regression_test_coroutines_array_proxy_lifetime {
 				if (index >= 0 && index < size) {
 					return a.mpParent.children[index];
 				}
-				return std::weak_ptr<A>();
+				return eastl::weak_ptr<A>();
 			}
 
 			// Operators : arithmetic
@@ -129,18 +126,18 @@ inline namespace sol2_regression_test_coroutines_array_proxy_lifetime {
 
 namespace sol {
 	template <typename T>
-	struct unique_usertype_traits<std::weak_ptr<T>> {
-		static T* get(lua_State*, const std::weak_ptr<T>& ptr) noexcept {
+	struct unique_usertype_traits<eastl::weak_ptr<T>> {
+		static T* get(lua_State*, const eastl::weak_ptr<T>& ptr) noexcept {
 			return ptr.lock().get();
 		}
 
-		static bool is_null(lua_State*, const std::weak_ptr<T>& ptr) noexcept {
+		static bool is_null(lua_State*, const eastl::weak_ptr<T>& ptr) noexcept {
 			return ptr.expired();
 		}
 	};
 
 	template <>
-	struct is_container<ArrayProxy> : std::true_type { };
+	struct is_container<ArrayProxy> : eastl::true_type { };
 } // namespace sol
 
 TEST_CASE("test for issue #1400 - array proxy tests", "[sol2][regression][issue-1400]") {
@@ -152,9 +149,9 @@ TEST_CASE("test for issue #1400 - array proxy tests", "[sol2][regression][issue-
 	const int inner = 100;
 	A a(0);
 	for (int i = 0; i < outer; i++) {
-		auto child = std::make_shared<A>(i * outer);
+		auto child = eastl::make_shared<A>(i * outer);
 		for (int j = 0; j < inner; j++) {
-			auto child2 = std::make_shared<A>(i * outer + j);
+			auto child2 = eastl::make_shared<A>(i * outer + j);
 			child->children.push_back(child2);
 		}
 		a.children.push_back(child);

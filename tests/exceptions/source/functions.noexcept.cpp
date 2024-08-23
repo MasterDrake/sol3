@@ -50,7 +50,7 @@ TEST_CASE("exceptions/functions/noexcept", "allow noexcept functions to be seria
 
 	sol::state lua;
 
-	auto check_script_call = [&lua](std::string script) {
+	auto check_script_call = [&lua](eastl::string script) {
 		auto result = lua.safe_script(script, &sol::script_pass_on_error);
 		sol::optional<sol::error> maybe_err = result;
 		REQUIRE(result.valid());
@@ -61,7 +61,7 @@ TEST_CASE("exceptions/functions/noexcept", "allow noexcept functions to be seria
 	lua.set_function("f", &T::noexcept_function);
 	lua.set_function("g", &T::noexcept_method);
 	lua.set_function("h", &T::noexcept_method, T());
-	lua.set_function("i", &T::noexcept_method, std::ref(t));
+	lua.set_function("i", &T::noexcept_method, eastl::ref(t));
 	lua.set_function("j", &T::noexcept_method, &t);
 	lua.set_function("k", &T::noexcept_method, t);
 	lua.set_function("l", &raw_noexcept_function);

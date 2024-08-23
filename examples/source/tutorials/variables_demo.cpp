@@ -1,9 +1,6 @@
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 
-#include <tuple>
-#include <utility> // for std::pair
-
 int main() {
 
 	sol::state lua;
@@ -30,10 +27,10 @@ config = {
 
 	// table and state can have multiple things pulled out of it
 	// too
-	std::tuple<int, int> xyresolutiontuple
+	eastl::tuple<int, int> xyresolutiontuple
 	     = resolution.get<int, int>("x", "y");
-	SOL_ASSERT(std::get<0>(xyresolutiontuple) == 1024);
-	SOL_ASSERT(std::get<1>(xyresolutiontuple) == 768);
+	SOL_ASSERT(eastl::get<0>(xyresolutiontuple) == 1024);
+	SOL_ASSERT(eastl::get<1>(xyresolutiontuple) == 768);
 
 	// test variable
 	auto bark = lua["config"]["bark"];

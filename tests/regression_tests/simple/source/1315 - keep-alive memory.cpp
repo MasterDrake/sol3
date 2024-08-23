@@ -31,18 +31,18 @@ inline namespace sol2_regression_test_1315 {
 		A() {
 		}
 
-		std::vector<int> children;
+		eastl::vector<int> children;
 	};
 
-	static std::vector<int>* getChildrenPtr(A& a) {
+	static eastl::vector<int>* getChildrenPtr(A& a) {
 		return &a.children;
 	}
 
-	static std::vector<int>& getChildrenRef(A& a) {
+	static eastl::vector<int>& getChildrenRef(A& a) {
 		return a.children;
 	}
 
-	static std::vector<int> getChildrenValue(A& a) {
+	static eastl::vector<int> getChildrenValue(A& a) {
 		return a.children;
 	}
 
@@ -93,8 +93,8 @@ end)";
 			perform_action();
 		}
 	}
-	SECTION("A as a std::ref") {
-		lua["A"] = std::ref(a);
+	SECTION("A as a eastl::ref") {
+		lua["A"] = eastl::ref(a);
 		SECTION("using getChildrenPtr as the sol::property function") {
 			lua.new_usertype<A>("A", "children", sol::property(getChildrenPtr));
 			perform_action();
@@ -124,7 +124,7 @@ end)";
 		}
 	}
 	SECTION("A usertype object as a value (moved)") {
-		lua["A"] = std::move(a);
+		lua["A"] = eastl::move(a);
 		SECTION("using getChildrenPtr as the sol::property function") {
 			lua.new_usertype<A>("A", "children", sol::property(getChildrenPtr));
 			perform_action();

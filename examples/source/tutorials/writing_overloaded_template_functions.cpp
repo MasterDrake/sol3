@@ -12,7 +12,7 @@ int main() {
 
 	auto int_function_pointer = &my_add<int, int>;
 	auto string_function_pointer
-	     = &my_add<std::string, std::string>;
+	     = &my_add<eastl::string, eastl::string>;
 	// adds 2 integers, or "adds" (concatenates) two strings
 	lua["my_combine"] = sol::overload(
 	     int_function_pointer, string_function_pointer);
@@ -21,7 +21,7 @@ int main() {
 	lua.script(
 	     "my_str = my_combine('bark bark', ' woof woof')");
 	int my_num = lua["my_num"];
-	std::string my_str = lua["my_str"];
+	eastl::string my_str = lua["my_str"];
 	SOL_ASSERT(my_num == 3);
 	SOL_ASSERT(my_str == "bark bark woof woof");
 

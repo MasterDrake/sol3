@@ -2,34 +2,36 @@
 #include <sol/sol.hpp>
 
 
-#include <unordered_set>
+#include <EASTL/unordered_set.h>
 #include <iostream>
 
 int main() {
-	struct hasher {
-		typedef std::pair<std::string, std::string>
-		     argument_type;
-		typedef std::size_t result_type;
+	struct hasher
+	{
+		typedef eastl::pair<eastl::string, eastl::string> argument_type;
+		typedef eastl::size_t result_type;
 
-		result_type operator()(const argument_type& p) const {
-			return std::hash<std::string>()(p.first);
+		result_type operator()(const argument_type& p) const
+		{
+			return eastl::hash<eastl::string>()(p.first);
 		}
 	};
 
-	using my_set = std::unordered_set<
-	     std::pair<std::string, std::string>,
-	     hasher>;
+	using my_set = eastl::unordered_set<
+		 eastl::pair<eastl::string, eastl::string>,
+		 hasher>;
 
-	std::cout << "=== containers with std::pair<> ==="
+	std::cout << "=== containers with eastl::pair<> ==="
 	          << std::endl;
 
 	sol::state lua;
 	lua.open_libraries(sol::lib::base);
 
-	lua.set_function("f", []() {
-		return my_set { { "key1", "value1" },
-			{ "key2", "value2" },
-			{ "key3", "value3" } };
+	lua.set_function("f", []()
+	{
+		return my_set { eastl::pair<eastl::string,eastl::string>("key1", "value1"),
+						eastl::pair<eastl::string,eastl::string>("key2", "value2"),
+						eastl::pair<eastl::string,eastl::string>("key3", "value3")};
 	});
 
 	lua.safe_script("v = f()");

@@ -1,14 +1,12 @@
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 
-#include <vector>
-#include <numeric>
-
 #include <iostream>
+#include <EASTL/numeric.h>
 
 class number_storage {
 private:
-	std::vector<int> data;
+	eastl::vector<int> data;
 
 public:
 	number_storage(int i) {
@@ -16,7 +14,7 @@ public:
 	}
 
 	int accumulate() const {
-		return std::accumulate(data.begin(), data.end(), 0);
+		return eastl::accumulate(data.begin(), data.end(), 0);
 	}
 
 public:
@@ -33,7 +31,7 @@ public:
 		return data.size();
 	}
 	size_type max_size() const noexcept {
-		return data.max_size();
+		return SIZE_MAX;
 	}
 	void push_back(int value) {
 		data.push_back(value);
@@ -45,7 +43,7 @@ public:
 
 namespace sol {
 	template <>
-	struct is_container<number_storage> : std::false_type { };
+	struct is_container<number_storage> : eastl::false_type { };
 } // namespace sol
 
 int main(int, char*[]) {

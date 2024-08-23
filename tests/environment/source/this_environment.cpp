@@ -26,7 +26,7 @@
 #include <sol/sol.hpp>
 
 TEST_CASE("environments/this_environment", "test various situations of pulling out an environment") {
-	static std::string code = "return (f(10))";
+	static eastl::string code = "return (f(10))";
 
 	sol::state lua;
 	sol::stack_guard luasg(lua);

@@ -1,10 +1,10 @@
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 
-std::string my_function(int D_count, std::string original) {
+eastl::string my_function(int D_count, eastl::string original) {
 	// Create a string with the letter 'D' "D_count" times,
 	// append it to 'original'
-	return original + std::string(D_count, 'D');
+	return original + eastl::string(D_count, 'D');
 }
 
 int main() {
@@ -21,7 +21,7 @@ int main() {
 
 	// Read out the global variable we stored in 'some_str' in
 	// the quick lua code we just executed
-	std::string some_str = lua["some_str"];
+	eastl::string some_str = lua["some_str"];
 	SOL_ASSERT(some_str == "DaD");
 
 	return 0;

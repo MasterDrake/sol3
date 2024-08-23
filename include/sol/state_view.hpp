@@ -73,14 +73,14 @@ namespace sol {
 				}
 			}
 #endif
-			auto loaded = reg[eastl::string("_LOADED")];
+			auto loaded = reg["_LOADED"];
 			if (!loaded.valid())
 			{
 				loaded = create_table_with(key, sr);
 			}
 			else
 			{
-				//BUGUBUGBUG: loaded[key] = sr;
+				loaded[key] = sr;
 			}
 		}
 

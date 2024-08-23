@@ -15,7 +15,7 @@ int main(int, char*[]) {
 	     lua["abc_sol2"]);
 	lua.create_named_table("def_sol2", "ghi", inner_table);
 
-	std::string code = R"(
+	eastl::string code = R"(
 		abc = { [0] = 24 }
 		def = {
 			ghi = {

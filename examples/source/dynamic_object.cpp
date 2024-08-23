@@ -2,29 +2,28 @@
 #include <sol/sol.hpp>
 
 #include <iostream>
-#include <unordered_map>
 
 // use as-is,
 // add as a member of your class,
 // or derive from it and bind it appropriately
 struct dynamic_object {
-	std::unordered_map<std::string, sol::object> entries;
+	eastl::unordered_map<eastl::string, sol::object> entries;
 
-	void dynamic_set(std::string key, sol::stack_object value) {
+	void dynamic_set(eastl::string key, sol::stack_object value) {
 		auto it = entries.find(key);
 		if (it == entries.cend()) {
 			entries.insert(
-			     it, { std::move(key), std::move(value) });
+			     it, { eastl::move(key), eastl::move(value) });
 		}
 		else {
-			std::pair<const std::string, sol::object>& kvp
+			eastl::pair<const eastl::string, sol::object>& kvp
 			     = *it;
 			sol::object& entry = kvp.second;
-			entry = sol::object(std::move(value));
+			entry = sol::object(eastl::move(value));
 		}
 	}
 
-	sol::object dynamic_get(std::string key) {
+	sol::object dynamic_get(eastl::string key) {
 		auto it = entries.find(key);
 		if (it == entries.cend()) {
 			return sol::lua_nil;

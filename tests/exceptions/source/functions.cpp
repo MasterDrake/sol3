@@ -29,7 +29,7 @@
 #include <string_view>
 
 inline namespace sol2_tests_exceptions_functions {
-	inline constexpr const std::string_view special_string = "Whoopsie [expected]";
+	inline constexpr const eastl::string_view special_string = "Whoopsie [expected]";
 
 	static void func_throw() {
 		throw std::runtime_error(special_string.data());
@@ -62,16 +62,16 @@ TEST_CASE("exceptions/functions", "exercise the ability to throw exceptions many
 			REQUIRE_FALSE(res.valid());
 			REQUIRE(res.status() == sol::call_status::runtime);
 			sol::error err = res.get<sol::error>();
-			std::string_view err_what(err.what());
-			REQUIRE(err_what.find(special_string) != std::string::npos);
+			eastl::string_view err_what(err.what());
+			REQUIRE(err_what.find(special_string) != eastl::string::npos);
 		}
 		else {
 			auto res = lua.safe_script("func_throw()", sol::script_pass_on_error);
 			REQUIRE_FALSE(res.valid());
 			REQUIRE(res.status() == sol::call_status::runtime);
 			sol::error err = res.get<sol::error>();
-			std::string_view err_what(err.what());
-			REQUIRE(err_what.find(special_string) != std::string::npos);
+			eastl::string_view err_what(err.what());
+			REQUIRE(err_what.find(special_string) != eastl::string::npos);
 		}
 	};
 
@@ -109,19 +109,19 @@ TEST_CASE("exceptions/functions", "exercise the ability to throw exceptions many
 		lua["func_throw"] = &some_class::mem_func_throw;
 		REQUIRE_NOTHROW(throw_action(lua, true));
 
-		lua["func_throw"] = std::function<void()>([f = &func_throw] { return f(); });
+		lua["func_throw"] = eastl::function<void()>([f = &func_throw] { return f(); });
 		REQUIRE_NOTHROW(throw_action(lua, false));
 
-		lua["func_throw"] = sol::overload(std::function<void()>([f = &func_throw] { return f(); }));
+		lua["func_throw"] = sol::overload(eastl::function<void()>([f = &func_throw] { return f(); }));
 		REQUIRE_NOTHROW(throw_action(lua, false));
 
-		lua["func_throw"] = std::function<void()>([] { return func_throw(); });
+		lua["func_throw"] = eastl::function<void()>([] { return func_throw(); });
 		REQUIRE_NOTHROW(throw_action(lua, false));
 
-		lua["func_throw"] = std::function<void()>(&func_throw);
+		lua["func_throw"] = eastl::function<void()>(&func_throw);
 		REQUIRE_NOTHROW(throw_action(lua, false));
 
-		lua["func_throw"] = std::function<void(some_class&)>(&some_class::mem_func_throw);
+		lua["func_throw"] = eastl::function<void(some_class&)>(&some_class::mem_func_throw);
 		REQUIRE_NOTHROW(throw_action(lua, true));
 	}
 
@@ -165,16 +165,16 @@ TEST_CASE("exceptions/functions", "exercise the ability to throw exceptions many
 		lua.set_function("func_throw", &some_class::mem_func_throw);
 		REQUIRE_NOTHROW(throw_action(lua, true));
 
-		lua.set_function("func_throw", std::function<void()>([f = &func_throw] { return f(); }));
+		lua.set_function("func_throw", eastl::function<void()>([f = &func_throw] { return f(); }));
 		REQUIRE_NOTHROW(throw_action(lua, false));
 
-		lua.set_function("func_throw", sol::overload(std::function<void()>([f = &func_throw] { return f(); })));
+		lua.set_function("func_throw", sol::overload(eastl::function<void()>([f = &func_throw] { return f(); })));
 		REQUIRE_NOTHROW(throw_action(lua, false));
 
-		lua.set_function("func_throw", std::function<void()>([] { return func_throw(); }));
+		lua.set_function("func_throw", eastl::function<void()>([] { return func_throw(); }));
 		REQUIRE_NOTHROW(throw_action(lua, false));
 
-		lua.set_function("func_throw", std::function<void()>(&func_throw));
+		lua.set_function("func_throw", eastl::function<void()>(&func_throw));
 		REQUIRE_NOTHROW(throw_action(lua, false));
 
 		lua.set_function("func_throw", &some_class::mem_func_throw, &sc);
@@ -183,10 +183,10 @@ TEST_CASE("exceptions/functions", "exercise the ability to throw exceptions many
 		lua.set_function("func_throw", &some_class::mem_func_throw, sc);
 		REQUIRE_NOTHROW(throw_action(lua, false));
 
-		lua.set_function("func_throw", &some_class::mem_func_throw, std::ref(sc));
+		lua.set_function("func_throw", &some_class::mem_func_throw, eastl::ref(sc));
 		REQUIRE_NOTHROW(throw_action(lua, false));
 
-		lua.set_function("func_throw", std::function<void(some_class&)>(&some_class::mem_func_throw));
+		lua.set_function("func_throw", eastl::function<void(some_class&)>(&some_class::mem_func_throw));
 		REQUIRE_NOTHROW(throw_action(lua, true));
 	}
 }

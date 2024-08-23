@@ -1,7 +1,6 @@
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 
-#include <tuple>
 #include <iostream>
 
 int main() {
@@ -11,11 +10,11 @@ int main() {
 	lua.open_libraries(sol::lib::base);
 
 	// multi-return functions are supported using
-	// std::tuple as the transfer type,
+	// eastl::tuple as the transfer type,
 	// sol::as_returns for containers,
 	// and sol::variadic_results for more special things
 	lua.set_function("multi_tuple",
-	     [] { return std::make_tuple(10, "goodbye"); });
+	     [] { return eastl::make_tuple(10, "goodbye"); });
 	lua.script("print('calling multi_tuple')");
 	lua.script("print(multi_tuple())");
 	lua.script("x, y = multi_tuple()");
@@ -23,7 +22,7 @@ int main() {
 
 	auto multi = lua.get<sol::function>("multi_tuple");
 	int first;
-	std::string second;
+	eastl::string second;
 	// tie the values
 	sol::tie(first, second) = multi();
 
@@ -33,13 +32,13 @@ int main() {
 
 	// sol::as_returns
 	// works with any iterable,
-	// but we show off std::vector here
+	// but we show off eastl::vector here
 	lua.set_function("multi_containers", [](bool add_extra) {
-		std::vector<int> values { 55, 66 };
+		eastl::vector<int> values { 55, 66 };
 		if (add_extra) {
 			values.push_back(77);
 		}
-		return sol::as_returns(std::move(values));
+		return sol::as_returns(eastl::move(values));
 	});
 	lua.script("print('calling multi_containers')");
 	lua.script("print(multi_containers(false))");
@@ -72,7 +71,7 @@ int main() {
 	lua.script("t, u, v = multi_vars(42, true)");
 	int t = lua["t"];
 	bool u = lua["u"];
-	std::string v = lua["v"];
+	eastl::string v = lua["v"];
 
 	SOL_ASSERT(t == 42);
 	SOL_ASSERT(u);

@@ -80,7 +80,7 @@ sol::object BaseObject::getAsRetyped(
 			     L, static_cast<const Armor*>(this));
 		case BaseObjectLifetime::Shared:
 			return sol::make_object(L,
-			     std::make_shared<Armor>(
+			     eastl::make_shared<Armor>(
 			          *static_cast<const Armor*>(this)));
 		case BaseObjectLifetime::Value:
 		default:
@@ -95,7 +95,7 @@ sol::object BaseObject::getAsRetyped(
 			     L, static_cast<const Weapon*>(this));
 		case BaseObjectLifetime::Shared:
 			return sol::make_object(L,
-			     std::make_shared<Weapon>(
+			     eastl::make_shared<Weapon>(
 			          *static_cast<const Weapon*>(this)));
 		case BaseObjectLifetime::Value:
 		default:
@@ -120,7 +120,7 @@ sol::object BaseObject::getAsRetyped(
 			return sol::make_object_userdata(L, *this);
 		case BaseObjectLifetime::Shared:
 			return sol::make_object_userdata(
-			     L, std::make_shared<BaseObject>(*this));
+			     L, eastl::make_shared<BaseObject>(*this));
 		case BaseObjectLifetime::Pointer:
 		default:
 			return sol::make_object_userdata(L, this);
@@ -142,8 +142,8 @@ int sol_lua_push(sol::types<BaseObject*>, lua_State* L,
      const BaseObject* obj) {
 	return obj->pushAsRetyped(L, BaseObjectLifetime::Pointer);
 }
-int sol_lua_push(sol::types<std::shared_ptr<BaseObject>>,
-     lua_State* L, const std::shared_ptr<BaseObject>& obj) {
+int sol_lua_push(sol::types<eastl::shared_ptr<BaseObject>>,
+     lua_State* L, const eastl::shared_ptr<BaseObject>& obj) {
 	return obj->pushAsRetyped(L, BaseObjectLifetime::Shared);
 }
 
@@ -195,19 +195,19 @@ int main() {
 	std::cout << std::endl;
 
 	std::cout << "Smart direct pointers..." << std::endl;
-	lua["sharedBase"] = std::make_shared<BaseObject>();
-	lua["sharedArmor"] = std::make_shared<Armor>();
-	lua["sharedArmor"] = std::make_shared<Weapon>();
+	lua["sharedBase"] = eastl::make_shared<BaseObject>();
+	lua["sharedArmor"] = eastl::make_shared<Armor>();
+	lua["sharedArmor"] = eastl::make_shared<Weapon>();
 	std::cout << std::endl;
 
 	std::cout << "Smart pointers put as the base class..."
 	          << std::endl;
-	lua["sharedBaseAsBase"] = (std::shared_ptr<BaseObject>)
-	     std::make_shared<BaseObject>();
-	lua["sharedArmorAsBase"] = (std::shared_ptr<BaseObject>)
-	     std::make_shared<Armor>();
-	lua["sharedArmorAsBase"] = (std::shared_ptr<BaseObject>)
-	     std::make_shared<Weapon>();
+	lua["sharedBaseAsBase"] = (eastl::shared_ptr<BaseObject>)
+	     eastl::make_shared<BaseObject>();
+	lua["sharedArmorAsBase"] = (eastl::shared_ptr<BaseObject>)
+	     eastl::make_shared<Armor>();
+	lua["sharedArmorAsBase"] = (eastl::shared_ptr<BaseObject>)
+	     eastl::make_shared<Weapon>();
 	std::cout << std::endl;
 
 	return 0;

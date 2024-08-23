@@ -26,16 +26,15 @@
 #include <sol/sol.hpp>
 
 #include <iostream>
-#include <string>
 
 TEST_CASE("issue #1095 - raw_get from global table should NOT fail at all", "[sol2][regression][issue1095]") {
-	const std::string magic_value = "test_value";
+	const eastl::string magic_value = "test_value";
 
 	sol::state lua;
 	lua[magic_value] = magic_value;
 
-	std::string test0 = lua.globals().get<std::string>(magic_value);
+	eastl::string test0 = lua.globals().get<eastl::string>(magic_value);
 	REQUIRE(test0 == magic_value);
-	std::string test1 = lua.globals().raw_get<std::string>(magic_value);
+	eastl::string test1 = lua.globals().raw_get<eastl::string>(magic_value);
 	REQUIRE(test1 == magic_value);
 }

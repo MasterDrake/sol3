@@ -1,5 +1,4 @@
 #include <lua_interop.hpp>
-
 #include <entity.hpp>
 
 #define SOL_ALL_SAFETIES_ON 1

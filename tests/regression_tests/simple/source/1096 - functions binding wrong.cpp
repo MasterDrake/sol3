@@ -26,7 +26,6 @@
 #include <sol/sol.hpp>
 
 #include <iostream>
-#include <string>
 
 inline namespace sol2_regression_test_1096 {
 	const double constant_float_v = 3;
@@ -52,10 +51,10 @@ TEST_CASE("issue #1096 - checking different functions/lambdas/structures bind as
 	lua["test7"]["value"] = [&] { return constant_float_v; };
 
 	unsigned int accumulated_errors = 0;
-	for (std::size_t i = 0; i < 8; ++i) {
-		std::string num = std::to_string(i);
-		std::string val = std::to_string(constant_float_v);
-		std::string code = "local val = test" + num + ".value()\nassert(val == " + val + ")";
+	for (eastl::size_t i = 0; i < 8; ++i) {
+		eastl::string num = eastl::to_string(i);
+		eastl::string val = eastl::to_string(constant_float_v);
+		eastl::string code = "local val = test" + num + ".value()\nassert(val == " + val + ")";
 		sol::optional<sol::error> maybe_error = lua.safe_script(code, sol::script_pass_on_error);
 		if (maybe_error.has_value()) {
 			const sol::error& err = *maybe_error;

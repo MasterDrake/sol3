@@ -1,8 +1,6 @@
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 
-#include <string>
-#include <memory>
 #include <iostream>
 
 struct thing {
@@ -40,7 +38,7 @@ int main(int, char*[]) {
 	     0, thing { 50 }, 1, unrelated {}, 4, super_thing {});
 
 
-	std::vector<std::reference_wrapper<thing>> things;
+	eastl::vector<eastl::reference_wrapper<thing>> things;
 	// Our recursive function
 	// We use some lambda techniques and pass the function
 	// itself itself so we can recurse, but a regular function
@@ -70,9 +68,9 @@ int main(int, char*[]) {
 				     = value.as<sol::optional<thing&>>();
 				if (maybe_thing) {
 					thing& the_thing = maybe_thing.value();
-					if (key.is<std::string>()) {
+					if (key.is<eastl::string>()) {
 						std::cout << "key "
-						          << key.as<std::string>()
+						          << key.as<eastl::string>()
 						          << " is a thing -- ";
 					}
 					else if (key.is<int>()) {

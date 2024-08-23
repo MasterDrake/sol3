@@ -27,9 +27,9 @@ struct vec {
 		// know the values from Lua will remain on Lua's stack,
 		// so long we we don't mess with it
 		auto maybe_string_key
-		     = key.as<sol::optional<std::string>>();
+		     = key.as<sol::optional<eastl::string>>();
 		if (maybe_string_key) {
-			const std::string& k = *maybe_string_key;
+			const eastl::string& k = *maybe_string_key;
 			if (k == "x") {
 				// Return x
 				return sol::object(
@@ -73,9 +73,9 @@ struct vec {
 		// know the values from Lua will remain on Lua's stack,
 		// so long we we don't mess with it
 		auto maybe_string_key
-		     = key.as<sol::optional<std::string>>();
+		     = key.as<sol::optional<eastl::string>>();
 		if (maybe_string_key) {
-			const std::string& k = *maybe_string_key;
+			const eastl::string& k = *maybe_string_key;
 			if (k == "x") {
 				// set x
 				this->x = value.as<double>();

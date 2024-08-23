@@ -1,14 +1,12 @@
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
-
-#include <string>
 #include <iostream>
 
 int main() {
 	std::cout << "=== coroutine ===" << std::endl;
 
 	sol::state lua;
-	std::vector<sol::coroutine> tasks;
+	eastl::vector<sol::coroutine> tasks;
 
 	lua.open_libraries(sol::lib::base, sol::lib::coroutine);
 
@@ -22,7 +20,7 @@ int main() {
 		          = runner_thread.state();
 		     // Put the task in our task list to keep it alive
 		     // and track it
-		     std::size_t task_index = tasks.size();
+		     eastl::size_t task_index = tasks.size();
 		     tasks.emplace_back(runner_thread_state, f);
 		     sol::coroutine& f_on_runner_thread
 		          = tasks[task_index];

@@ -6,10 +6,10 @@
 
 struct foo {
 private:
-	std::string name;
+	eastl::string name;
 
 public:
-	foo(std::string name) : name(std::string(name)) {
+	foo(eastl::string name) : name(eastl::string(name)) {
 	}
 
 	void print() {
@@ -59,7 +59,7 @@ int main() {
 	// you must make sure that the name of the function
 	// goes before the member function pointer
 	lua.new_usertype<foo>("foo",
-	     sol::constructors<foo(std::string)>(),
+	     sol::constructors<foo(eastl::string)>(),
 	     "print",
 	     &foo::print,
 	     "test",

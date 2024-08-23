@@ -2,8 +2,8 @@
 #include <sol/sol.hpp>
 
 #include <iostream>
-#include <vector>
-#include <set>
+#include <EASTL/vector.h>
+#include <EASTL/set.h>
 
 int main(int, const char*[]) {
 
@@ -16,10 +16,10 @@ int main(int, const char*[]) {
 
 	sol::function f = lua["f"];
 
-	std::vector<int> v2 { 3, 4 };
+	eastl::vector<int> v2 { 3, 4 };
 	f(1, 2, sol::as_args(v2));
 
-	std::set<int> v4 { 3, 1, 2, 4 };
+	eastl::set<int> v4 { 3, 1, 2, 4 };
 	f(sol::as_args(v4));
 
 	int v3[] = { 2, 3, 4 };

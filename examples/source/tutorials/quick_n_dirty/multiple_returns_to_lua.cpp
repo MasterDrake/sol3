@@ -9,21 +9,21 @@ int main(int, char*[]) {
 	lua["f"] = [](int a, int b, sol::object c) {
 		// sol::object can be anything here: just pass it
 		// through
-		return std::make_tuple(a, b, c);
+		return eastl::make_tuple(a, b, c);
 	};
 
-	std::tuple<int, int, int> result = lua["f"](100, 200, 300);
-	const std::tuple<int, int, int> expected(100, 200, 300);
+	eastl::tuple<int, int, int> result = lua["f"](100, 200, 300);
+	const eastl::tuple<int, int, int> expected(100, 200, 300);
 	SOL_ASSERT(result == expected);
 
-	std::tuple<int, int, std::string> result2;
+	eastl::tuple<int, int, eastl::string> result2;
 	result2 = lua["f"](100, 200, "BARK BARK BARK!");
-	const std::tuple<int, int, std::string> expected2(
+	const eastl::tuple<int, int, eastl::string> expected2(
 	     100, 200, "BARK BARK BARK!");
 	SOL_ASSERT(result2 == expected2);
 
 	int a, b;
-	std::string c;
+	eastl::string c;
 	sol::tie(a, b, c) = lua["f"](100, 200, "bark");
 	SOL_ASSERT(a == 100);
 	SOL_ASSERT(b == 200);

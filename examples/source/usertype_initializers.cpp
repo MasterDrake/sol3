@@ -1,7 +1,6 @@
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 
-#include <memory>
 #include <iostream>
 
 struct holy {
@@ -22,11 +21,11 @@ public:
 
 	const int data;
 
-	static std::unique_ptr<holy, deleter> create() {
+	static eastl::unique_ptr<holy, deleter> create() {
 		std::cout << "creating 'holy' unique_ptr directly and "
 		             "letting sol/Lua handle it"
 		          << std::endl;
-		return std::unique_ptr<holy, deleter>(new holy(50));
+		return eastl::unique_ptr<holy, deleter>(new holy(50));
 	}
 
 	static void initialize(holy& uninitialized_memory) {

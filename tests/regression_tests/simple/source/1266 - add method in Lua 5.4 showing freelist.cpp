@@ -58,8 +58,8 @@ end)";
 
 	sol::table table = lua["table"];
 	REQUIRE(table.size() == 1);
-	std::string table_value = table[1];
-	std::string table_value_at_size = table[table.size()];
+	eastl::string table_value = table[1];
+	eastl::string table_value_at_size = table[table.size()];
 	REQUIRE(table_value == "item");
 	REQUIRE(table_value_at_size == "item");
 }

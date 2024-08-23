@@ -36,8 +36,7 @@ namespace sol {
 			static void construct(T&& obj, Args&&... args) {
 				typedef meta::unqualified_t<T> Tu;
 				eastl::allocator alloc {};
-				alloc.allocate(sizeof(T));
-				obj = Tu(eastl::forward<Args>(args)...);
+				alloc.construct(eastl::forward<T>(obj), eastl::forward<Args>(args)...);
 			}
 
 			template <typename T, typename... Args>

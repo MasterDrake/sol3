@@ -606,16 +606,26 @@ namespace sol { namespace u_detail {
 
 			auto auxiliary_first = auxiliary_keys.cbegin();
 			auto auxiliary_last = auxiliary_keys.cend();
-			while (auxiliary_first != auxiliary_last) {
+			while (auxiliary_first != auxiliary_last)
+			{
 				// save a copy to what we're going to destroy
 				auto auxiliary_target = auxiliary_first;
 				// move the iterator up by 1
 				++auxiliary_first;
-				// extract the node and destroy the key
-				//BUGBUGBUG: auto extracted_node = auxiliary_keys.extract(auxiliary_target);
-				//BUGBUGBUG: extracted_node.key().reset(m_L);
-				//BUGBUGBUG: extracted_node.mapped().reset(m_L);
-				// continue if auxiliary_first hasn't been exhausted
+				
+				//BUGBUGBUG CODE SMELL CONST_CAST BUGBUGBUG
+				// Extract the key and value
+				sol::stateless_reference& non_const_reference = const_cast<sol::stateless_reference&>(auxiliary_target->first);
+
+				sol::stateless_reference& non_const_reference2 = const_cast<sol::stateless_reference&>(auxiliary_target->second);
+				
+				//// Reset the key and value
+				non_const_reference2.reset(m_L);
+				non_const_reference.reset(m_L);
+
+				// Remove the node from the map
+				auxiliary_keys.erase(auxiliary_target);
+				//// continue if auxiliary_first hasn't been exhausted
 			}
 		}
 	};

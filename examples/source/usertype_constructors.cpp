@@ -24,17 +24,17 @@ int main() {
 	          // MyClass.new(...) -- dot syntax, no "self" value
 	          // passed in
 	          [](const double& d) {
-		          return std::make_shared<MyClass>(d);
+		          return eastl::make_shared<MyClass>(d);
 	          },
 	          // MyClass:new(...) -- colon syntax, passes in the
 	          // "self" value as first argument implicitly
 	          [](sol::object, const double& d) {
-		          return std::make_shared<MyClass>(d);
+		          return eastl::make_shared<MyClass>(d);
 	          }),
 	     // MyClass(...) syntax, only
 	     sol::call_constructor,
 	     sol::factories([](const double& d) {
-		     return std::make_shared<MyClass>(d);
+		     return eastl::make_shared<MyClass>(d);
 	     }),
 	     "data",
 	     &MyClass::data);

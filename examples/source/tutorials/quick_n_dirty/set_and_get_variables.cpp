@@ -1,7 +1,6 @@
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 
-
 int main(int, char*[]) {
 	sol::state lua;
 	lua.open_libraries(sol::lib::base);
@@ -20,7 +19,7 @@ int main(int, char*[]) {
 
 
 	// equivalent to this code
-	std::string equivalent_code = R"(
+	eastl::string equivalent_code = R"(
 		t = {
 			number = 24,
 			number2 = 24.5,
@@ -49,7 +48,7 @@ int main(int, char*[]) {
 	auto number2 = lua.get<double>("number2");
 	SOL_ASSERT(number2 == 24.5);
 	// strings too
-	std::string important_string = lua["important_string"];
+	eastl::string important_string = lua["important_string"];
 	SOL_ASSERT(important_string == "woof woof");
 	// dig into a table
 	int value = lua["some_table"]["value"];
@@ -57,8 +56,8 @@ int main(int, char*[]) {
 	// get a function
 	sol::function a_function = lua["a_function"];
 	int value_is_100 = a_function();
-	// convertible to std::function
-	std::function<int()> a_std_function = a_function;
+	// convertible to eastl::function
+	eastl::function<int()> a_std_function = a_function;
 	int value_is_still_100 = a_std_function();
 	SOL_ASSERT(value_is_100 == 100);
 	SOL_ASSERT(value_is_still_100 == 100);
@@ -72,7 +71,7 @@ int main(int, char*[]) {
 	// sol::type::function
 	sol::type t2 = function_obj.get_type();
 	SOL_ASSERT(t2 == sol::type::function);
-	bool is_it_really = function_obj.is<std::function<int()>>();
+	bool is_it_really = function_obj.is<eastl::function<int()>>();
 	SOL_ASSERT(is_it_really);
 
 	// will not contain data

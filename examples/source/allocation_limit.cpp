@@ -14,7 +14,7 @@ public:
 	memory_tracker() : memory_tracker(arbitrary_default_limit) {
 	}
 
-	memory_tracker(std::size_t maximum_memory)
+	memory_tracker(eastl::size_t maximum_memory)
 	: used(0)
 	, limit(maximum_memory)
 	, n_threads(0)
@@ -24,11 +24,11 @@ public:
 	, n_strings(0) {
 	}
 
-	std::size_t currently_used() const {
+	eastl::size_t currently_used() const {
 		return used;
 	}
 
-	std::size_t memory_limit() const {
+	eastl::size_t memory_limit() const {
 		return limit;
 	}
 
@@ -42,7 +42,7 @@ public:
 private:
 	void* alloc(void* ptr, size_t original_block_size_or_code,
 	     size_t new_block_size) {
-		std::size_t original_block_size
+		eastl::size_t original_block_size
 		     = original_block_size_or_code;
 		if (ptr == nullptr) {
 			// object code!
@@ -83,9 +83,9 @@ private:
 		}
 
 		// did we hit the limit?
-		std::size_t memory_differntial
+		eastl::size_t memory_differntial
 		     = new_block_size - original_block_size;
-		std::size_t desired_use = used + memory_differntial;
+		eastl::size_t desired_use = used + memory_differntial;
 		if (desired_use > limit) {
 			// tell the Lua Virtual Machine
 			// to toss off (by returning nullptr)
@@ -103,13 +103,13 @@ private:
 		return ptr;
 	}
 
-	std::size_t used;
-	std::size_t limit;
-	std::size_t n_threads;
-	std::size_t n_tables;
-	std::size_t n_functions;
-	std::size_t n_userdata;
-	std::size_t n_strings;
+	eastl::size_t used;
+	eastl::size_t limit;
+	eastl::size_t n_threads;
+	eastl::size_t n_tables;
+	eastl::size_t n_functions;
+	eastl::size_t n_userdata;
+	eastl::size_t n_strings;
 };
 
 struct my_type {
@@ -124,7 +124,7 @@ int main() {
 
 	std::cout << "=== memory tracker ===" << std::endl;
 
-#if SOL_LUAJIT_VERSION < 20100 && (UINTPTR_MAX > 0xFFFFFFFF)
+#if 0
 	std::cout << "LuaJIT in x64 mode on LuaJIT 2.0.X versions "
 	             "does not support using a custom allocator!"
 	          << std::endl;
@@ -150,7 +150,7 @@ int main() {
 	     &my_type::b,
 	     "d",
 	     &my_type::d);
-	lua["f"] = [](std::string s) { return s + " woof!"; };
+	lua["f"] = [](eastl::string s) { return s + " woof!"; };
 
 	std::cout << "memory after function and usertype setup: "
 	          << box.currently_used() << " bytes / "

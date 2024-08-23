@@ -1,11 +1,10 @@
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 
-#include <string>
 #include <iostream>
 
 int main() {
-	std::cout << "=== coroutine - multple threads ==="
+	std::cout << "=== coroutine - multiple threads ==="
 	          << std::endl;
 
 	sol::state lua;
@@ -14,7 +13,7 @@ int main() {
 	     sol::lib::coroutine);
 
 	lua["print"] = [](sol::object v) {
-		std::cout << v.as<std::string>() << std::endl;
+		std::cout << v.as<eastl::string>() << std::endl;
 	};
 	lua["cyield"] = sol::yielding(
 	     []() { std::cout << "YIELDING" << std::endl; });

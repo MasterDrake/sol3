@@ -112,8 +112,7 @@ namespace sol {
 		constexpr eastl::size_t aligned_space_for() {
 			static_assert(sizeof...(Args) > 0);
 
-			//BUGUBUGBUG: constexpr eastl::size_t max_arg_alignment = (eastl::max)({ alignof(Args)... });
-			constexpr eastl::size_t max_arg_alignment = 16;
+			constexpr eastl::size_t max_arg_alignment = (eastl::max)({ alignof(Args)... });
 			if constexpr (max_arg_alignment <= alignof(std::max_align_t)) {
 				// If all types are `good enough`, simply calculate alignment in case of the worst allocator
 				eastl::size_t worst_required_size = 0;
@@ -440,7 +439,11 @@ namespace sol {
 			T** pdata = static_cast<T**>(memory);
 			T* data = *pdata;
 			eastl::allocator alloc {};
-			alloc.deallocate(data, sizeof(T));
+			alloc.destroy<T>(data);
+			//std::allocator<T> alloc {};
+			//std::allocator_traits<std::allocator<T>>::destroy(alloc, data);
+			//eastl::allocator alloc {};
+			//alloc.deallocate(data, sizeof(T));
 			return 0;
 		}
 
@@ -458,9 +461,9 @@ namespace sol {
 		int user_alloc_destroy(lua_State* L) noexcept {
 			void* memory = lua_touserdata(L, 1);
 			void* aligned_memory = align_user<T>(memory);
-			T* typed_memory = static_cast<T*>(aligned_memory);
-			eastl::allocator alloc;
-			alloc.deallocate(typed_memory, sizeof(T));
+			T* typed_memory = static_cast<T*>(aligned_memory);			
+			eastl::allocator alloc {};
+			alloc.destroy<T>(typed_memory);
 			return 0;
 		}
 
@@ -468,8 +471,8 @@ namespace sol {
 		void usertype_unique_alloc_destroy(void* memory) {
 			void* aligned_memory = align_usertype_unique<Real, true>(memory);
 			Real* typed_memory = static_cast<Real*>(aligned_memory);
-			eastl::allocator alloc;
-			alloc.deallocate(typed_memory, sizeof(T));
+			eastl::allocator alloc {};
+			alloc.destroy<Real>(typed_memory);
 		}
 
 		template <typename T>
@@ -1368,7 +1371,7 @@ namespace sol {
 		int oss_default_to_string(eastl::true_type, lua_State* L) {
 			std::ostringstream oss;
 			oss << stack::unqualified_get<T>(L, 1);
-			return stack::push(L, oss.str());
+			return stack::push(L, oss.str().c_str());
 		}
 
 		template <typename T>

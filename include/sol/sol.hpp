@@ -65,6 +65,9 @@
 #include <sol/variadic_results.hpp>
 #include <sol/lua_value.hpp>
 
+//TODO: to remove
+#include "eastl_utils.h"
+
 #if SOL_IS_ON(SOL_COMPILER_GCC)
 #pragma GCC diagnostic pop
 #elif SOL_IS_ON(SOL_COMPILER_CLANG)

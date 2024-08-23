@@ -1,5 +1,4 @@
 #include <lua_zm_interop.hpp>
-
 #include <zm/vec3.hpp>
 
 #define SOL_ALL_SAFETIES_ON 1

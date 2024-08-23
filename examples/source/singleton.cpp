@@ -3,7 +3,6 @@
 
 #include <iostream>
 
-#include <memory>
 #include <mutex>
 
 struct SomeLib {
@@ -12,14 +11,14 @@ private:
 	}
 
 public:
-	static std::shared_ptr<SomeLib> getInstance();
+	static eastl::shared_ptr<SomeLib> getInstance();
 
 	int doSomething() const {
 		return 20;
 	}
 
 	// destructor must be public to work with
-	// std::shared_ptr and friends
+	// eastl::shared_ptr and friends
 	// if you need it to be private, you must implement
 	// a custom deleter with access to the private members
 	// (e.g., a deleter struct defined in this class)
@@ -27,8 +26,8 @@ public:
 	}
 };
 
-std::shared_ptr<SomeLib> SomeLib::getInstance() {
-	static std::weak_ptr<SomeLib> instance;
+eastl::shared_ptr<SomeLib> SomeLib::getInstance() {
+	static eastl::weak_ptr<SomeLib> instance;
 	static std::mutex m;
 
 	m.lock();

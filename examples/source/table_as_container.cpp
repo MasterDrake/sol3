@@ -1,7 +1,6 @@
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 
-
 struct Vector {
 	int x;
 	int y;
@@ -25,7 +24,7 @@ int main() {
 
 	lua.script(
 	     "vectors = { Vector.new(3, 6), Vector.new(6, 3) }");
-	auto vectors = lua["vectors"].get<std::vector<Vector>>();
+	auto vectors = lua["vectors"].get<eastl::vector<Vector>>();
 
 	SOL_ASSERT(vectors[0].x == 3);
 	SOL_ASSERT(vectors[0].y == 6);

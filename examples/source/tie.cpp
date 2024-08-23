@@ -23,10 +23,10 @@ int main(int, char*[]) {
 	lua.script("function f () return 10, 11, 12 end");
 
 	sol::function f = lua["f"];
-	std::tuple<int, int, int> abc = f();
-	SOL_ASSERT(std::get<0>(abc) == 10);
-	SOL_ASSERT(std::get<1>(abc) == 11);
-	SOL_ASSERT(std::get<2>(abc) == 12);
+	eastl::tuple<int, int, int> abc = f();
+	SOL_ASSERT(eastl::get<0>(abc) == 10);
+	SOL_ASSERT(eastl::get<1>(abc) == 11);
+	SOL_ASSERT(eastl::get<2>(abc) == 12);
 	// or
 	int a, b, c;
 	sol::tie(a, b, c) = f();

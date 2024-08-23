@@ -15,8 +15,8 @@ struct custom_reader {
 	// PLEASE DO NOT USE A BUFFER
 	// OF SIZE 2!
 	char buffer[2];
-	std::size_t current_size;
-	std::size_t read_count;
+	eastl::size_t current_size;
+	eastl::size_t read_count;
 
 	custom_reader(FILE* f_)
 	: f(f_), buffer(), current_size(0), read_count(0) {

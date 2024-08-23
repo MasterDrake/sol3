@@ -21,7 +21,7 @@ void ultra_bark(pup& p, int barks) {
 		p.bark();
 }
 
-void picky_bark(pup& p, std::string s) {
+void picky_bark(pup& p, eastl::string s) {
 	if (s == "bark")
 		p.bark();
 }

@@ -8,59 +8,59 @@
 
 namespace itsy_bitsy {
 
-	template <std::size_t sz, typename C = void>
+	template <eastl::size_t sz, typename C = void>
 	struct bit_type {
 		typedef uint64_t type;
 	};
 
-	template <std::size_t sz>
-	struct bit_type<sz, std::enable_if_t<(sz <= 1)>> {
+	template <eastl::size_t sz>
+	struct bit_type<sz, eastl::enable_if_t<(sz <= 1)>> {
 		typedef bool type;
 	};
 
-	template <std::size_t sz>
+	template <eastl::size_t sz>
 	struct bit_type<sz,
-	     std::enable_if_t<(sz > 2 && sz <= 16)>> {
+	     eastl::enable_if_t<(sz > 2 && sz <= 16)>> {
 		typedef uint16_t type;
 	};
 
-	template <std::size_t sz>
+	template <eastl::size_t sz>
 	struct bit_type<sz,
-	     std::enable_if_t<(sz > 16 && sz <= 32)>> {
+	     eastl::enable_if_t<(sz > 16 && sz <= 32)>> {
 		typedef uint32_t type;
 	};
 
-	template <std::size_t sz>
+	template <eastl::size_t sz>
 	struct bit_type<sz,
-	     std::enable_if_t<(sz > 32 && sz <= 64)>> {
+	     eastl::enable_if_t<(sz > 32 && sz <= 64)>> {
 		typedef uint64_t type;
 	};
 
-	template <std::size_t sz>
+	template <eastl::size_t sz>
 	using bit_type_t = typename bit_type<sz>::type;
 
 	template <typename T, typename V>
-	bool vcxx_warning_crap(std::true_type, V val) {
+	bool vcxx_warning_crap(eastl::true_type, V val) {
 		return val != 0;
 	}
 
 	template <typename T, typename V>
-	T vcxx_warning_crap(std::false_type, V val) {
+	T vcxx_warning_crap(eastl::false_type, V val) {
 		return static_cast<T>(val);
 	}
 
 	template <typename T, typename V>
 	auto vcxx_warning_crap(V val) {
 		return vcxx_warning_crap<T>(
-		     std::is_same<bool, T>(), val);
+		     eastl::is_same<bool, T>(), val);
 	}
 
-	template <typename Base, std::size_t bit_target = 0x0,
-	     std::size_t size = 0x1>
+	template <typename Base, eastl::size_t bit_target = 0x0,
+	     eastl::size_t size = 0x1>
 	void write(Base& b, bit_type_t<size> bits) {
 		typedef bit_type_t<sizeof(Base) * CHAR_BIT>
 		     aligned_type;
-		static const std::size_t aligned_type_bit_size
+		static const eastl::size_t aligned_type_bit_size
 		     = sizeof(aligned_type) * CHAR_BIT;
 		static_assert(
 		     sizeof(Base) * CHAR_BIT >= (bit_target + size),
@@ -72,7 +72,7 @@ namespace itsy_bitsy {
 		     "bit offset and size cross beyond largest "
 		     "integral constant boundary.");
 
-		const std::size_t aligned_target
+		const eastl::size_t aligned_target
 		     = (bit_target + size) / aligned_type_bit_size;
 		const aligned_type bits_left
 		     = static_cast<aligned_type>(
@@ -92,13 +92,13 @@ namespace itsy_bitsy {
 		     |= (static_cast<aligned_type>(bits) << bits_left);
 	}
 
-	template <typename Base, std::size_t bit_target = 0x0,
-	     std::size_t size = 0x1>
+	template <typename Base, eastl::size_t bit_target = 0x0,
+	     eastl::size_t size = 0x1>
 	bit_type_t<size> read(Base& b) {
 		typedef bit_type_t<sizeof(Base) * CHAR_BIT>
 		     aligned_type;
 		typedef bit_type_t<size> field_type;
-		static const std::size_t aligned_type_bit_size
+		static const eastl::size_t aligned_type_bit_size
 		     = sizeof(aligned_type) * CHAR_BIT;
 		static_assert(
 		     sizeof(Base) * CHAR_BIT >= (bit_target + size),
@@ -110,7 +110,7 @@ namespace itsy_bitsy {
 		     "bit offset and size cross beyond largest "
 		     "integral constant boundary.");
 
-		const std::size_t aligned_target
+		const eastl::size_t aligned_target
 		     = (bit_target + size) / aligned_type_bit_size;
 		const aligned_type bits_left
 		     = static_cast<aligned_type>(
@@ -173,7 +173,7 @@ int main() {
 	     sol::property(itsy_bitsy::read<flags_t, 8, 14>,
 	          itsy_bitsy::write<flags_t, 8, 14>));
 
-	lua["f"] = std::ref(flags);
+	lua["f"] = eastl::ref(flags);
 
 	lua.script(R"(
     print(f.C)

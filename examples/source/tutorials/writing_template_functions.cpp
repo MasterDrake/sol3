@@ -16,7 +16,7 @@ int main() {
 
 	// concatenates 2 strings
 	auto string_function_pointer
-	     = &my_add<std::string, std::string>;
+	     = &my_add<eastl::string, eastl::string>;
 	lua["my_string_combine"] = string_function_pointer;
 
 	lua.script("my_num = my_int_add(1, 2)");
@@ -26,7 +26,7 @@ int main() {
 	lua.script(
 	     "my_str = my_string_combine('bark bark', ' woof "
 	     "woof')");
-	std::string my_str = lua["my_str"];
+	eastl::string my_str = lua["my_str"];
 	SOL_ASSERT(my_str == "bark bark woof woof");
 
 	return 0;

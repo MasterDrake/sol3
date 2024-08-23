@@ -13,10 +13,10 @@
 int LoadFileRequire(lua_State* L) {
 	// use sol2 stack API to pull
 	// "first argument"
-	std::string path = sol::stack::get<std::string>(L, 1);
+	eastl::string path = sol::stack::get<eastl::string>(L, 1);
 
 	if (path == "a") {
-		std::string script = R"(
+		eastl::string script = R"(
 			print("Hello from module land!")
 			test = 123
 			return "bananas"

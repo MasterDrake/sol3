@@ -1,13 +1,13 @@
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 
-#include <string>
+#include <EASTL/string.h>
 #include <iostream>
 
 // shows how to load basic data to a struct
 
 struct config {
-	std::string name;
+	eastl::string name;
 	int width;
 	int height;
 
@@ -28,7 +28,7 @@ name = "Asus"
 width = 1920
 height = 1080
 )");
-	screen.name = lua.get<std::string>("name");
+	screen.name = lua.get<eastl::string>("name");
 	screen.width = lua.get<int>("width");
 	screen.height = lua.get<int>("height");
 	SOL_ASSERT(screen.name == "Asus");

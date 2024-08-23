@@ -7,27 +7,27 @@
 #include <EASTL/vector.h>
 #include <iostream>
 
-void* __cdecl operator new[](size_t size, const char* name, int flags, unsigned debugFlags, const char* file, int line)
-{
-	(void)name;
-	(void)flags;
-	(void)debugFlags;
-	(void)file;
-	(void)line;
-	return new uint8_t[size];
-}
-
-void* __cdecl operator new[](size_t size, size_t alignment, size_t offset, const char* name, int flags, unsigned debugFlags, const char* file, int line)
-{
-	(void)name;
-	(void)alignment;
-	(void)offset;
-	(void)flags;
-	(void)debugFlags;
-	(void)file;
-	(void)line;
-	return new uint8_t[size];
-}
+//void* __cdecl operator new[](size_t size, const char* name, int flags, unsigned debugFlags, const char* file, int line)
+//{
+//	(void)name;
+//	(void)flags;
+//	(void)debugFlags;
+//	(void)file;
+//	(void)line;
+//	return new uint8_t[size];
+//}
+//
+//void* __cdecl operator new[](size_t size, size_t alignment, size_t offset, const char* name, int flags, unsigned debugFlags, const char* file, int line)
+//{
+//	(void)name;
+//	(void)alignment;
+//	(void)offset;
+//	(void)flags;
+//	(void)debugFlags;
+//	(void)file;
+//	(void)line;
+//	return new uint8_t[size];
+//}
 
 //namespace std
 //{

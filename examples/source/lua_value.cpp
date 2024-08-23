@@ -2,7 +2,6 @@
 #include <sol/sol.hpp>
 
 #include <iostream>
-#include <string>
 
 struct int_entry {
 	int value;
@@ -13,8 +12,8 @@ struct int_entry {
 	int_entry(int v) : value(v) {
 	}
 
-	std::string to_string() const {
-		return "int_entry(" + std::to_string(value) + ")";
+	eastl::string to_string() const {
+		return "int_entry(" + eastl::to_string(value) + ")";
 	}
 
 	bool operator==(const int_entry& e) const {

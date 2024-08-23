@@ -50,7 +50,7 @@ TEST_CASE("issue #1192 - alignment test should not fail for strangely-aligned / 
 	lua["test"] = Test {};
 
 	// Test also unique and over-aligned userdata
-	lua["test"] = std::make_unique<Test>();
+	lua["test"] = eastl::make_unique<Test>();
 	lua["test"] = Test2 {};
 
 	return 0;

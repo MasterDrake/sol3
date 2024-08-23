@@ -1,7 +1,6 @@
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 
-#include <string>
 #include <iostream>
 
 // this example shows how to read data in from a lua table
@@ -26,8 +25,8 @@ int main() {
 
 	/* Shorter Syntax: */
 	// using the values stored in table1
-	/*std::cout << (std::string)lua["table1"][1] << " "
-	     << (std::string)lua["table1"][2] << '\n';
+	/*std::cout << (eastl::string)lua["table1"][1] << " "
+	     << (eastl::string)lua["table1"][2] << '\n';
 	   */
 	// some retrieval of values from the nested table
 	// the cleaner way of doing things
@@ -38,34 +37,34 @@ int main() {
 	// sol::table t2 = lua["table2"];
 	// sol::table nestedTable = t2["nestedTable"];
 
-	std::string x = lua["table2"]["nestedTable"]["key2"];
+	eastl::string x = lua["table2"]["nestedTable"]["key2"];
 	std::cout << "nested table: key1 : "
-	          << nestedTable.get<std::string>("key1")
+	          << nestedTable.get<eastl::string>("key1")
 	          << ", key2: " << x << '\n';
-	std::cout << "name of t2: " << t2.get<std::string>("name")
+	std::cout << "name of t2: " << t2.get<eastl::string>("name")
 	          << '\n';
-	std::string t2name = t2["name"];
+	eastl::string t2name = t2["name"];
 	std::cout << "name of t2: " << t2name << '\n';
 
 	/* Longer Syntax: */
 	// using the values stored in table1
-	std::cout << lua.get<sol::table>("table1").get<std::string>(
+	std::cout << lua.get<sol::table>("table1").get<eastl::string>(
 	     1) << " "
-	          << lua.get<sol::table>("table1").get<std::string>(
+	          << lua.get<sol::table>("table1").get<eastl::string>(
 	                  2)
 	          << '\n';
 
 	// some retrieval of values from the nested table
 	// the cleaner way of doing things
 	std::cout << "nested table: key1 : "
-	          << nestedTable.get<std::string>("key1")
+	          << nestedTable.get<eastl::string>("key1")
 	          << ", key2: "
 	          // yes you can chain the get<>() results
 	          << lua.get<sol::table>("table2")
 	                  .get<sol::table>("nestedTable")
-	                  .get<std::string>("key2")
+	                  .get<eastl::string>("key2")
 	          << '\n';
-	std::cout << "name of t2: " << t2.get<std::string>("name")
+	std::cout << "name of t2: " << t2.get<eastl::string>("name")
 	          << '\n';
 
 	std::cout << std::endl;

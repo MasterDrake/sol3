@@ -2,7 +2,6 @@
 #include <sol/sol.hpp>
 
 #include <iostream>
-#include <unordered_map>
 
 struct thing {
 	int member_variable = 5;
@@ -17,9 +16,9 @@ struct thing {
 // cheap storage: in reality, you'd need to find a
 // better way of handling this.
 // or not! It's up to you.
-static std::unordered_map<sol::string_view, sol::object>
+static eastl::unordered_map<sol::string_view, sol::object>
      thing_function_associations;
-static std::unordered_map<sol::string_view, sol::object>
+static eastl::unordered_map<sol::string_view, sol::object>
      thing_variable_associations;
 
 void register_thing_type(sol::state& lua) {

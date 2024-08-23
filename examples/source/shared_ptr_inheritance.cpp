@@ -1,7 +1,6 @@
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 
-#include <memory>
 #include <iostream>
 
 struct Shape {
@@ -20,7 +19,7 @@ int main() {
 	lua.new_usertype<Shape>("Shape", sol::no_constructor);
 
 	lua.new_usertype<Box>("Box", sol::factories([&]() {
-		auto b = std::make_shared<Box>();
+		auto b = eastl::make_shared<Box>();
 		std::cout << "create Box@" << std::hex << b.get()
 		          << '\n';
 		return b;
@@ -28,10 +27,10 @@ int main() {
 
 	lua.set_function(
 	     "inspect_shape_table", [](const sol::table& args) {
-		     std::shared_ptr<Shape> defbox = nullptr;
+		     eastl::shared_ptr<Shape> defbox = nullptr;
 		     // check if there's a field with the name "shape"
 		     auto s = args.get<
-		          sol::optional<std::shared_ptr<Shape>>>(
+		          sol::optional<eastl::shared_ptr<Shape>>>(
 		          "shape");
 		     std::cout << "has   : " << std::boolalpha
 		               << s.has_value() << '\n';
@@ -39,7 +38,7 @@ int main() {
 		     // get the field named "shape" or use the default
 		     // value
 		     std::cout << "get_or: " << std::hex
-		               << args.get_or<std::shared_ptr<Shape>>(
+		               << args.get_or<eastl::shared_ptr<Shape>>(
 		                           "shape", defbox)
 		                       .get()
 		               << '\n';
@@ -48,7 +47,7 @@ int main() {
 		     // beforehand...
 		     std::cout
 		          << "get   : " << std::hex
-		          << args.get<std::shared_ptr<Shape>>("shape")
+		          << args.get<eastl::shared_ptr<Shape>>("shape")
 		                  .get()
 		          << '\n';
 	     });

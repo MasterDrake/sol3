@@ -368,7 +368,7 @@ namespace sol {
 		}
 
 		~stateless_reference() noexcept = default;
-		//BUGBUGBUG: dovrebbe essere delete invece che default
+		//BUGBUGBUG: must be delete instead of default, it's due hashtable nodes and const pair shenaningans...
 		stateless_reference(const stateless_reference& o) noexcept = default;
 		stateless_reference& operator=(const stateless_reference& r) noexcept = default;
 

@@ -1,14 +1,14 @@
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 
-#include <list>
+#include <EASTL/slist.h>
 #include <iosfwd>
 
 #include <iostream>
 
 class automatic {
 private:
-	std::list<double> data;
+	eastl::slist<double> data;
 
 public:
 	using value_type = decltype(data)::value_type;
@@ -17,7 +17,7 @@ public:
 
 	// automatically bound to obj( args... ) [ __call ]
 	void operator()() {
-		data.push_back(
+		data.push_front(
 		     static_cast<value_type>(data.size() + 1) / 3.0);
 	}
 
@@ -49,7 +49,8 @@ public:
 	// other comparison operators are based off the above in Lua
 	// and cannot be overridden directly
 };
-
+namespace std
+	{
 // automatically bound to tostring(obj) [ __tostring ]
 std::ostream& operator<<(
      std::ostream& os, const automatic& right) {
@@ -69,7 +70,7 @@ std::ostream& operator<<(
 	os << " }";
 	return os;
 }
-
+}
 int main(int, char*[]) {
 	std::cout << "=== usertype automatic operators ==="
 	          << std::endl;

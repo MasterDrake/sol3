@@ -32,11 +32,11 @@ int main(int, char*[]) {
 	// lifetime is same as dog in C++
 	// (access after it is destroyed is bad)
 	lua["dog"] = &dog;
-	// Same as above: respects std::reference_wrapper
-	lua["dog"] = std::ref(dog);
+	// Same as above: respects eastl::reference_wrapper
+	lua["dog"] = eastl::ref(dog);
 	// These two are identical to above
 	lua.set("dog", &dog);
-	lua.set("dog", std::ref(dog));
+	lua.set("dog", eastl::ref(dog));
 
 
 	Doge& dog_ref = lua["dog"];     // References Lua memory

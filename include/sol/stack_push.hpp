@@ -165,10 +165,8 @@ namespace sol { namespace stack {
        // just the sizeof(T*), and nothing else.
 			T* obj = detail::usertype_allocate<T>(L);
 			f();
-			//BUGBUGBUG: SHITSHOW
 			eastl::allocator alloc {};
-			alloc.allocate(sizeof(*obj));
-			*obj = T(eastl::forward<Args>(args)...);
+			alloc.construct<T, Args...>(obj, eastl::forward<Args>(args)...);
 			return 1;
 		}
 
@@ -685,10 +683,8 @@ namespace sol { namespace stack {
 				}
 				lua_setmetatable(L, -2);
 			}
-			//BUGBUGBUG: ...
 			eastl::allocator alloc {};
-			alloc.allocate(data);
-			*data = T(eastl::forward<Args>(args)...);
+			alloc.construct<T, Args...>(data, eastl::forward<Args>(args)...);
 			return 1;
 		}
 

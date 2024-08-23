@@ -26,7 +26,6 @@
 #include <sol/sol.hpp>
 
 #include <cstdint>
-#include <limits>
 
 inline namespace sol2_tests_exhaustive {
 	struct Link {
@@ -41,7 +40,7 @@ inline namespace sol2_tests_exhaustive {
 
 	inline constexpr int LINK_CONSTANT = 0xA837;
 
-	inline int ex_f0(sol::exhaustive<std::vector<Link>> ex_vec) {
+	inline int ex_f0(sol::exhaustive<eastl::vector<Link>> ex_vec) {
 		const auto& vec = ex_vec.value();
 		for (const auto& elem : vec) {
 			REQUIRE(elem.value == LINK_CONSTANT);
@@ -49,16 +48,16 @@ inline namespace sol2_tests_exhaustive {
 		return 0;
 	}
 
-	inline int ex_f1(sol::exhaustive<std::vector<uint64_t>> ex_vec) {
+	inline int ex_f1(sol::exhaustive<eastl::vector<uint64_t>> ex_vec) {
 		const auto& vec = ex_vec.value();
-		for (std::size_t i = 0; i < vec.size(); ++i) {
+		for (eastl::size_t i = 0; i < vec.size(); ++i) {
 			const auto& elem = vec[i];
 			REQUIRE(elem == static_cast<uint64_t>(i + 1));
 		}
 		return 1;
 	}
 
-	inline int ex_f2(sol::exhaustive<std::vector<NonLink>> ex_vec, sol::this_state this_lua) {
+	inline int ex_f2(sol::exhaustive<eastl::vector<NonLink>> ex_vec, sol::this_state this_lua) {
 		const auto& vec = ex_vec.value();
 		void* address = static_cast<void*>(this_lua.lua_state());
 		for (const auto& elem : vec) {

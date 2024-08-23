@@ -6,12 +6,12 @@ int main() {
 
 	lua.script("function f (a, b, c) return a, b, c end");
 
-	std::tuple<int, int, int> result;
+	eastl::tuple<int, int, int> result;
 	result = lua["f"](1, 2, 3);
-	SOL_ASSERT(result == std::make_tuple(1, 2, 3));
+	SOL_ASSERT(result == eastl::make_tuple(1, 2, 3));
 	int a, b;
-	std::string c;
-	// NOTE: sol::tie, NOT std::tie
+	eastl::string c;
+	// NOTE: sol::tie, NOT eastl::tie
 	// (ESS OH ELL prefix, not ESS TEE DEE prefix)
 	sol::tie(a, b, c) = lua["f"](1, 2, "bark");
 	SOL_ASSERT(a == 1);

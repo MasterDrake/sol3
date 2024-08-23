@@ -51,14 +51,14 @@ int main() {
 	lua.new_usertype<my_type>(
 	     "my_type", "value", &my_type::value);
 	{
-		std::shared_ptr<my_type> shared
-		     = std::make_shared<my_type>();
-		lua["shared"] = std::move(shared);
+		eastl::shared_ptr<my_type> shared
+		     = eastl::make_shared<my_type>();
+		lua["shared"] = eastl::move(shared);
 	}
 	{
 		std::cout << "getting reference to shared_ptr..."
 		          << std::endl;
-		std::shared_ptr<my_type>& ref_to_shared_ptr
+		eastl::shared_ptr<my_type>& ref_to_shared_ptr
 		     = lua["shared"];
 		std::cout << "\tshared.use_count(): "
 		          << ref_to_shared_ptr.use_count()
@@ -88,7 +88,7 @@ int main() {
 	{
 		std::cout << "getting copy of shared_ptr..."
 		          << std::endl;
-		std::shared_ptr<my_type> copy_of_shared_ptr
+		eastl::shared_ptr<my_type> copy_of_shared_ptr
 		     = lua["shared"];
 		std::cout << "\tshared.use_count(): "
 		          << copy_of_shared_ptr.use_count()

@@ -1,11 +1,11 @@
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 
-#include <map>
+#include <EASTL/map.h>
 #include <iostream>
 
 struct my_thing {
-	std::map<std::string, int> m {
+	eastl::map<eastl::string, int> m {
 		{ "bark", 20 },
 		{ "woof", 60 },
 		{ "borf", 30 },
@@ -17,7 +17,7 @@ struct my_thing {
 };
 
 struct lua_iterator_state {
-	typedef std::map<std::string, int>::iterator it_t;
+	typedef eastl::map<eastl::string, int>::iterator it_t;
 	it_t it;
 	it_t last;
 
@@ -26,7 +26,7 @@ struct lua_iterator_state {
 	}
 };
 
-std::tuple<sol::object, sol::object> my_next(
+eastl::tuple<sol::object, sol::object> my_next(
      sol::user<lua_iterator_state&> user_it_state,
      sol::this_state l) {
 	// this gets called
@@ -41,18 +41,18 @@ std::tuple<sol::object, sol::object> my_next(
 	if (it == it_state.last) {
 		// return nil to signify that
 		// there's nothing more to work with.
-		return std::make_tuple(sol::object(sol::lua_nil),
+		return eastl::make_tuple(sol::object(sol::lua_nil),
 		     sol::object(sol::lua_nil));
 	}
 	auto itderef = *it;
 	// 2 values are returned (pushed onto the stack):
 	// the key and the value
 	// the state is left alone
-	auto r = std::make_tuple(
+	auto r = eastl::make_tuple(
 	     sol::object(l, sol::in_place, it->first),
 	     sol::object(l, sol::in_place, it->second));
 	// the iterator must be moved forward one before we return
-	std::advance(it, 1);
+	eastl::advance(it, 1);
 	return r;
 }
 
@@ -68,8 +68,8 @@ auto my_pairs(my_thing& mt) {
 	// usertypes, it's incompatible with regular usertypes and
 	// stores the type T directly in lua without any pretty
 	// setup saves space allocation and a single dereference
-	return std::make_tuple(&my_next,
-	     sol::user<lua_iterator_state>(std::move(it_state)),
+	return eastl::make_tuple(&my_next,
+	     sol::user<lua_iterator_state>(eastl::move(it_state)),
 	     sol::lua_nil);
 }
 

@@ -28,9 +28,9 @@ int main(int, char*[]) {
 
 	lua["dog"] = Doge {};
 	lua["dog_copy"] = dog;
-	lua["dog_move"] = std::move(dog);
-	lua["dog_unique_ptr"] = std::make_unique<Doge>(21);
-	lua["dog_shared_ptr"] = std::make_shared<Doge>(51);
+	lua["dog_move"] = eastl::move(dog);
+	lua["dog_unique_ptr"] = eastl::make_unique<Doge>(21);
+	lua["dog_shared_ptr"] = eastl::make_shared<Doge>(51);
 
 	// now we can access these types in Lua
 	lua.new_usertype<Doge>("Doge",

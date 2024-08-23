@@ -7,7 +7,7 @@ int func_1(int value) {
 	return 20 + value;
 }
 
-std::string func_2(std::string text) {
+eastl::string func_2(eastl::string text) {
 	return "received: " + text;
 }
 

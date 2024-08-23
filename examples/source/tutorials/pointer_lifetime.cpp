@@ -23,13 +23,13 @@ int main() {
 	*/
 
 	// :ok:
-	lua["my_func0"] = []() -> std::unique_ptr<my_type> {
-		return std::make_unique<my_type>();
+	lua["my_func0"] = []() -> eastl::unique_ptr<my_type> {
+		return eastl::make_unique<my_type>();
 	};
 
 	// :ok:
-	lua["my_func1"] = []() -> std::shared_ptr<my_type> {
-		return std::make_shared<my_type>();
+	lua["my_func1"] = []() -> eastl::shared_ptr<my_type> {
+		return eastl::make_shared<my_type>();
 	};
 
 	// :ok:
@@ -37,16 +37,16 @@ int main() {
 
 	// :ok:
 	lua.set(
-	     "something", std::unique_ptr<my_type>(new my_type()));
+	     "something", eastl::unique_ptr<my_type>(new my_type()));
 
-	std::shared_ptr<my_type> my_shared
-	     = std::make_shared<my_type>();
+	eastl::shared_ptr<my_type> my_shared
+	     = eastl::make_shared<my_type>();
 	// :ok:
 	lua.set("something_else", my_shared);
 
 	// :ok:
-	auto my_unique = std::make_unique<my_type>();
-	lua["other_thing"] = std::move(my_unique);
+	auto my_unique = eastl::make_unique<my_type>();
+	lua["other_thing"] = eastl::move(my_unique);
 
 	// :ok:
 	lua["my_func5"] = []() -> my_type* {
@@ -64,11 +64,11 @@ int main() {
 	     = []() -> std::nullptr_t { return nullptr; };
 
 	// :ok:
-	lua["my_func8"] = []() -> std::unique_ptr<my_type> {
+	lua["my_func8"] = []() -> eastl::unique_ptr<my_type> {
 		// default-constructs as a nullptr,
 		// gets pushed as nil to Lua
-		return std::unique_ptr<my_type>();
-		// same happens for std::shared_ptr
+		return eastl::unique_ptr<my_type>();
+		// same happens for eastl::shared_ptr
 	};
 
 	// Acceptable, it will set 'something' to nil

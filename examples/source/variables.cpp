@@ -24,11 +24,11 @@ int main() {
 	// basic retrieval of a variable
 	// through multiple ways
 	int x = lua["x"];
-	auto y = lua.get<std::string>("y");
+	auto y = lua.get<eastl::string>("y");
 
 	int x2;
-	std::string y2;
-	std::tie(x2, y2) = lua.get<int, std::string>("x", "y");
+	eastl::string y2;
+	eastl::tie(x2, y2) = lua.get<int, eastl::string>("x", "y");
 
 	// show the values
 	std::cout << x << std::endl;

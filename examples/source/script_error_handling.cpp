@@ -8,7 +8,7 @@ int main(int, char**) {
 
 	sol::state lua;
 
-	std::string code = R"(
+	eastl::string code = R"(
 bad&$#*$syntax
 bad.code = 2
 return 24

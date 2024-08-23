@@ -1,10 +1,8 @@
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 
-#include <vector>
-#include <map>
+#include <EASTL/map.h>
 #include <iostream>
-
 
 // nested allows serialization of maps with vectors inside, and
 // vice-versa all from a nested structure of Lua tables it has
@@ -12,13 +10,13 @@
 // and which ones are considered userdata, but it covers a good
 // 90% of cases where someone wants to handle a nested table
 void demo(
-     sol::nested<std::map<std::string, std::vector<std::string>>>
+     sol::nested<eastl::map<eastl::string, eastl::vector<eastl::string>>>
           src) {
 	std::cout << "demo, sol::nested<...>" << std::endl;
 	const auto& listmap = src.value();
 	SOL_ASSERT(listmap.size() == 2);
 	for (const auto& kvp : listmap) {
-		const std::vector<std::string>& strings = kvp.second;
+		const eastl::vector<eastl::string>& strings = kvp.second;
 		SOL_ASSERT(strings.size() == 3);
 		std::cout << "\t" << kvp.first << " = ";
 		for (const auto& s : strings) {
@@ -38,8 +36,8 @@ void demo(
 // you you can mix which parts are considered tables from Lua,
 // and which parts are considered other kinds of types, such as
 // userdata and the like
-void demo_explicit(sol::as_table_t<std::map<std::string,
-          sol::as_table_t<std::vector<std::string>>>>
+void demo_explicit(sol::as_table_t<eastl::map<eastl::string,
+          sol::as_table_t<eastl::vector<eastl::string>>>>
           src) {
 	std::cout << "demo, explicit sol::as_table_t<...>"
 	          << std::endl;
@@ -50,7 +48,7 @@ void demo_explicit(sol::as_table_t<std::map<std::string,
 	for (const auto& kvp : listmap) {
 		// Have to access the internal "source" for the inner
 		// as_table_t, as well
-		const std::vector<std::string>& strings
+		const eastl::vector<eastl::string>& strings
 		     = kvp.second.value();
 		SOL_ASSERT(strings.size() == 3);
 		std::cout << "\t" << kvp.first << " = ";
