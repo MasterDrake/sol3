@@ -4,6 +4,7 @@
 - stack_core.hpp, eastl::max and eastl::max_element must be EA_CONSTEXPR'd
 - eastl/allocator needs this :
 ```c+++
+		#include <EASTL/utility.h>
 		template <typename T, typename... Args>
 		void allocator::construct(T* ptr, Args&&... args)
 		{
@@ -18,6 +19,11 @@
 ```
 - eastl/internal/config. needs this:
 ```c++
+	namespace eastl
+	{
+		using size_t = eastl_size_t;
+		using ssize_t = eastl_ssize_t;
+	}
 ```
 
-- docs.std_threads, containers with pairs, customization_to_table needs fixing.
+- containers with pairs, customization_to_table needs fixing.

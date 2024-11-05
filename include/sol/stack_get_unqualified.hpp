@@ -1037,7 +1037,7 @@ namespace sol { namespace stack {
 			record temp_tracking = tracking;
 			if (stack::check<T>(L, index, &no_panic, temp_tracking)) {
 				tracking = temp_tracking;
-				return V(eastl::in_place_index_t<I>, stack::get<T>(L, index));
+				return V(eastl::in_place<I>, stack::get<T>(L, index));
 			}
 			return get_one(eastl::integral_constant<eastl::size_t, I + 1>(), L, index, tracking);
 		}
